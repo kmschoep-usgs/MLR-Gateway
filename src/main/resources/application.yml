@@ -1,0 +1,27 @@
+server:
+  port: 8089
+
+zuul:
+  routes:
+    legacyCru:
+      path: /monitoringLocations/**
+      stripPrefix: false
+    ddot:
+      path: /ddots/**
+      stripPrefix: false
+
+legacyCru:
+  ribbon:
+    listOfServers: ${legacyCruServers}
+    eureka:
+      enabled: false
+
+ddot:
+  ribbon:
+    listOfServers: ${ddotServers}
+    eureka:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false
