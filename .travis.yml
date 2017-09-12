@@ -1,4 +1,4 @@
 language: java
 
 script:
-  - mvn verify
+  - mvn clean verify jacoco:report coveralls:report
