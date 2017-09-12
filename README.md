@@ -1,5 +1,6 @@
 # MLR-Gateway
-[![Build Status](https://travis-ci.org/USGS-CIDA/MLR-gateway.svg?branch=master)](https://travis-ci.org/USGS-CIDA/MLR-Gateway)
+[![Build Status](https://travis-ci.org/USGS-CIDA/MLR-Gateway.svg?branch=master)](https://travis-ci.org/USGS-CIDA/MLR-Gateway) [![Coverage Status](https://coveralls.io/repos/github/USGS-CIDA/MLR-Gateway/badge.svg?branch=master)](https://coveralls.io/github/USGS-CIDA/MLR-Gateway?branch=master)
+
 Monitoring Location Gateway
 
 ## Running the Application
