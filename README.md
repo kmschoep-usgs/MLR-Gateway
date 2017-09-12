@@ -1,4 +1,5 @@
 # MLR-Gateway
+[![Build Status](https://travis-ci.org/USGS-CIDA/MLR-gateway.svg?branch=master)](https://travis-ci.org/USGS-CIDA/MLR-Gateway)
 Monitoring Location Gateway
 
 ## Running the Application
