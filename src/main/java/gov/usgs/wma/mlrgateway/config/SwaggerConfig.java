@@ -1,4 +1,4 @@
-package gov.usgs.wma.mlrgateway;
+package gov.usgs.wma.mlrgateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,4 +23,5 @@ public class SwaggerConfig {
 				.paths(Predicates.or(PathSelectors.ant("/workflow/**"), PathSelectors.ant("/info/**"), PathSelectors.ant("/health/**")))
 				.build();
 	}
+
 }
