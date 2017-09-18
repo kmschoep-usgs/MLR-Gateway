@@ -106,4 +106,5 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		assertEquals("{}", service.ddotValidation(file, response));
 		verify(ddotService).parseDdot(any(MultipartFile.class));
 	}
+
 }

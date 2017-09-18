@@ -20,7 +20,7 @@ public class SwaggerConfig {
 	public Docket gatewayApi() {
 		return new Docket(DocumentationType.SWAGGER_2)
 				.select() 
-				.paths(Predicates.or(PathSelectors.ant("/workflow/**"), PathSelectors.ant("/info/**"), PathSelectors.ant("/health/**")))
+				.paths(Predicates.or(PathSelectors.ant("/workflows/**"), PathSelectors.ant("/info/**"), PathSelectors.ant("/health/**")))
 				.build();
 	}
 
