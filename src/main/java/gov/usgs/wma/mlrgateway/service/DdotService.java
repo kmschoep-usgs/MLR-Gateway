@@ -30,7 +30,7 @@ public class DdotService {
 		ObjectMapper mapper = new ObjectMapper();
 		TypeReference<List<Map<?,?>>> mapType = new TypeReference<List<Map<?,?>>>() {};
 
-		String ddotResponse = ddotClient.injestDdot(file);
+		String ddotResponse = ddotClient.ingestDdot(file);
 
 		try {
 			ddots = mapper.readValue(ddotResponse, mapType);

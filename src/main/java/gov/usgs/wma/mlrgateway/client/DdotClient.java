@@ -15,6 +15,6 @@ public interface DdotClient {
 
 	@RequestMapping(method=RequestMethod.POST, value="ddots")
 	@Headers("Content-Type: multipart/form-data")
-	String injestDdot(@RequestPart MultipartFile file);
+	String ingestDdot(@RequestPart MultipartFile file);
 
 }
