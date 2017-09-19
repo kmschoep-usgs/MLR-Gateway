@@ -46,7 +46,7 @@ public class DdotServiceTest extends BaseSpringTest {
 	@Test
 	public void garbageFromDdot_thenReturnInternalServerError() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		given(ddotClient.injestDdot(any(MultipartFile.class))).willReturn("not json");
+		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn("not json");
 		try {
 			service.parseDdot(file);
 			fail("Did not get expected Exception.");
@@ -56,14 +56,14 @@ public class DdotServiceTest extends BaseSpringTest {
 				JSONAssert.assertEquals("{\"error\":{\"message\":\"Unable to read ingestor output.\"}}", ((FeignBadResponseWrapper) e).getBody(), JSONCompareMode.STRICT);
 			}
 		}
-		verify(ddotClient).injestDdot(any(MultipartFile.class));
+		verify(ddotClient).ingestDdot(any(MultipartFile.class));
 	}
 
 	@Test
 	public void incorrectDdotSize_thenReturnBadRequest() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		String ddotResponse = "[{},{}]";
-		given(ddotClient.injestDdot(any(MultipartFile.class))).willReturn(ddotResponse);
+		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotResponse);
 		try {
 			service.parseDdot(file);
 			fail("Did not get expected Exception.");
@@ -74,7 +74,7 @@ public class DdotServiceTest extends BaseSpringTest {
 					+ ddotResponse + "}", ((FeignBadResponseWrapper) e).getBody(), JSONCompareMode.STRICT);
 			}
 		}
-		verify(ddotClient).injestDdot(any(MultipartFile.class));
+		verify(ddotClient).ingestDdot(any(MultipartFile.class));
 	}
 
 
@@ -83,11 +83,11 @@ public class DdotServiceTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		ObjectMapper mapper = new ObjectMapper();
 		String ddotResponse = mapper.writeValueAsString(singleAdd());
-		given(ddotClient.injestDdot(any(MultipartFile.class))).willReturn(ddotResponse);
+		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotResponse);
 		List<Map<?,?>> rtn = service.parseDdot(file);
 		assertEquals(1, rtn.size());
 		assertThat(rtn.get(0), is(singleAdd().get(0)));
-		verify(ddotClient).injestDdot(any(MultipartFile.class));
+		verify(ddotClient).ingestDdot(any(MultipartFile.class));
 	}
 
 	public static List<Map<?,?>> singleUnknown() {
