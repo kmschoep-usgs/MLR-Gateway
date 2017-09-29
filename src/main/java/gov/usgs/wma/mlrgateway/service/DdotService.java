@@ -25,10 +25,10 @@ public class DdotService {
 		this.ddotClient = ddotClient;
 	}
 
-	public List<Map<?,?>> parseDdot(MultipartFile file) throws HystrixBadRequestException {
-		List<Map<?,?>> ddots = null;
+	public List<Map<String, Object>> parseDdot(MultipartFile file) throws HystrixBadRequestException {
+		List<Map<String, Object>> ddots = null;
 		ObjectMapper mapper = new ObjectMapper();
-		TypeReference<List<Map<?,?>>> mapType = new TypeReference<List<Map<?,?>>>() {};
+		TypeReference<List<Map<String, Object>>> mapType = new TypeReference<List<Map<String, Object>>>() {};
 
 		String ddotResponse = ddotClient.ingestDdot(file);
 
