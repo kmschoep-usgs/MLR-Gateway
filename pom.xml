@@ -156,9 +156,9 @@
     </build>
     
     <scm>
-        <connection>scm:git:https://github.com/USGS-CIDA/MLR-Legacy-Service.git</connection>
-        <developerConnection>scm:git:https://github.com/USGS-CIDA/MLR-Legacy-Service.git</developerConnection>
-        <url>https://github.com/USGS-CIDA/MLR-Legacy-Service</url>
+        <connection>scm:git:https://github.com/USGS-CIDA/MLR-Gateway.git</connection>
+        <developerConnection>scm:git:https://github.com/USGS-CIDA/MLR-Gateway.git</developerConnection>
+        <url>https://github.com/USGS-CIDA/MLR-Gateway</url>
         <tag>HEAD</tag>
     </scm>
 
