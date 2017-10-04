@@ -13,12 +13,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
+import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.DdotClient;
+import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 
 @Service
 public class DdotService {
 
 	private DdotClient ddotClient;
+
+	protected static final String STEP_NAME = "Ingest D dot File";
+	protected static final String SUCCESS_MESSAGE = "D dot file parsed successfully.";
+	protected static final String INTERNAL_ERROR_MESSAGE = "{\"error\":{\"message\": \"Unable to read ingestor output.\"}}";
+	protected static final String WRONG_FORMAT_MESSAGE = "{\"error\":{\"message\":\"Only accepting files with one transaction at this time.\"},\"data\":%ddotResponse%}";
 
 	@Autowired
 	public DdotService(DdotClient ddotClient) {
@@ -35,14 +42,19 @@ public class DdotService {
 		try {
 			ddots = mapper.readValue(ddotResponse, mapType);
 		} catch (Exception e) {
-			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error\":{\"message\": \"Unable to read ingestor output.\"}}");
+			int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+			WorkflowController.addStepReport(new StepReport(STEP_NAME, status, INTERNAL_ERROR_MESSAGE, null, null));
+			throw new FeignBadResponseWrapper(status, null, INTERNAL_ERROR_MESSAGE);
 		}
 
 		if (ddots.size() != 1) {
-			throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\":{\"message\":\"Only accepting files with one transaction at this time.\"},\"data\":"
-					+ ddotResponse + "}");
+			int status = HttpStatus.SC_BAD_REQUEST;
+			String message = WRONG_FORMAT_MESSAGE.replace("%ddotResponse%", ddotResponse);
+			WorkflowController.addStepReport(new StepReport(STEP_NAME, status, message, null, null));
+			throw new FeignBadResponseWrapper(status, null, message);
 		}
 
+		WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, SUCCESS_MESSAGE, null, null));
 		return ddots;
 	}
 
