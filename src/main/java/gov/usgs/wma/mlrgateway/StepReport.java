@@ -1,5 +1,8 @@
 package gov.usgs.wma.mlrgateway;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class StepReport {
 
 	private String name;

@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +40,9 @@ public class LegacyWorkflowService {
 	public static final String SITE_ADD_SUCCESSFULL = "Site Added Successfully";
 	public static final String SITE_UPDATE_STEP = "Site Update";
 	public static final String SITE_UPDATE_SUCCESSFULL = "Site Updated Successfully.";
+	public static final String EXPORT_ADD_STEP = "Export Add Transaction File";
+	public static final String EXPORT_UPDATE_STEP = "Export Update Transaction File";
+	public static final String EXPORT_SUCCESSFULL = "Transaction File created Successfully.";
 	public static final String VALIDATION_STEP = "Validate";
 	public static final String VALIDATION_SUCCESSFULL = "Transaction validated successfully.";
 	public static final String BAD_TRANSACTION_TYPE = "{\"error\":{\"message\":\"Unable to determine transactionType.\"},\"data\":%json%}";
@@ -57,8 +58,7 @@ public class LegacyWorkflowService {
 		this.notificationClient = notificationClient;
 	}
 
-	public String completeWorkflow(MultipartFile file, HttpServletResponse response) throws HystrixBadRequestException {
-		String rtn = "{}";
+	public void completeWorkflow(MultipartFile file) throws HystrixBadRequestException {
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
 
 		for (Map<String, Object> ml: ddots) {
@@ -69,17 +69,9 @@ public class LegacyWorkflowService {
 
 			if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
 				if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
-					ResponseEntity<String> resp = legacyCruClient.createMonitoringLocation(json);
-					response.setStatus(resp.getStatusCodeValue());
-					rtn = resp.getBody();
-					fileExportClient.exportAdd(rtn);
-					WorkflowController.addStepReport(new StepReport(SITE_ADD_STEP, HttpStatus.SC_OK, SITE_ADD_SUCCESSFULL, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 				} else {
-					ResponseEntity<String> resp = legacyCruClient.patchMonitoringLocation(json);
-					response.setStatus(resp.getStatusCodeValue());
-					rtn = resp.getBody();
-					fileExportClient.exportUpdate(rtn);
-					WorkflowController.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_OK, SITE_UPDATE_SUCCESSFULL, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 				}
 			} else {
 				WorkflowController.addStepReport(new StepReport(VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, BAD_TRANSACTION_TYPE.replace("%json%", json), ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
@@ -87,19 +79,16 @@ public class LegacyWorkflowService {
 		}
 
 		notificationClient.sendEmail("test", "rtn", "drsteini@usgs.gov");
-		return rtn;
 	}
 
-	public String ddotValidation(MultipartFile file, HttpServletResponse response) throws HystrixBadRequestException {
-		String rtn = "{}";
+	public void ddotValidation(MultipartFile file) throws HystrixBadRequestException {
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
 
 		for (Map<String, Object> ml: ddots) {
-			rtn = transformAndValidate(ml);
+			transformAndValidate(ml);
 		}
 
 		notificationClient.sendEmail("test" + LocalDate.now(), "rtn", "drsteini@usgs.gov");
-		return rtn;
 	}
 
 	protected String transformAndValidate(Map<String, Object> ml) {
@@ -118,9 +107,29 @@ public class LegacyWorkflowService {
 		}
 
 		ResponseEntity<String> resp = legacyValidatorClient.validate(json);
-		WorkflowController.addStepReport(new StepReport(VALIDATION_STEP, HttpStatus.SC_OK, VALIDATION_SUCCESSFULL, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+		WorkflowController.addStepReport(new StepReport(VALIDATION_STEP, resp.getStatusCodeValue(), VALIDATION_SUCCESSFULL, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 
 		return json.substring(0, json.length()-1) + ",\"validation\":" + resp.getBody().toString() + "}";
+	}
+
+	protected void addTransaction(Object agencyCode, Object siteNumber, String json) {
+		ResponseEntity<String> cruResp = legacyCruClient.createMonitoringLocation(json);
+		int cruStatus = cruResp.getStatusCodeValue();
+		WorkflowController.addStepReport(new StepReport(SITE_ADD_STEP, cruStatus, 201 == cruStatus ? SITE_ADD_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+
+		ResponseEntity<String> exportResp = fileExportClient.exportAdd(cruResp.getBody());
+		int exportStatus = exportResp.getStatusCodeValue();
+		WorkflowController.addStepReport(new StepReport(EXPORT_ADD_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
+	}
+
+	protected void updateTransaction(Object agencyCode, Object siteNumber, String json) {
+		ResponseEntity<String> cruResp = legacyCruClient.patchMonitoringLocation(json);
+		int cruStatus = cruResp.getStatusCodeValue();
+		WorkflowController.addStepReport(new StepReport(SITE_UPDATE_STEP, cruStatus, 200 == cruStatus ? SITE_UPDATE_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+
+		ResponseEntity<String> exportResp = fileExportClient.exportUpdate(cruResp.getBody());
+		int exportStatus = exportResp.getStatusCodeValue();
+		WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
 	}
 
 }

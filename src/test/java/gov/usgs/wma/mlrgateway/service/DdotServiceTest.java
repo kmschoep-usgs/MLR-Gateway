@@ -52,7 +52,7 @@ public class DdotServiceTest extends BaseSpringTest {
 	@Test
 	public void garbageFromDdot_thenReturnInternalServerError() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":[{\"name\":\"" + DdotService.STEP_NAME + "\",\"status\":500,\"details\":\""
-				+ JSONObject.escape(DdotService.INTERNAL_ERROR_MESSAGE) + "\",\"agencyCode\":null,\"siteNumber\":null}]}";
+				+ JSONObject.escape(DdotService.INTERNAL_ERROR_MESSAGE) + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn("not json");
 		try {
@@ -71,7 +71,7 @@ public class DdotServiceTest extends BaseSpringTest {
 	@Test
 	public void incorrectDdotSize_thenReturnBadRequest() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":[{\"name\":\"" + DdotService.STEP_NAME + "\",\"status\":400,\"details\":\""
-				+ JSONObject.escape(DdotService.WRONG_FORMAT_MESSAGE.replace("%ddotResponse%", "[{},{}]")) + "\",\"agencyCode\":null,\"siteNumber\":null}]}";
+				+ JSONObject.escape(DdotService.WRONG_FORMAT_MESSAGE.replace("%ddotResponse%", "[{},{}]")) + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		String ddotResponse = "[{},{}]";
 		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotResponse);
@@ -93,7 +93,7 @@ public class DdotServiceTest extends BaseSpringTest {
 	@Test
 	public void happyPath() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + DdotService.STEP_NAME + "\",\"status\":200,\"details\":\""
-				+ DdotService.SUCCESS_MESSAGE + "\",\"agencyCode\":null,\"siteNumber\":null}]}";
+				+ DdotService.SUCCESS_MESSAGE + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		ObjectMapper mapper = new ObjectMapper();
 		String ddotResponse = mapper.writeValueAsString(singleAdd());

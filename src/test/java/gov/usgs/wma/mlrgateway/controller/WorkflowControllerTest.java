@@ -1,10 +1,8 @@
 package gov.usgs.wma.mlrgateway.controller;
 
-import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -49,35 +47,35 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 		GatewayReport rtn = controller.legacyWorkflow(file, response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
-		verify(legacy).completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
 
 	@Test
 	public void badBackingServiceRequest_LegacyWorkflow() throws Exception {
 		String badText = "This is really bad.";
 		String json = "{\"name\":\"" + WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":400,\"steps\":[{\"name\":\"" + WorkflowController.COMPLETE_WORKFLOW
-				+ "\",\"status\":400,\"details\":\"" + badText + "\",\"agencyCode\":null,\"siteNumber\":null}]}";
+				+ "\",\"status\":400,\"details\":\"" + badText + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		given(legacy.completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class))).willThrow(new FeignBadResponseWrapper(400, null, badText));
+		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).completeWorkflow(any(MultipartFile.class));
 
 		GatewayReport rtn = controller.legacyWorkflow(file, response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 
-		verify(legacy).completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
 
 	@Test
 	public void serverError_LegacyWorkflow() throws Exception {
 		String badText = "This is really bad.";
 		String json = "{\"name\":\"" + WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":500,\"steps\":[{\"name\":\""
-				+ WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":500,\"details\":\"" + badText + "\",\"agencyCode\":null,\"siteNumber\":null}]}";
+				+ WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":500,\"details\":\"" + badText + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		given(legacy.completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class))).willThrow(new HystrixBadRequestException(badText));
+		willThrow(new HystrixBadRequestException(badText)).given(legacy).completeWorkflow(any(MultipartFile.class));
 
 		GatewayReport rtn = controller.legacyWorkflow(file, response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 
-		verify(legacy).completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
 
 	@Test
@@ -89,35 +87,35 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		GatewayReport rtn = controller.legacyValidationWorkflow(file, response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 
-		verify(legacy).ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
 
 	@Test
 	public void badDdot_LegacyValidationWorkflow() throws Exception {
 		String badText = "This is really bad.";
 		String json = "{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW + "\",\"status\":400,\"steps\":[{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW
-				+ "\",\"status\":400,\"details\":\"" + badText + "\",\"agencyCode\":null,\"siteNumber\":null}]}";
+				+ "\",\"status\":400,\"details\":\"" + badText + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		given(legacy.ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class))).willThrow(new FeignBadResponseWrapper(400, null, badText));
+		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).ddotValidation(any(MultipartFile.class));
 
 		GatewayReport rtn = controller.legacyValidationWorkflow(file, response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 
-		verify(legacy).ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
 
 	@Test
 	public void serverError_LegacyValidationWorkflow() throws Exception {
 		String badText = "This is really bad.";
 		String json = "{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW + "\",\"status\":500,\"steps\":[{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW
-				+ "\",\"status\":500,\"details\":\"" + badText + "\",\"agencyCode\":null,\"siteNumber\":null}]}";
+				+ "\",\"status\":500,\"details\":\"" + badText + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		given(legacy.ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class))).willThrow(new HystrixBadRequestException(badText));
+		willThrow(new HystrixBadRequestException(badText)).given(legacy).ddotValidation(any(MultipartFile.class));
 
 		GatewayReport rtn = controller.legacyValidationWorkflow(file, response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 
-		verify(legacy).ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
 
 }

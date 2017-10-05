@@ -61,7 +61,7 @@ public class WorkflowController {
 	public GatewayReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
 		setReport(new GatewayReport(COMPLETE_WORKFLOW));
 		try {
-			legacy.completeWorkflow(file, response);
+			legacy.completeWorkflow(file);
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
@@ -85,7 +85,7 @@ public class WorkflowController {
 	public GatewayReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
 		setReport(new GatewayReport(VALIDATE_DDOT_WORKFLOW));
 		try {
-			legacy.ddotValidation(file, response);
+			legacy.ddotValidation(file);
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();

@@ -39,6 +39,7 @@ public class GatewayReport {
 	}
 	public void addStepReport(StepReport stepReport) {
 		if (399 < stepReport.getStatus()) {
+			//Only HttpStatus code of 400 and higher should override the current status.
 			status = stepReport.getStatus();
 		}
 		steps.add(stepReport);

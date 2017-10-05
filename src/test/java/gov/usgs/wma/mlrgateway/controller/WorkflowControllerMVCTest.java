@@ -1,15 +1,13 @@
 package gov.usgs.wma.mlrgateway.controller;
 
-import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletResponse;
-
+import org.apache.http.HttpStatus;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,15 +16,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.netflix.hystrix.exception.HystrixBadRequestException;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.client.DdotClient;
@@ -56,15 +50,16 @@ public class WorkflowControllerMVCTest {
 	@MockBean
 	private SpringClientFactory scf;
 
-	public String getCompareFile(String folder, String file) throws IOException {
-		return new String(FileCopyUtils.copyToByteArray(new ClassPathResource(folder + file).getInputStream()));
+	MockMultipartFile file;
+
+	@Before
+	public void init() {
+		file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 	}
 
 	@Test
 	public void happyPathLegacyWorkflow() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		String legacyJson = getCompareFile("testData/", "oneAdd.json");
-		given(legacy.completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class))).willReturn(legacyJson);
+		String legacyJson = "{\"name\":\"" + WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":200,\"steps\":[]}";
 
 		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots")
 				.file(file))
@@ -72,14 +67,14 @@ public class WorkflowControllerMVCTest {
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andExpect(content().string(legacyJson));
 
-		verify(legacy).completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
 
 	@Test
-	public void badDdot_LegacyWorkflow() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		String badJson = "{\"error\": \"bad Ddot\"}";
-		given(legacy.completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class))).willThrow(new FeignBadResponseWrapper(400, null, badJson));
+	public void badRepsonse_LegacyWorkflow() throws Exception {
+		String badJson = "{\"name\":\"" + WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":400,\"steps\":[{\"name\":\"" 
+				+ WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":400,\"details\":\"{\\\"error\\\": 123}\"}]}";
+		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).completeWorkflow(any(MultipartFile.class));
 
 		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots")
 				.file(file))
@@ -87,29 +82,27 @@ public class WorkflowControllerMVCTest {
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andExpect(content().string(badJson));
 
-		verify(legacy).completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
 
 	@Test
 	public void serverError_LegacyWorkflow() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		String badMsg = "{\"error\": \"bad stuff\"}";
-		given(legacy.completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class))).willThrow(new HystrixBadRequestException(badMsg));
+		String badJson = "{\"name\":\"" + WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":500,\"steps\":[{\"name\":\""
+				+ WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":500,\"details\":\"wow 456\"}]}";
+		willThrow(new RuntimeException("wow 456")).given(legacy).completeWorkflow(any(MultipartFile.class));
 
 		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots")
 				.file(file))
 				.andExpect(status().isInternalServerError())
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
-				.andExpect(content().string(badMsg));
+				.andExpect(content().string(badJson));
 
-		verify(legacy).completeWorkflow(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
 
 	@Test
 	public void happyPathLegacyValidationWorkflow() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		String legacyJson = getCompareFile("testData/", "oneAdd.json");
-		given(legacy.ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class))).willReturn(legacyJson);
+		String legacyJson = "{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW + "\",\"status\":200,\"steps\":[]}";
 
 		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots/validate")
 				.file(file))
@@ -117,14 +110,14 @@ public class WorkflowControllerMVCTest {
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andExpect(content().string(legacyJson));
 
-		verify(legacy).ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
 
 	@Test
 	public void badDdot_LegacyValidationWorkflow() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		String badJson = "{\"error\": \"bad Ddot\"}";
-		given(legacy.ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class))).willThrow(new FeignBadResponseWrapper(400, null, badJson));
+		String badJson = "{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW + "\",\"status\":400,\"steps\":[{\"name\":\"" 
+				+ WorkflowController.VALIDATE_DDOT_WORKFLOW + "\",\"status\":400,\"details\":\"{\\\"error\\\": 123}\"}]}";
+		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).ddotValidation(any(MultipartFile.class));
 
 		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots/validate")
 				.file(file))
@@ -132,22 +125,22 @@ public class WorkflowControllerMVCTest {
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andExpect(content().string(badJson));
 
-		verify(legacy).ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
 
 	@Test
 	public void serverError_LegacyValidationWorkflow() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		String badMsg = "{\"error\": \"bad stuff\"}";
-		given(legacy.ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class))).willThrow(new HystrixBadRequestException(badMsg));
+		String badJson = "{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW + "\",\"status\":500,\"steps\":[{\"name\":\""
+				+ WorkflowController.VALIDATE_DDOT_WORKFLOW + "\",\"status\":500,\"details\":\"wow 456\"}]}";
+		willThrow(new RuntimeException("wow 456")).given(legacy).ddotValidation(any(MultipartFile.class));
 
 		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots/validate")
 				.file(file))
 				.andExpect(status().isInternalServerError())
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
-				.andExpect(content().string(badMsg));
+				.andExpect(content().string(badJson));
 
-		verify(legacy).ddotValidation(any(MultipartFile.class), any(HttpServletResponse.class));
+		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
 
 }

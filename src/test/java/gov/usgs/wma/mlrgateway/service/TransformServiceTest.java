@@ -1,17 +1,13 @@
 package gov.usgs.wma.mlrgateway.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Matchers.anyMap;
+import static org.mockito.Mockito.never;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,17 +17,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.hystrix.exception.HystrixBadRequestException;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
-import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
-import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyTransformerClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import net.minidev.json.JSONObject;
@@ -47,7 +37,7 @@ public class TransformServiceTest extends BaseSpringTest {
 	private ObjectMapper mapper;
 	private String legacyJson = "{\"" + LegacyWorkflowService.TRANSACTION_TYPE + "\":\"" + LegacyWorkflowService.TRANSACTION_TYPE_ADD
 			+ "\",\"" + LegacyWorkflowService.AGENCY_CODE + "\": \"USGS \",\"" + LegacyWorkflowService.SITE_NUMBER + "\": \"12345678       \"";
-	private String jsonGeo = ", \"" + TransformService.LATITUDE + "\": \" 400000    \", \"" + TransformService.LATITUDE + "\": \" 400000    \", \""
+	private String jsonGeo = ", \"" + TransformService.LATITUDE + "\": \" 400000    \", \"" + TransformService.LONGITUDE + "\": \" 1000000    \", \""
 			+ TransformService.COORDINATE_DATUM_CODE + "\": \"NAD27      \", \"decimalLatitude\" : 40, \"decimalLongitude\": -100";
 	private String jsonIX = ", \"" + TransformService.STATION_NAME + "\": \"Station#_Name1$\", \"stationIx\" : \"STATIONNAME1\"";
 	private String legacyJsonGeo = legacyJson + jsonGeo + "}";
@@ -118,28 +108,60 @@ public class TransformServiceTest extends BaseSpringTest {
 	}
 
 	@Test
-	public void happyPath_transform_thenReturnTransformed() throws Exception {
+	public void happyPathGeo_transform_thenReturnTransformed() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + TransformService.STEP_NAME + "\",\"status\":200,\"details\":\""
+				+ JSONObject.escape(TransformService.GEO_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
+		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJsonGeo, HttpStatus.OK);
+		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
+		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
+
+		Map<String, Object> rtn = service.transform(addGeo(getAdd()));
+
+		JSONAssert.assertEquals(legacyJsonGeo, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(legacyTransformerClient).decimalLocation(anyString());
+		verify(legacyTransformerClient, never()).stationIx(anyString());
+	}
+
+	@Test
+	public void happyPathIx_transform_thenReturnTransformed() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + TransformService.STEP_NAME + "\",\"status\":200,\"details\":\""
+				+ JSONObject.escape(TransformService.STATION_IX_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
+		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJsonIX, HttpStatus.OK);
+		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
+		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
+
+		Map<String, Object> rtn = service.transform(addIX(getAdd()));
+
+		JSONAssert.assertEquals(legacyJsonIX, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(legacyTransformerClient, never()).decimalLocation(anyString());
+		verify(legacyTransformerClient).stationIx(anyString());
+	}
+
+	@Test
+	public void happyPathBoth_transform_thenReturnTransformed() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + TransformService.STEP_NAME + "\",\"status\":200,\"details\":\""
 				+ JSONObject.escape(TransformService.GEO_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"},"
 				+ "{\"name\":\"" + TransformService.STEP_NAME + "\",\"status\":200,\"details\":\""
 				+ JSONObject.escape(TransformService.STATION_IX_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJsonBoth, HttpStatus.OK);
 		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
+		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
 
 		Map<String, Object> rtn = service.transform(addIX(addGeo(getAdd())));
 
-		JSONAssert.assertEquals(legacyJsonGeo, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(legacyJsonBoth, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(legacyTransformerClient).decimalLocation(anyString());
-		
+		verify(legacyTransformerClient).stationIx(anyString());
 	}
-
 
 	public static Map<String, Object> addGeo(Map<String, Object> baseMap) {
 		Map<String, Object> rtn = new HashMap<>();
 		rtn.putAll(baseMap);
 		rtn.put(TransformService.LATITUDE, " 400000    ");
-		rtn.put(TransformService.LATITUDE, " 1000000    ");
+		rtn.put(TransformService.LONGITUDE, " 1000000    ");
 		rtn.put(TransformService.COORDINATE_DATUM_CODE, "NAD27      ");
 		return rtn;
 	}
