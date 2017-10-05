@@ -2,14 +2,29 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>gov.usgs.wma</groupId>
     <artifactId>mlrgateway</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <additionalparam>-Xdoclint:none</additionalparam>
         <springfox.version>2.7.0</springfox.version>
+        <wma.artifactory.url>https://cida.usgs.gov/artifactory</wma.artifactory.url>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>release</id>
+            <name>cidasdpdasartip.cr.usgs.gov-releases</name>
+            <url>${wma.artifactory.url}/mlr-maven-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>cidasdpdasartip.cr.usgs.gov-snapshots</name>
+            <url>${wma.artifactory.url}/mlr-maven-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement> 
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -148,5 +163,12 @@
             </plugin>
         </plugins>
     </build>
+    
+    <scm>
+        <connection>scm:git:https://github.com/USGS-CIDA/MLR-Gateway.git</connection>
+        <developerConnection>scm:git:https://github.com/USGS-CIDA/MLR-Gateway.git</developerConnection>
+        <url>https://github.com/USGS-CIDA/MLR-Gateway</url>
+        <tag>HEAD</tag>
+    </scm>
 
 </project>
