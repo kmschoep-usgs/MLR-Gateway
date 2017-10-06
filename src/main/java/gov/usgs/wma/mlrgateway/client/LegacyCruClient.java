@@ -16,4 +16,7 @@ public interface LegacyCruClient {
 	@RequestMapping(method=RequestMethod.PUT, value="monitoringLocations/{id}", consumes="application/json")
 	ResponseEntity<String> updateMonitoringLocation(@PathVariable("id") String id, @RequestBody String ml);
 
+	@RequestMapping(method=RequestMethod.PATCH, value="monitoringLocations", consumes="application/json")
+	ResponseEntity<String> patchMonitoringLocation(@RequestBody String ml);
+
 }

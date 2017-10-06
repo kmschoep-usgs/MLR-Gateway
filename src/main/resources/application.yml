@@ -6,28 +6,57 @@ mlrServicePassword: ${mlrServicePassword}
 zuul:
   routes:
     legacyCru:
-      path: /monitoringLocations/**
+      path: /monitoringLocations/get/**
       stripPrefix: false
-    ddot:
-      path: /ddots/**
-      stripPrefix: false
-
-legacyCru:
-  ribbon:
-    listOfServers: ${legacyCruServers}
-    eureka:
-      enabled: false
 
 ddot:
   ribbon:
     listOfServers: ${ddotServers}
-    eureka:
-      enabled: false
+
+legacyTransformer:
+  ribbon:
+    listOfServers: ${legacyTransformerServers}
+
+legacyValidator:
+  ribbon:
+    listOfServers: ${legacyValidatorServers}
+
+legacyCru:
+  ribbon:
+    listOfServers: ${legacyCruServers}
+
+fileExport:
+  ribbon:
+    listOfServers: ${fileExportServers}
+
+notification:
+  ribbon:
+    listOfServers: ${notificationServers}
 
 eureka:
   client:
     enabled: false
 
 feign:
-  hystix:
+  hystrix:
     enabled: true
+
+ribbon:
+  MaxAutoRetries: ${ribbonMaxAutoRetries}
+  MaxAutoRetriesNextServer: 0
+  ConnectTimeout: ${ribbonConnectTimeout}
+  ReadTimeout: ${ribbonReadTimeout}
+  OkToRetryOnAllOperations: true
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: ${hystrixThreadTimeout}
+
+logging:
+  level:
+    org:
+      springframework: ${springFrameworkLogLevel}
