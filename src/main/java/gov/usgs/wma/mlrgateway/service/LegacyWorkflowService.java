@@ -1,6 +1,7 @@
 package gov.usgs.wma.mlrgateway.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,14 +39,20 @@ public class LegacyWorkflowService {
 	public static final String TRANSACTION_TYPE_UPDATE = "M";
 	public static final String SITE_ADD_STEP = "Site Add";
 	public static final String SITE_ADD_SUCCESSFULL = "Site Added Successfully";
+	public static final String SITE_ADD_FAILED = "Site add failed";
 	public static final String SITE_UPDATE_STEP = "Site Update";
 	public static final String SITE_UPDATE_SUCCESSFULL = "Site Updated Successfully.";
+	public static final String SITE_UPDATE_FAILED = "Site update failed";
 	public static final String EXPORT_ADD_STEP = "Export Add Transaction File";
 	public static final String EXPORT_UPDATE_STEP = "Export Update Transaction File";
 	public static final String EXPORT_SUCCESSFULL = "Transaction File created Successfully.";
+	public static final String EXPORT_ADD_FAILED = "Export add failed";
+	public static final String EXPORT_UPDATE_FAILED = "Export update failed";
 	public static final String VALIDATION_STEP = "Validate";
 	public static final String VALIDATION_SUCCESSFULL = "Transaction validated successfully.";
 	public static final String BAD_TRANSACTION_TYPE = "{\"error\":{\"message\":\"Unable to determine transactionType.\"},\"data\":%json%}";
+	public static final String COMPLETE_WORKFLOW = "Complete Workflow";
+	public static final String COMPLETE_WORKFLOW_FAILED = "Complete workflow failed";
 
 	@Autowired
 	public LegacyWorkflowService(DdotService ddotService, LegacyCruClient legacyCruClient, TransformService transformService, LegacyValidatorClient legacyValidatorClient,
@@ -61,20 +68,25 @@ public class LegacyWorkflowService {
 	public void completeWorkflow(MultipartFile file) throws HystrixBadRequestException {
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
 
+		String json = "{}";
 		for (Map<String, Object> ml: ddots) {
 			//Note that this is only coded for a single transaction and will need logic to handle multiples - some of which may succeed while others fail.
-			//Each one is a seperate transaction and will not be rolled back no matter what happens before or after it. The case with an invalid transaction type 
+			//Each one is a seperate transaction and will not be rolled back no matter what happens before or after it. The case with an invalid transaction type
 			//should also not stop processing of the transactions.
-			String json = transformAndValidate(ml);
-
-			if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
-				if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
-					addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
-				} else {
-					updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
-				}
-			} else {
-				WorkflowController.addStepReport(new StepReport(VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, BAD_TRANSACTION_TYPE.replace("%json%", json), ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+			try {
+					//loop through every item, try/catch
+					if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
+						json = transformAndValidate(ml);
+						if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
+							addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
+						} else {
+							updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
+						}
+					} else {
+						WorkflowController.addStepReport(new StepReport(VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, BAD_TRANSACTION_TYPE.replace("%json%", json), ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					}
+			} catch (Exception e) {
+				WorkflowController.addStepReport(new StepReport(COMPLETE_WORKFLOW, HttpStatus.SC_INTERNAL_SERVER_ERROR, COMPLETE_WORKFLOW_FAILED,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 			}
 		}
 
@@ -113,23 +125,53 @@ public class LegacyWorkflowService {
 	}
 
 	protected void addTransaction(Object agencyCode, Object siteNumber, String json) {
-		ResponseEntity<String> cruResp = legacyCruClient.createMonitoringLocation(json);
-		int cruStatus = cruResp.getStatusCodeValue();
-		WorkflowController.addStepReport(new StepReport(SITE_ADD_STEP, cruStatus, 201 == cruStatus ? SITE_ADD_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+		//catch bad adds and exports
+		try {
+			ResponseEntity<String> cruResp = legacyCruClient.createMonitoringLocation(json);
+			int cruStatus = cruResp.getStatusCodeValue();
+			WorkflowController.addStepReport(new StepReport(SITE_ADD_STEP, cruStatus, 201 == cruStatus ? SITE_ADD_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+			exportAdd(agencyCode, siteNumber, cruResp.getBody());
+		} catch (Exception e) {
+			WorkflowController.addStepReport(new StepReport(SITE_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_ADD_FAILED,  agencyCode, siteNumber));
+		}
 
-		ResponseEntity<String> exportResp = fileExportClient.exportAdd(cruResp.getBody());
-		int exportStatus = exportResp.getStatusCodeValue();
-		WorkflowController.addStepReport(new StepReport(EXPORT_ADD_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
 	}
 
-	protected void updateTransaction(Object agencyCode, Object siteNumber, String json) {
-		ResponseEntity<String> cruResp = legacyCruClient.patchMonitoringLocation(json);
-		int cruStatus = cruResp.getStatusCodeValue();
-		WorkflowController.addStepReport(new StepReport(SITE_UPDATE_STEP, cruStatus, 200 == cruStatus ? SITE_UPDATE_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+	protected void exportAdd(Object agencyCode, Object siteNumber, String json) {
+		try {
+			ResponseEntity<String> exportResp = fileExportClient.exportAdd(json);
+			int exportStatus = exportResp.getStatusCodeValue();
+			WorkflowController.addStepReport(new StepReport(EXPORT_ADD_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
+		} catch (Exception e) {
+			WorkflowController.addStepReport(new StepReport(EXPORT_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, EXPORT_ADD_FAILED,  agencyCode, siteNumber));
+		}
+	}
 
-		ResponseEntity<String> exportResp = fileExportClient.exportUpdate(cruResp.getBody());
-		int exportStatus = exportResp.getStatusCodeValue();
-		WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
+
+	protected void updateTransaction(Object agencyCode, Object siteNumber, String json) {
+		//catch bad updates and exports (new stepreport)
+		try {
+			ResponseEntity<String> cruResp = legacyCruClient.patchMonitoringLocation(json);
+			int cruStatus = cruResp.getStatusCodeValue();
+			WorkflowController.addStepReport(new StepReport(SITE_UPDATE_STEP, cruStatus, 200 == cruStatus ? SITE_UPDATE_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+			exportUpdate(agencyCode, siteNumber, cruResp.getBody());
+		} catch (Exception e){
+			WorkflowController.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_UPDATE_FAILED,  agencyCode, siteNumber));
+
+		}
+
+
+	}
+
+	protected void exportUpdate(Object agencyCode, Object siteNumber, String json) {
+		try {
+			ResponseEntity<String> exportResp = fileExportClient.exportUpdate(json);
+			int exportStatus = exportResp.getStatusCodeValue();
+			WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
+		} catch (Exception e) {
+			WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, EXPORT_UPDATE_FAILED,  agencyCode, siteNumber));
+
+		}
 	}
 
 }
