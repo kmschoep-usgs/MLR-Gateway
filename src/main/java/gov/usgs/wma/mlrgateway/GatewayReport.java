@@ -5,6 +5,9 @@ import java.util.List;
 
 import org.apache.http.HttpStatus;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class GatewayReport {
 
 	private String name;
@@ -45,4 +48,13 @@ public class GatewayReport {
 		steps.add(stepReport);
 	}
 
+	@Override
+	public String toString() {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			return mapper.writeValueAsString(this);
+		} catch (JsonProcessingException e) {
+			return "Unable to get Report";
+		}
+	}
 }
