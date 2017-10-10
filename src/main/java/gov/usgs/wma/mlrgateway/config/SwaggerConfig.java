@@ -20,7 +20,7 @@ public class SwaggerConfig {
 	@Bean
 	public Docket gatewayApi() {
 		return new Docket(DocumentationType.SWAGGER_2)
-				.tags(new Tag("Workflow", "Process D dot files"))
+				.tags(new Tag("Workflow", "Process D dot files"), new Tag("Export Workflow", "Generate Add Transaction File"))
 				.useDefaultResponseMessages(false)
 				.select()
 					.paths(Predicates.or(PathSelectors.ant("/workflows/**"), PathSelectors.ant("/info/**"), PathSelectors.ant("/health/**")))
