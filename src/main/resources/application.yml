@@ -1,37 +1,37 @@
 server:
   port: 8080
   
-mlrServicePassword: ${mlrServicePassword}
+mlrServicePassword: ${mlrgateway_mlrServicePassword}
 
 zuul:
   routes:
     legacyCru:
-      path: /monitoringLocations/get/**
+      path: /monitoringLocations/**
       stripPrefix: false
 
 ddot:
   ribbon:
-    listOfServers: ${ddotServers}
+    listOfServers: ${mlrgateway_ddotServers}
 
 legacyTransformer:
   ribbon:
-    listOfServers: ${legacyTransformerServers}
+    listOfServers: ${mlrgateway_legacyTransformerServers}
 
 legacyValidator:
   ribbon:
-    listOfServers: ${legacyValidatorServers}
+    listOfServers: ${mlrgateway_legacyValidatorServers}
 
 legacyCru:
   ribbon:
-    listOfServers: ${legacyCruServers}
+    listOfServers: ${mlrgateway_legacyCruServers}
 
 fileExport:
   ribbon:
-    listOfServers: ${fileExportServers}
+    listOfServers: ${mlrgateway_fileExportServers}
 
 notification:
   ribbon:
-    listOfServers: ${notificationServers}
+    listOfServers: ${mlrgateway_notificationServers}
 
 eureka:
   client:
@@ -42,10 +42,10 @@ feign:
     enabled: true
 
 ribbon:
-  MaxAutoRetries: ${ribbonMaxAutoRetries}
+  MaxAutoRetries: ${mlrgateway_ribbonMaxAutoRetries}
   MaxAutoRetriesNextServer: 0
-  ConnectTimeout: ${ribbonConnectTimeout}
-  ReadTimeout: ${ribbonReadTimeout}
+  ConnectTimeout: ${mlrgateway_ribbonConnectTimeout}
+  ReadTimeout: ${mlrgateway_ribbonReadTimeout}
   OkToRetryOnAllOperations: true
 
 hystrix:
@@ -54,9 +54,9 @@ hystrix:
       execution:
         isolation:
           thread:
-            timeoutInMilliseconds: ${hystrixThreadTimeout}
+            timeoutInMilliseconds: ${mlrgateway_hystrixThreadTimeout}
 
 logging:
   level:
     org:
-      springframework: ${springFrameworkLogLevel}
+      springframework: ${mlrgateway_springFrameworkLogLevel}

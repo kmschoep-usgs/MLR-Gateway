@@ -26,15 +26,15 @@ To run the image, you will need to provide as environment variables the substitu
 will be available on part 8080 within the container.
 
 ## Substitution Variables
-* mlrServicePassword - password for the monitoring user (deprecated)
-* ddotServers - comma separated list of url(s) for the D dot Ingester Microservice
-* legacyTransformerServers - comma separated list of url(s) for the Legacy Transformer Microservice
-* legacyValidatorServers - comma separated list of url(s) for the Legacy Validator Microservice
-* legacyCruServers - comma separated list of url(s) for the Legacy CRU Microservice
-* fileExportServers - comma separated list of url(s) for the File Export Microservice
-* notificationServers - comma separated list of url(s) for the Notification Microservice
-* ribbonMaxAutoRetries - maximum number of times to retry connecting to a microservice
-* ribbonConnectTimeout - maximum milliseconds to wait for a connection to a microservice
-* ribbonReadTimeout - maximum milliseconds to wait for a response from a microservice
-* hystrixThreadTimeout - maximum milliseconds for a request to process
-* springFrameworkLogLevel - log level for org.springframework
+* mlrgateway_mlrServicePassword - password for the monitoring user (deprecated)
+* mlrgateway_ddotServers - comma separated list of url(s) for the D dot Ingester Microservice
+* mlrgateway_legacyTransformerServers - comma separated list of url(s) for the Legacy Transformer Microservice
+* mlrgateway_legacyValidatorServers - comma separated list of url(s) for the Legacy Validator Microservice
+* mlrgateway_legacyCruServers - comma separated list of url(s) for the Legacy CRU Microservice
+* mlrgateway_fileExportServers - comma separated list of url(s) for the File Export Microservice
+* mlrgateway_notificationServers - comma separated list of url(s) for the Notification Microservice
+* mlrgateway_ribbonMaxAutoRetries - maximum number of times to retry connecting to a microservice
+* mlrgateway_ribbonConnectTimeout - maximum milliseconds to wait for a connection to a microservice
+* mlrgateway_ribbonReadTimeout - maximum milliseconds to wait for a response from a microservice
+* mlrgateway_hystrixThreadTimeout - maximum milliseconds for a request to process
+* mlrgateway_springFrameworkLogLevel - log level for org.springframework
