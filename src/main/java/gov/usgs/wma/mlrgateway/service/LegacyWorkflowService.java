@@ -1,6 +1,5 @@
 package gov.usgs.wma.mlrgateway.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +44,8 @@ public class LegacyWorkflowService {
 	public static final String EXPORT_SUCCESSFULL = "Transaction File created Successfully.";
 	public static final String VALIDATION_STEP = "Validate";
 	public static final String VALIDATION_SUCCESSFULL = "Transaction validated successfully.";
+	public static final String NOTIFICATION_STEP = "Notification";
+	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 	public static final String BAD_TRANSACTION_TYPE = "{\"error\":{\"message\":\"Unable to determine transactionType.\"},\"data\":%json%}";
 
 	@Autowired
@@ -78,7 +79,7 @@ public class LegacyWorkflowService {
 			}
 		}
 
-		notificationClient.sendEmail("test", "rtn", "drsteini@usgs.gov");
+		sendNotification();
 	}
 
 	public void ddotValidation(MultipartFile file) throws HystrixBadRequestException {
@@ -88,7 +89,7 @@ public class LegacyWorkflowService {
 			transformAndValidate(ml);
 		}
 
-		notificationClient.sendEmail("test" + LocalDate.now(), "rtn", "drsteini@usgs.gov");
+		sendNotification();
 	}
 
 	protected String transformAndValidate(Map<String, Object> ml) {
@@ -132,4 +133,8 @@ public class LegacyWorkflowService {
 		WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
 	}
 
+	protected void sendNotification() {
+		ResponseEntity<String> notifResp = notificationClient.sendEmail("test", WorkflowController.getReport().toString(), "drsteini@usgs.gov");
+		WorkflowController.addStepReport(new StepReport(NOTIFICATION_STEP, notifResp.getStatusCodeValue(), NOTIFICATION_SUCCESSFULL, null, null));
+	}
 }

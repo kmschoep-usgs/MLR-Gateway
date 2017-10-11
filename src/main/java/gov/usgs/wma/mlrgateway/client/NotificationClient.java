@@ -11,7 +11,7 @@ import gov.usgs.wma.mlrgateway.config.PropagateBadRequest;
 @FeignClient(name="notification", configuration=PropagateBadRequest.class)
 public interface NotificationClient {
 
-	@RequestMapping(method=RequestMethod.POST, value="notification/email", consumes="application/json")
+	@RequestMapping(method=RequestMethod.POST, value="notification/email")
 	ResponseEntity<String>  sendEmail(@RequestParam("subject") String subject, @RequestParam("message") String message, @RequestParam("recipient") String recipient);
 
 }

@@ -89,7 +89,8 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"" + LegacyWorkflowService.VALIDATION_SUCCESSFULL
 					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.BAD_TRANSACTION_TYPE.replace("%json%", data))
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "{\"name\":\"" + LegacyWorkflowService.NOTIFICATION_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.NOTIFICATION_SUCCESSFULL) + "\"}"
 				+ "]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		List<Map<String, Object>> ddotRtn = DdotServiceTest.singleUnknown();
@@ -98,6 +99,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		given(transformService.transform(anyMap())).willReturn(ml);
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyValidation, HttpStatus.OK);
 		given(legacyValidatorClient.validate(anyString())).willReturn(legacyRtn);
+		given(notificationClient.sendEmail(anyString(), anyString(), anyString())).willReturn(legacyRtn);
 
 		service.completeWorkflow(file);
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
@@ -119,7 +121,8 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 				+ "{\"name\":\"" + LegacyWorkflowService.SITE_ADD_STEP + "\",\"status\":201,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.SITE_ADD_SUCCESSFULL)
 					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_ADD_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "{\"name\":\"" + LegacyWorkflowService.NOTIFICATION_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.NOTIFICATION_SUCCESSFULL) + "\"}"
 				+ "]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		List<Map<String, Object>> ddotRtn = DdotServiceTest.singleAdd();
@@ -131,6 +134,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		given(legacyCruClient.createMonitoringLocation(anyString())).willReturn(addRtn);
 		given(legacyValidatorClient.validate(anyString())).willReturn(legacyRtn);
 		given(fileExportClient.exportAdd(anyString())).willReturn(legacyRtn);
+		given(notificationClient.sendEmail(anyString(), anyString(), anyString())).willReturn(legacyRtn);
 
 		service.completeWorkflow(file);
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
@@ -153,7 +157,8 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 				+ "{\"name\":\"" + LegacyWorkflowService.SITE_UPDATE_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.SITE_UPDATE_SUCCESSFULL)
 					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_UPDATE_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "{\"name\":\"" + LegacyWorkflowService.NOTIFICATION_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.NOTIFICATION_SUCCESSFULL) + "\"}"
 				+ "]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		List<Map<String, Object>> ddotRtn = DdotServiceTest.singleUpdate();
@@ -164,6 +169,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		given(legacyCruClient.patchMonitoringLocation(anyString())).willReturn(legacyRtn);
 		given(legacyValidatorClient.validate(anyString())).willReturn(legacyRtn);
 		given(fileExportClient.exportUpdate(anyString())).willReturn(legacyRtn);
+		given(notificationClient.sendEmail(anyString(), anyString(), anyString())).willReturn(legacyRtn);
 
 		service.completeWorkflow(file);
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
@@ -181,13 +187,16 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	@Test
 	public void ddotValidation_callsBackingServices() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":200,\"details\":\""
-				+ LegacyWorkflowService.VALIDATION_SUCCESSFULL + "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}]}";
+				+ LegacyWorkflowService.VALIDATION_SUCCESSFULL + "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "{\"name\":\"" + LegacyWorkflowService.NOTIFICATION_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.NOTIFICATION_SUCCESSFULL) + "\"}"
+				+ "]}";
 		Map<String, Object> ml = getAdd();
 		given(transformService.transform(anyMap())).willReturn(ml);
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyValidation, HttpStatus.OK);
 		given(legacyValidatorClient.validate(anyString())).willReturn(legacyRtn);
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(DdotServiceTest.singleAdd());
+		given(notificationClient.sendEmail(anyString(), anyString(), anyString())).willReturn(legacyRtn);
 
 		service.ddotValidation(file);
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
@@ -248,4 +257,17 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(notificationClient, never()).sendEmail(anyString(), anyString(), anyString());
 	}
 
+	@Test
+	public void sendNotification_callsBackingServices() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.NOTIFICATION_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.NOTIFICATION_SUCCESSFULL) + "\"}"
+				+ "]}";
+		ResponseEntity<String> legacyRtn = new ResponseEntity<String>("", HttpStatus.OK);
+		given(notificationClient.sendEmail(anyString(), anyString(), anyString())).willReturn(legacyRtn);
+
+		service.sendNotification();
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(notificationClient).sendEmail(anyString(), anyString(), anyString());
+	}
 }

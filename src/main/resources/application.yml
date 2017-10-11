@@ -6,7 +6,7 @@ mlrServicePassword: ${mlrgateway_mlrServicePassword}
 zuul:
   routes:
     legacyCru:
-      path: /monitoringLocations/get/**
+      path: /monitoringLocations/**
       stripPrefix: false
 
 ddot:
