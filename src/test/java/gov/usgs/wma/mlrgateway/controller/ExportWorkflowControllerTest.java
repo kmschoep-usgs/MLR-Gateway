@@ -20,31 +20,37 @@ import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.service.ExportWorkflowService;
+import gov.usgs.wma.mlrgateway.service.NotificationService;
 
 @RunWith(SpringRunner.class)
 public class ExportWorkflowControllerTest extends BaseSpringTest {
 
 	@MockBean
 	private ExportWorkflowService export;
-
+	@MockBean
+	private NotificationService notificationService;
+	
 	private ExportWorkflowController controller;
 	private MockHttpServletResponse response;
 	private ObjectMapper mapper;
+	private String reportName = "TEST Legacy Workflow";
+	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 
 	@Before
 	public void init() {
-		controller = new ExportWorkflowController(export);
+		controller = new ExportWorkflowController(export, notificationService);
 		response = new MockHttpServletResponse();
+		ExportWorkflowController.setReport(new GatewayReport(reportName));
 		mapper = new ObjectMapper();
 	}
 
 	@Test
 	public void happyPath_ExportWorkflow() throws Exception {
 		String json = "{\"name\":\"" + ExportWorkflowController.COMPLETE_WORKFLOW + "\",\"status\":200,\"steps\":[]}";
-
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 		verify(export).completeWorkflow(anyString(), anyString());
+		verify(notificationService).sendNotification(anyString(), anyString());
 	}
 
 	@Test

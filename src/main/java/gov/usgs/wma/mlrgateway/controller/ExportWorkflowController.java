@@ -4,15 +4,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.service.ExportWorkflowService;
+import gov.usgs.wma.mlrgateway.service.NotificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -20,34 +20,19 @@ import io.swagger.annotations.ApiResponses;
 
 @Api(tags={"Export Workflow"})
 @RestController
-@RequestMapping("/workflows")
-public class ExportWorkflowController {
+public class ExportWorkflowController extends BaseController {
 
-	private static ThreadLocal<GatewayReport> gatewayReport = new ThreadLocal<>();
 	private ExportWorkflowService export;
+	private NotificationService notificationService;
 	public static final String COMPLETE_WORKFLOW = "Complete Export Workflow";
+	public static final String EXPORT_WORKFLOW_SUBJECT = "MLR Transaction File for requested location";
+	public static final String NOTIFICATION_STEP = "Notification";
+	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 
 	@Autowired
-	public ExportWorkflowController(ExportWorkflowService export) {
+	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService) {
 		this.export = export;
-	}
-
-	public static GatewayReport getReport() {
-		return gatewayReport.get();
-	}
-
-	public static void setReport(GatewayReport report) {
-		gatewayReport.set(report);
-	}
-
-	public static void addStepReport(StepReport stepReport) {
-		GatewayReport report = gatewayReport.get();
-		report.addStepReport(stepReport);
-		gatewayReport.set(report);
-	}
-
-	public static void remove() {
-		gatewayReport.remove();
+		this.notificationService = notificationService;
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including retrieving record from Legacy CRU and returning the Transaction file.")
@@ -55,8 +40,8 @@ public class ExportWorkflowController {
 			@ApiResponse(code=400, message="Bad Request"),
 			@ApiResponse(code=401, message="Unauthorized"),
 			@ApiResponse(code=403, message="Forbidden")})
-	@PostMapping("/file_export/add")
-	public GatewayReport exportWorkflow(@RequestParam("agencyCode") String agencyCode, @RequestParam("siteNumber") String siteNumber, HttpServletResponse response) {
+	@PostMapping("/legacy/location/{agencyCode}/{siteNumber}")
+	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response) {
 		setReport(new GatewayReport(COMPLETE_WORKFLOW));
 		try {
 			export.completeWorkflow(agencyCode, siteNumber);
@@ -69,10 +54,12 @@ public class ExportWorkflowController {
 				ExportWorkflowController.addStepReport(new StepReport(COMPLETE_WORKFLOW, status, e.getLocalizedMessage(), null, null));
 			}
 		}
+		notificationService.sendNotification(EXPORT_WORKFLOW_SUBJECT, getReport().toString());
 		GatewayReport rtn = getReport();
 		response.setStatus(rtn.getStatus());
 		remove();
 		return rtn;
+		
 	}
 
 }

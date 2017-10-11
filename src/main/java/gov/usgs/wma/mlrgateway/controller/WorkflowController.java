@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import gov.usgs.wma.mlrgateway.controller.BaseController;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
@@ -22,9 +23,8 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags={"Workflow"})
 @RestController
 @RequestMapping("/workflows")
-public class WorkflowController {
+public class WorkflowController extends BaseController {
 
-	private static ThreadLocal<GatewayReport> gatewayReport = new ThreadLocal<>();
 	private LegacyWorkflowService legacy;
 	public static final String COMPLETE_WORKFLOW = "Complete Workflow";
 	public static final String VALIDATE_DDOT_WORKFLOW = "Validate Ddot File";
@@ -32,24 +32,6 @@ public class WorkflowController {
 	@Autowired
 	public WorkflowController(LegacyWorkflowService legacy) {
 		this.legacy = legacy;
-	}
-
-	public static GatewayReport getReport() {
-		return gatewayReport.get();
-	}
-
-	public static void setReport(GatewayReport report) {
-		gatewayReport.set(report);
-	}
-
-	public static void addStepReport(StepReport stepReport) {
-		GatewayReport report = gatewayReport.get();
-		report.addStepReport(stepReport);
-		gatewayReport.set(report);
-	}
-
-	public static void remove() {
-		gatewayReport.remove();
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")

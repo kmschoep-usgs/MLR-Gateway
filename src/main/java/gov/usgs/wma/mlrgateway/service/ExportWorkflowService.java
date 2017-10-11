@@ -24,28 +24,26 @@ public class ExportWorkflowService {
 
 	private LegacyCruClient legacyCruClient;
 	private FileExportClient fileExportClient;
-	private NotificationClient notificationClient;
 
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";
-	public static final String SITE_GET_STEP = "Site Get by AgencyCode and SiteNumber";
-	public static final String SITE_GET_SUCCESSFULL = "Site Get Successful";
-	public static final String SITE_GET_DOES_NOT_EXIST = "Requested Site Not Found";
-	public static final String EXPORT_ADD_STEP = "Export Add Transaction File";
-	public static final String EXPORT_SUCCESSFULL = "Transaction File created Successfully.";
+	public static final String SITE_GET_STEP = "Location Get by AgencyCode and SiteNumber";
+	public static final String SITE_GET_SUCCESSFULL = "Location Get Successful";
+	public static final String SITE_GET_DOES_NOT_EXIST = "Requested Location Not Found";
+	public static final String EXPORT_ADD_STEP = "Export MLR Transaction File";
+	public static final String EXPORT_SUCCESSFULL = "MLR Transaction File created Successfully.";
 	
 	protected static final String INTERNAL_ERROR_MESSAGE = "{\"error\":{\"message\": \"Unable to read Legacy CRU output.\"}}";
+	protected static final String SC_INTERNAL_ERROR_MESSAGE = "{\"error_message\": \"Unable to serialize Legacy CRU output.\"}";
 
 	@Autowired
 	public ExportWorkflowService(LegacyCruClient legacyCruClient, FileExportClient fileExportClient, NotificationClient notificationClient) {
 		this.legacyCruClient = legacyCruClient;
 		this.fileExportClient = fileExportClient;
-		this.notificationClient = notificationClient;
 	}
 
 	public void completeWorkflow(String agencyCode, String siteNumber) throws HystrixBadRequestException {
 		addTransaction(agencyCode, siteNumber);
-		notificationClient.sendEmail("test", "rtn", "kmschoep@usgs.gov");
 	}
 
 
@@ -76,7 +74,7 @@ public class ExportWorkflowService {
 				json = mapper.writeValueAsString(sites.get(0));
 			} catch (Exception e) {
 				// Unable to determine when this might actually happen, but the api says it can...
-				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize Legacy CRU output.\"}");
+				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SC_INTERNAL_ERROR_MESSAGE);
 			}
 				
 			ResponseEntity<String> exportResp = fileExportClient.exportAdd(json);

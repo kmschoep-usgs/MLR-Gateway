@@ -52,7 +52,7 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 	}
 
 	@Test
-	public void oneAddTransaction_completeWorkflow_thenReturnCreated() throws Exception {
+	public void completeWorkflow_goodSite() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + ExportWorkflowService.SITE_GET_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(ExportWorkflowService.SITE_GET_SUCCESSFULL)
 					+ "\",\"agencyCode\":\"USGS\",\"siteNumber\":\"12345678\"},"
@@ -69,11 +69,10 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(ExportWorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(legacyCruClient).getMonitoringLocations(anyString(), anyString());
 		verify(fileExportClient).exportAdd(anyString());
-		verify(notificationClient).sendEmail(anyString(), anyString(), anyString());
 	}
 	
 	@Test
-	public void oneAddTransaction_completeWorkflow_siteDoesNotExist() throws Exception {
+	public void completeWorkflow_siteDoesNotExist() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + ExportWorkflowService.SITE_GET_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(ExportWorkflowService.SITE_GET_DOES_NOT_EXIST)
 					+ "\",\"agencyCode\":\"USGS\",\"siteNumber\":\"1234\"}"
@@ -85,7 +84,6 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(ExportWorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(legacyCruClient).getMonitoringLocations(anyString(), anyString());
-		verify(notificationClient).sendEmail(anyString(), anyString(), anyString());
 	}
 
 }
