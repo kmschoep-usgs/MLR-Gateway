@@ -56,7 +56,7 @@ public class LegacyWorkflowService {
 
 	@Autowired
 	public LegacyWorkflowService(DdotService ddotService, LegacyCruClient legacyCruClient, TransformService transformService, LegacyValidatorClient legacyValidatorClient,
-			FileExportClient fileExportClient, NotificationClient notificationClient) {
+								 FileExportClient fileExportClient, NotificationClient notificationClient) {
 		this.ddotService = ddotService;
 		this.legacyCruClient = legacyCruClient;
 		this.transformService = transformService;
@@ -70,21 +70,17 @@ public class LegacyWorkflowService {
 
 		String json = "{}";
 		for (Map<String, Object> ml: ddots) {
-			//Note that this is only coded for a single transaction and will need logic to handle multiples - some of which may succeed while others fail.
-			//Each one is a seperate transaction and will not be rolled back no matter what happens before or after it. The case with an invalid transaction type
-			//should also not stop processing of the transactions.
 			try {
-					//loop through every item, try/catch
-					if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
-						json = transformAndValidate(ml);
-						if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
-							addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
-						} else {
-							updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
-						}
+				if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
+					json = transformAndValidate(ml);
+					if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
+						addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 					} else {
-						WorkflowController.addStepReport(new StepReport(VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, BAD_TRANSACTION_TYPE.replace("%json%", json), ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+						updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 					}
+				} else {
+					WorkflowController.addStepReport(new StepReport(VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, BAD_TRANSACTION_TYPE.replace("%json%", json), ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+				}
 			} catch (Exception e) {
 				WorkflowController.addStepReport(new StepReport(COMPLETE_WORKFLOW, HttpStatus.SC_INTERNAL_SERVER_ERROR, COMPLETE_WORKFLOW_FAILED,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 			}
