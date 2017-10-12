@@ -52,7 +52,7 @@ public class TransformService {
 	}
 
 	protected Map<String, Object> transformGeo(Map<String, Object> ml) {
-		String json = "\"{\"" + LATITUDE + "\": \"" + ml.get(LATITUDE) + "\",\"" + LONGITUDE + "\":\"" + ml.get(LONGITUDE) + "\",\"" + COORDINATE_DATUM_CODE + "\":\"" + ml.get(COORDINATE_DATUM_CODE) + "\"}";
+		String json = "{\"" + LATITUDE + "\": \"" + ml.get(LATITUDE) + "\",\"" + LONGITUDE + "\":\"" + ml.get(LONGITUDE) + "\",\"" + COORDINATE_DATUM_CODE + "\":\"" + ml.get(COORDINATE_DATUM_CODE) + "\"}";
 		ObjectMapper mapper = new ObjectMapper();
 		Map<String, Object> transforms = new HashMap<>();
 		TypeReference<Map<String, Object>> mapType = new TypeReference<Map<String, Object>>() {};
