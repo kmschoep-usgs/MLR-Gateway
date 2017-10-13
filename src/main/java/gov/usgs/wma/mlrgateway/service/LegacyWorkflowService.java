@@ -48,6 +48,7 @@ public class LegacyWorkflowService {
 	public static final String EXPORT_UPDATE_FAILED = "Export update failed";
 	public static final String VALIDATION_STEP = "Validate";
 	public static final String VALIDATION_SUCCESSFULL = "Transaction validated successfully.";
+	public static final String VALIDATION_FAILED = "Transaction validation failed.";
 	public static final String NOTIFICATION_STEP = "Notification";
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 	public static final String BAD_TRANSACTION_TYPE = "{\"error\":{\"message\":\"Unable to determine transactionType.\"},\"data\":%json%}";
@@ -93,7 +94,11 @@ public class LegacyWorkflowService {
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
 
 		for (Map<String, Object> ml: ddots) {
-			transformAndValidate(ml);
+			try {
+				transformAndValidate(ml);
+			} catch (Exception e) {
+				WorkflowController.addStepReport(new StepReport(VALIDATION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, VALIDATION_FAILED, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+			}
 		}
 
 		sendNotification();

@@ -240,6 +240,32 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	}
 
 	@Test
+	public void ddotValidation_throwsException() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":500,\"details\":\"" + "Transaction validation failed."
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "{\"name\":\"" + LegacyWorkflowService.NOTIFICATION_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.NOTIFICATION_SUCCESSFULL) + "\"}"
+				+ "]}";
+		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
+		ResponseEntity<String> legacyRtn = new ResponseEntity<String>("", HttpStatus.OK);
+		given(transformService.transform(anyMap())).willThrow(new RuntimeException());
+		given(notificationClient.sendEmail(anyString(), anyString(), anyString())).willReturn(legacyRtn);
+		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(DdotServiceTest.singleAdd());
+
+		service.ddotValidation(file);
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(ddotService).parseDdot(any(MultipartFile.class));
+		verify(transformService).transform(anyMap());
+		verify(legacyValidatorClient, never()).validate(anyString());
+		verify(legacyCruClient, never()).createMonitoringLocation(anyString());
+		verify(legacyCruClient, never()).patchMonitoringLocation(anyString());
+		verify(fileExportClient, never()).exportAdd(anyString());
+		verify(fileExportClient, never()).exportUpdate(anyString());
+		verify(notificationClient).sendEmail(anyString(), anyString(), anyString());
+	}
+
+	@Test
 	public void addTransaction_callsBackingServices() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + LegacyWorkflowService.SITE_ADD_STEP + "\",\"status\":201,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.SITE_ADD_SUCCESSFULL)
