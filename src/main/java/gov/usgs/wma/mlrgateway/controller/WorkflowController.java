@@ -15,6 +15,7 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.service.LegacyWorkflowService;
+import gov.usgs.wma.mlrgateway.service.NotificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -26,12 +27,16 @@ import io.swagger.annotations.ApiResponses;
 public class WorkflowController extends BaseController {
 
 	private LegacyWorkflowService legacy;
+	private NotificationService notificationService;
 	public static final String COMPLETE_WORKFLOW = "Complete Workflow";
+	public static final String COMPLETE_WORKFLOW_SUBJECT = "MLR Report for Submitted Ddot Transaction";
 	public static final String VALIDATE_DDOT_WORKFLOW = "Validate Ddot File";
+	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "MLR Report for Submitted Ddot Validation";
 
 	@Autowired
-	public WorkflowController(LegacyWorkflowService legacy) {
+	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService) {
 		this.legacy = legacy;
+		this.notificationService = notificationService;
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")
@@ -53,6 +58,7 @@ public class WorkflowController extends BaseController {
 				WorkflowController.addStepReport(new StepReport(COMPLETE_WORKFLOW, status, e.getLocalizedMessage(), null, null));
 			}
 		}
+		notificationService.sendNotification(COMPLETE_WORKFLOW_SUBJECT, getReport().toString());
 		GatewayReport rtn = getReport();
 		response.setStatus(rtn.getStatus());
 		remove();
@@ -79,6 +85,7 @@ public class WorkflowController extends BaseController {
 				response.setStatus(status);
 			}
 		}
+		notificationService.sendNotification(VALIDATE_DDOT_WORKFLOW_SUBJECT, getReport().toString());
 		GatewayReport rtn = getReport();
 		remove();
 		return rtn;

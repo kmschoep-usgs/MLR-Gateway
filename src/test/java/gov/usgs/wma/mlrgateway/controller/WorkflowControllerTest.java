@@ -22,10 +22,15 @@ import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.service.LegacyWorkflowService;
+import gov.usgs.wma.mlrgateway.service.NotificationService;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 public class WorkflowControllerTest extends BaseSpringTest {
 
+	@MockBean
+	private NotificationService notify;
 	@MockBean
 	private LegacyWorkflowService legacy;
 
@@ -35,7 +40,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	@Before
 	public void init() {
-		controller = new WorkflowController(legacy);
+		controller = new WorkflowController(legacy, notify);
 		response = new MockHttpServletResponse();
 		mapper = new ObjectMapper();
 	}
