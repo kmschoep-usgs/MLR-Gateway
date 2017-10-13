@@ -47,13 +47,6 @@ public class DdotService {
 			throw new FeignBadResponseWrapper(status, null, INTERNAL_ERROR_MESSAGE);
 		}
 
-		if (ddots.size() != 1) {
-			int status = HttpStatus.SC_BAD_REQUEST;
-			String message = WRONG_FORMAT_MESSAGE.replace("%ddotResponse%", ddotResponse);
-			WorkflowController.addStepReport(new StepReport(STEP_NAME, status, message, null, null));
-			throw new FeignBadResponseWrapper(status, null, message);
-		}
-
 		WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, SUCCESS_MESSAGE, null, null));
 		return ddots;
 	}

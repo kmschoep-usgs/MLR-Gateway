@@ -84,28 +84,24 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 
 	@Test
 	public void noTransactionType_completeWorkflow_thenReturnBadRequest() throws Exception {
-		String data = "{\"transactionType\":\"A\",\"siteNumber\":\"12345678       \",\"agencyCode\":\"USGS \",\"validation\":{\"validation_passed_message\": \"Validations Passed\"}}";
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":["
-				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"" + LegacyWorkflowService.VALIDATION_SUCCESSFULL
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
-				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.BAD_TRANSACTION_TYPE.replace("%json%", data))
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.BAD_TRANSACTION_TYPE.replace("%json%", "{}"))
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.NOTIFICATION_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.NOTIFICATION_SUCCESSFULL) + "\"}"
 				+ "]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		List<Map<String, Object>> ddotRtn = DdotServiceTest.singleUnknown();
-		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
-		Map<String, Object> ml = getAdd();
-		given(transformService.transform(anyMap())).willReturn(ml);
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyValidation, HttpStatus.OK);
-		given(legacyValidatorClient.validate(anyString())).willReturn(legacyRtn);
+		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
 		given(notificationClient.sendEmail(anyString(), anyString(), anyString())).willReturn(legacyRtn);
 
+
 		service.completeWorkflow(file);
+		System.out.println("\n\n" + mapper.writeValueAsString(WorkflowController.getReport()) + "\n\n");
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService).transform(anyMap());
-		verify(legacyValidatorClient).validate(anyString());
+		verify(transformService, never()).transform(anyMap());
+		verify(legacyValidatorClient, never()).validate(anyString());
 		verify(legacyCruClient, never()).createMonitoringLocation(anyString());
 		verify(legacyCruClient, never()).patchMonitoringLocation(anyString());
 		verify(fileExportClient, never()).exportAdd(anyString());
@@ -114,14 +110,51 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	}
 
 	@Test
+	public void noTransactionType_completeWorkflow_noStopOnError() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.BAD_TRANSACTION_TYPE.replace("%json%", "{}"))
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"" + LegacyWorkflowService.VALIDATION_SUCCESSFULL
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "{\"name\":\"" + LegacyWorkflowService.SITE_ADD_STEP + "\",\"status\":201,\"details\":\"" + LegacyWorkflowService.SITE_ADD_SUCCESSFULL
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_ADD_STEP + "\",\"status\":200,\"details\":\"" + LegacyWorkflowService.EXPORT_SUCCESSFULL
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "{\"name\":\"" + LegacyWorkflowService.NOTIFICATION_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.NOTIFICATION_SUCCESSFULL) + "\"}"
+				+ "]}";
+		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
+		List<Map<String, Object>> ddotRtn = DdotServiceTest.multipleWithErrors();
+		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
+		Map<String, Object> ml = getAdd();
+		given(transformService.transform(anyMap())).willReturn(ml);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyValidation, HttpStatus.OK);
+		given(legacyValidatorClient.validate(anyString())).willReturn(legacyRtn);
+		ResponseEntity<String> addRtn = new ResponseEntity<String>(legacyJson, HttpStatus.CREATED);
+		given(legacyCruClient.createMonitoringLocation(anyString())).willReturn(addRtn);
+		given(fileExportClient.exportAdd(anyString())).willReturn(legacyRtn);
+		given(notificationClient.sendEmail(anyString(), anyString(), anyString())).willReturn(legacyRtn);
+
+		service.completeWorkflow(file);
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(ddotService).parseDdot(any(MultipartFile.class));
+		verify(transformService).transform(anyMap());
+		verify(legacyValidatorClient).validate(anyString());
+		verify(legacyCruClient).createMonitoringLocation(anyString());
+		verify(legacyCruClient, never()).patchMonitoringLocation(anyString());
+		verify(fileExportClient).exportAdd(anyString());
+		verify(fileExportClient, never()).exportUpdate(anyString());
+		verify(notificationClient).sendEmail(anyString(), anyString(), anyString());
+	}
+
+	@Test
 	public void oneAddTransaction_completeWorkflow_thenReturnCreated() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"" + LegacyWorkflowService.VALIDATION_SUCCESSFULL
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.SITE_ADD_STEP + "\",\"status\":201,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.SITE_ADD_SUCCESSFULL)
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_ADD_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.NOTIFICATION_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.NOTIFICATION_SUCCESSFULL) + "\"}"
 				+ "]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
@@ -153,11 +186,11 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	public void oneUpdateTransaction_completeWorkflow_thenReturnUpdated() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"" + LegacyWorkflowService.VALIDATION_SUCCESSFULL
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.SITE_UPDATE_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.SITE_UPDATE_SUCCESSFULL)
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_UPDATE_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.NOTIFICATION_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.NOTIFICATION_SUCCESSFULL) + "\"}"
 				+ "]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
@@ -210,9 +243,9 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	public void addTransaction_callsBackingServices() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + LegacyWorkflowService.SITE_ADD_STEP + "\",\"status\":201,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.SITE_ADD_SUCCESSFULL)
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_ADD_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
 		ResponseEntity<String> addRtn = new ResponseEntity<String>(legacyJson, HttpStatus.CREATED);
@@ -233,12 +266,76 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	}
 
 	@Test
+	public void addTransaction_throwsException() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.SITE_ADD_STEP + "\",\"status\":500,\"details\":\"" + "Site add failed"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		given(legacyCruClient.createMonitoringLocation(anyString())).willThrow(new RuntimeException());
+
+		service.addTransaction("USGS ", "12345678       ", "{}");
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(ddotService, never()).parseDdot(any(MultipartFile.class));
+		verify(transformService, never()).transform(anyMap());
+		verify(legacyValidatorClient, never()).validate(anyString());
+		verify(legacyCruClient).createMonitoringLocation(anyString());
+		verify(legacyCruClient, never()).patchMonitoringLocation(anyString());
+		verify(fileExportClient, never()).exportAdd(anyString());
+		verify(fileExportClient, never()).exportUpdate(anyString());
+		verify(notificationClient, never()).sendEmail(anyString(), anyString(), anyString());
+	}
+
+	@Test
+	public void addExport_callsBackingServices() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_ADD_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
+		given(fileExportClient.exportAdd(anyString())).willReturn(legacyRtn);
+
+		service.exportAdd("USGS ", "12345678       ", "{}");
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(ddotService, never()).parseDdot(any(MultipartFile.class));
+		verify(transformService, never()).transform(anyMap());
+		verify(legacyValidatorClient, never()).validate(anyString());
+		verify(legacyCruClient, never()).createMonitoringLocation(anyString());
+		verify(legacyCruClient, never()).patchMonitoringLocation(anyString());
+		verify(fileExportClient).exportAdd(anyString());
+		verify(fileExportClient, never()).exportUpdate(anyString());
+		verify(notificationClient, never()).sendEmail(anyString(), anyString(), anyString());
+	}
+
+	@Test
+	public void addExport_throwsException() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_ADD_STEP + "\",\"status\":500,\"details\":\"" + "Export add failed"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		given(fileExportClient.exportAdd(anyString())).willThrow(new RuntimeException());
+
+		service.exportAdd("USGS ", "12345678       ", "{}");
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(ddotService, never()).parseDdot(any(MultipartFile.class));
+		verify(transformService, never()).transform(anyMap());
+		verify(legacyValidatorClient, never()).validate(anyString());
+		verify(legacyCruClient, never()).createMonitoringLocation(anyString());
+		verify(legacyCruClient, never()).patchMonitoringLocation(anyString());
+		verify(fileExportClient).exportAdd(anyString());
+		verify(fileExportClient, never()).exportUpdate(anyString());
+		verify(notificationClient, never()).sendEmail(anyString(), anyString(), anyString());
+	}
+
+	@Test
 	public void updateTransaction_callsBackingServices() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + LegacyWorkflowService.SITE_UPDATE_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.SITE_UPDATE_SUCCESSFULL)
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_UPDATE_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
-					+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
 		given(legacyCruClient.patchMonitoringLocation(anyString())).willReturn(legacyRtn);
@@ -252,6 +349,70 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyValidatorClient, never()).validate(anyString());
 		verify(legacyCruClient, never()).createMonitoringLocation(anyString());
 		verify(legacyCruClient).patchMonitoringLocation(anyString());
+		verify(fileExportClient, never()).exportAdd(anyString());
+		verify(fileExportClient).exportUpdate(anyString());
+		verify(notificationClient, never()).sendEmail(anyString(), anyString(), anyString());
+	}
+
+	@Test
+	public void updateTransaction_throwsException() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.SITE_UPDATE_STEP + "\",\"status\":500,\"details\":\"" + "Site update failed"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		given(legacyCruClient.patchMonitoringLocation(anyString())).willThrow(new RuntimeException());
+
+		service.updateTransaction("USGS ", "12345678       ", "{}");
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(ddotService, never()).parseDdot(any(MultipartFile.class));
+		verify(transformService, never()).transform(anyMap());
+		verify(legacyValidatorClient, never()).validate(anyString());
+		verify(legacyCruClient, never()).createMonitoringLocation(anyString());
+		verify(legacyCruClient).patchMonitoringLocation(anyString());
+		verify(fileExportClient, never()).exportAdd(anyString());
+		verify(fileExportClient, never()).exportUpdate(anyString());
+		verify(notificationClient, never()).sendEmail(anyString(), anyString(), anyString());
+	}
+
+	@Test
+	public void updateExport_callsBackingServices() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_UPDATE_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
+		given(fileExportClient.exportUpdate(anyString())).willReturn(legacyRtn);
+
+		service.exportUpdate("USGS ", "12345678       ", "{}");
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(ddotService, never()).parseDdot(any(MultipartFile.class));
+		verify(transformService, never()).transform(anyMap());
+		verify(legacyValidatorClient, never()).validate(anyString());
+		verify(legacyCruClient, never()).createMonitoringLocation(anyString());
+		verify(legacyCruClient, never()).patchMonitoringLocation(anyString());
+		verify(fileExportClient, never()).exportAdd(anyString());
+		verify(fileExportClient).exportUpdate(anyString());
+		verify(notificationClient, never()).sendEmail(anyString(), anyString(), anyString());
+	}
+
+	@Test
+	public void updateExport_throwsException() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_UPDATE_STEP + "\",\"status\":500,\"details\":\"" + "Export update failed"
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		given(fileExportClient.exportUpdate(anyString())).willThrow(new RuntimeException());
+
+		service.exportUpdate("USGS ", "12345678       ", "{}");
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(ddotService, never()).parseDdot(any(MultipartFile.class));
+		verify(transformService, never()).transform(anyMap());
+		verify(legacyValidatorClient, never()).validate(anyString());
+		verify(legacyCruClient, never()).createMonitoringLocation(anyString());
+		verify(legacyCruClient, never()).patchMonitoringLocation(anyString());
 		verify(fileExportClient, never()).exportAdd(anyString());
 		verify(fileExportClient).exportUpdate(anyString());
 		verify(notificationClient, never()).sendEmail(anyString(), anyString(), anyString());

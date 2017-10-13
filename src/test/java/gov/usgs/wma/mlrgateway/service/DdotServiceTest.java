@@ -69,28 +69,6 @@ public class DdotServiceTest extends BaseSpringTest {
 	}
 
 	@Test
-	public void incorrectDdotSize_thenReturnBadRequest() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":[{\"name\":\"" + DdotService.STEP_NAME + "\",\"status\":400,\"details\":\""
-				+ JSONObject.escape(DdotService.WRONG_FORMAT_MESSAGE.replace("%ddotResponse%", "[{},{}]")) + "\"}]}";
-		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		String ddotResponse = "[{},{}]";
-		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotResponse);
-		try {
-			service.parseDdot(file);
-			fail("Did not get expected Exception.");
-		} catch (Exception e) {
-			if (e instanceof FeignBadResponseWrapper) {
-				assertEquals(HttpStatus.BAD_REQUEST.value(), ((FeignBadResponseWrapper) e).getStatus());
-				JSONAssert.assertEquals(DdotService.WRONG_FORMAT_MESSAGE.replace("%ddotResponse%", "[{},{}]"),
-						((FeignBadResponseWrapper) e).getBody(), JSONCompareMode.STRICT);
-			}
-		}
-		verify(ddotClient).ingestDdot(any(MultipartFile.class));
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
-	}
-
-
-	@Test
 	public void happyPath() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + DdotService.STEP_NAME + "\",\"status\":200,\"details\":\""
 				+ DdotService.SUCCESS_MESSAGE + "\"}]}";
@@ -120,6 +98,13 @@ public class DdotServiceTest extends BaseSpringTest {
 	public static List<Map<String, Object>> singleUpdate() {
 		List<Map<String, Object>> lm = new ArrayList<>();
 		lm.add(getUpdate());
+		return lm;
+	}
+
+	public static List<Map<String, Object>> multipleWithErrors() {
+		List<Map<String, Object>> lm = new ArrayList<>();
+		lm.add(getUnknown());
+		lm.add(getAdd());
 		return lm;
 	}
 
