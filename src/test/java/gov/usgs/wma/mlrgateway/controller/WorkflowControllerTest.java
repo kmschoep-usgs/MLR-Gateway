@@ -2,7 +2,6 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +22,6 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.service.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)

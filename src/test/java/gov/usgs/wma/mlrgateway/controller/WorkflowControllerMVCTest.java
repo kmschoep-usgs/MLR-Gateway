@@ -41,7 +41,7 @@ public class WorkflowControllerMVCTest {
 	private LegacyWorkflowService legacy;
 	
 	@MockBean
-	private NotificationService notificationService ;
+	private NotificationService notificationService;
 	
 	@MockBean
 	private NotificationClient notificationClient;

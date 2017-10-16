@@ -58,7 +58,11 @@ public class WorkflowController extends BaseController {
 				WorkflowController.addStepReport(new StepReport(COMPLETE_WORKFLOW, status, e.getLocalizedMessage(), null, null));
 			}
 		}
-		notificationService.sendNotification(COMPLETE_WORKFLOW_SUBJECT, getReport().toString());
+		
+		//Send Notification
+		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
+		
+		//Return report
 		GatewayReport rtn = getReport();
 		response.setStatus(rtn.getStatus());
 		remove();
@@ -78,17 +82,38 @@ public class WorkflowController extends BaseController {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
 				WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_WORKFLOW, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
-				response.setStatus(status);
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 				WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_WORKFLOW, status, e.getLocalizedMessage(), null, null));
-				response.setStatus(status);
 			}
 		}
-		notificationService.sendNotification(VALIDATE_DDOT_WORKFLOW_SUBJECT, getReport().toString());
+		
+		//Send Notification
+		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
+		
+		//Return report
 		GatewayReport rtn = getReport();
+		response.setStatus(rtn.getStatus());
 		remove();
 		return rtn;
 	}
-
+	
+	private int notificationStep(String subject) {
+		int status = -1;
+		
+		//Send Notification
+		try {
+			notificationService.sendNotification("drsteini@usgs.gov", subject, getReport().toString());
+		} catch(Exception e) {
+			if (e instanceof FeignBadResponseWrapper) {
+				 status = ((FeignBadResponseWrapper) e).getStatus();
+				WorkflowController.addStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
+			} else {
+				status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				WorkflowController.addStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, e.getLocalizedMessage(), null, null));
+			}
+		}
+		
+		return status;
+	}
 }

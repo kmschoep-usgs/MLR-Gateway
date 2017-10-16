@@ -21,7 +21,6 @@ import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
-import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 
 
 @RunWith(SpringRunner.class)
@@ -47,12 +46,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void happyPath() throws Exception {
 		ResponseEntity<String> emailResp = new ResponseEntity<String>("test", HttpStatus.OK);
-		given(notificationClient.sendEmail(anyString(), anyString(), anyString())).willReturn(emailResp);
-		service.sendNotification("test", "test");
+		given(notificationClient.sendEmail(anyString())).willReturn(emailResp);
+		service.sendNotification("test", "test", "test");
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
-		verify(notificationClient).sendEmail(anyString(), anyString(), anyString());
+		verify(notificationClient).sendEmail(anyString());
 		
-		ResponseEntity<String> rtn = notificationClient.sendEmail("test", "test", "test@test.com");
+		ResponseEntity<String> rtn = notificationClient.sendEmail("test");
 		assertEquals(rtn.getBody(), emailResp.getBody());
 	}
 
