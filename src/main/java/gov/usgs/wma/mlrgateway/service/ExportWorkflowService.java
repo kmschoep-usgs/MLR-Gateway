@@ -16,7 +16,6 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.FileExportClient;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
-import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.controller.ExportWorkflowController;
 
 @Service
@@ -37,7 +36,7 @@ public class ExportWorkflowService {
 	protected static final String SC_INTERNAL_ERROR_MESSAGE = "{\"error_message\": \"Unable to serialize Legacy CRU output.\"}";
 
 	@Autowired
-	public ExportWorkflowService(LegacyCruClient legacyCruClient, FileExportClient fileExportClient, NotificationClient notificationClient) {
+	public ExportWorkflowService(LegacyCruClient legacyCruClient, FileExportClient fileExportClient) {
 		this.legacyCruClient = legacyCruClient;
 		this.fileExportClient = fileExportClient;
 	}

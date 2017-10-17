@@ -50,7 +50,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 		verify(export).completeWorkflow(anyString(), anyString());
-		verify(notificationService).sendNotification(anyString(), anyString());
+		verify(notificationService).sendNotification(anyString(), anyString(), anyString());
 	}
 
 	@Test
