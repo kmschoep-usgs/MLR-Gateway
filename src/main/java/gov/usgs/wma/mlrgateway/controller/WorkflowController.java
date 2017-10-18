@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -25,6 +26,9 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping("/workflows")
 public class WorkflowController extends BaseController {
+
+	@Value("${temporaryNotificationEmail}")
+	private String temporaryNotificationEmail;
 
 	private LegacyWorkflowService legacy;
 	private NotificationService notificationService;
@@ -103,7 +107,7 @@ public class WorkflowController extends BaseController {
 		
 		//Send Notification
 		try {
-			notificationService.sendNotification("drsteini@usgs.gov", subject, getReport().toString());
+			notificationService.sendNotification(temporaryNotificationEmail, subject, getReport().toString());
 		} catch(Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				 status = ((FeignBadResponseWrapper) e).getStatus();

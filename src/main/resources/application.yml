@@ -1,7 +1,9 @@
 server:
   port: 8080
-  
+
 mlrServicePassword: ${mlrgateway_mlrServicePassword}
+
+temporaryNotificationEmail: ${mlrgateway_temporaryNotificationEmail}
 
 zuul:
   routes:
