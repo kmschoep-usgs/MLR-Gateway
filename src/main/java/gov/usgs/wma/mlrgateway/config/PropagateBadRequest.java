@@ -16,19 +16,14 @@ public class PropagateBadRequest {
 	public ErrorDecoder errorDecoder() {
 		return (methodKey, response) -> {
 			int status = response.status();
-			if (status == 400) {
-				StringBuilder body = new StringBuilder("{\"").append(methodKey).append("\": [");
-				try {
-					body.append(IOUtils.toString(response.body().asReader()));
-				} catch (Exception ignored) {}
-				body.append("]}");
-				HttpHeaders httpHeaders = new HttpHeaders();
-				response.headers().forEach((k, v) -> httpHeaders.add("feign-" + k, StringUtils.join(v,",")));
-				return new FeignBadResponseWrapper(status, httpHeaders, body.toString());
-			}
-			else {
-				return new RuntimeException("Response Code " + status);
-			}
+			StringBuilder body = new StringBuilder("{\"").append(methodKey).append("\": [");
+			try {
+				body.append(IOUtils.toString(response.body().asReader()));
+			} catch (Exception ignored) {}
+			body.append("]}");
+			HttpHeaders httpHeaders = new HttpHeaders();
+			response.headers().forEach((k, v) -> httpHeaders.add("feign-" + k, StringUtils.join(v,",")));
+			return new FeignBadResponseWrapper(status, httpHeaders, body.toString());
 		};
 	}
 

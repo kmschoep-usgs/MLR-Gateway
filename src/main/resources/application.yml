@@ -1,31 +1,63 @@
 server:
   port: 8080
 
+security.sessions: NEVER
+
 zuul:
   routes:
     legacyCru:
       path: /monitoringLocations/**
       stripPrefix: false
-    ddot:
-      path: /ddots/**
-      stripPrefix: false
-
-legacyCru:
-  ribbon:
-    listOfServers: ${legacyCruServers}
-    eureka:
-      enabled: false
 
 ddot:
   ribbon:
-    listOfServers: ${ddotServers}
-    eureka:
-      enabled: false
+    listOfServers: ${mlrgateway_ddotServers}
+
+legacyTransformer:
+  ribbon:
+    listOfServers: ${mlrgateway_legacyTransformerServers}
+
+legacyValidator:
+  ribbon:
+    listOfServers: ${mlrgateway_legacyValidatorServers}
+
+legacyCru:
+  ribbon:
+    listOfServers: ${mlrgateway_legacyCruServers}
+
+fileExport:
+  ribbon:
+    listOfServers: ${mlrgateway_fileExportServers}
+
+notification:
+  ribbon:
+    listOfServers: ${mlrgateway_notificationServers}
 
 eureka:
   client:
     enabled: false
 
 feign:
-  hystix:
+  hystrix:
     enabled: true
+
+ribbon:
+  MaxAutoRetries: ${mlrgateway_ribbonMaxAutoRetries}
+  MaxAutoRetriesNextServer: 0
+  ConnectTimeout: ${mlrgateway_ribbonConnectTimeout}
+  ReadTimeout: ${mlrgateway_ribbonReadTimeout}
+  OkToRetryOnAllOperations: true
+
+hystrix:
+  shareSecurityContext: true
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: ${mlrgateway_hystrixThreadTimeout}
+
+logging:
+  level:
+    org:
+      springframework: ${mlrgateway_springFrameworkLogLevel}

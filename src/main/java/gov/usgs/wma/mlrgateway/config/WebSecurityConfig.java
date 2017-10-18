@@ -1,35 +1,31 @@
 package gov.usgs.wma.mlrgateway.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
+import org.springframework.cloud.security.oauth2.client.feign.OAuth2FeignRequestInterceptor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
+
+import feign.RequestInterceptor;
 
 @Configuration
 @EnableOAuth2Sso
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Value("${mlrServicePassword}")
-	private String pwd;
-
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http
+			.httpBasic().disable()
 			.cors().and()
 			.authorizeRequests()
-				.antMatchers("/login**").permitAll()
-				.antMatchers( "/swagger-resources/**", "/webjars/**", "/v2/**").permitAll()
+				.antMatchers("/swagger-resources/**", "/webjars/**", "/v2/**").permitAll()
 				.antMatchers("/health/**", "/hystrix/**", "/hystrix.stream**", "/proxy.stream**", "/favicon.ico").permitAll()
 				.anyRequest().fullyAuthenticated()
-			.and()
-				.formLogin().defaultSuccessUrl("/swagger-ui.html", true)
-			.and()
-				.logout().logoutSuccessUrl("/swagger-ui.html")
-			.and()
-				.formLogin().permitAll()
 			.and()
 				.logout().permitAll()
 			.and()
@@ -37,11 +33,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		;
 	}
 
-	@Autowired
-	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-		auth
-		.inMemoryAuthentication()
-		.withUser("user").password(pwd).roles("ACTUATOR");
+	@Bean
+	public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2ClientContext oauth2ClientContext, OAuth2ProtectedResourceDetails resource){
+		return new OAuth2FeignRequestInterceptor(oauth2ClientContext, resource);
+	}
+
+
+	@Bean
+	public TaskScheduler taskScheduler() {
+		return new ConcurrentTaskScheduler(); //single threaded by default
 	}
 
 }

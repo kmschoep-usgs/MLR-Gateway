@@ -7,6 +7,7 @@ import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
+import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 
 @EnableHystrixDashboard
 @EnableZuulProxy
@@ -14,6 +15,7 @@ import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 @EnableFeignClients
 @EnableCircuitBreaker
 @EnableHystrix
+@EnableJdbcHttpSession
 public class Application {
 
 	public static void main(String[] args) {
