@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +22,9 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags={"Export Workflow"})
 @RestController
 public class ExportWorkflowController extends BaseController {
+
+	@Value("${temporaryNotificationEmail}")
+	private String temporaryNotificationEmail;
 
 	private ExportWorkflowService export;
 	private NotificationService notificationService;
@@ -70,7 +74,7 @@ public class ExportWorkflowController extends BaseController {
 		
 		//Send Notification
 		try {
-			notificationService.sendNotification("drsteini@usgs.gov", subject, getReport().toString());
+			notificationService.sendNotification(temporaryNotificationEmail, subject, getReport().toString());
 		} catch(Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				 status = ((FeignBadResponseWrapper) e).getStatus();
