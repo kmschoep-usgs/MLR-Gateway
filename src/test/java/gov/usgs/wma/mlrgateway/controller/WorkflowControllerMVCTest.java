@@ -25,7 +25,9 @@ import org.springframework.web.multipart.MultipartFile;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.client.DdotClient;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
+import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.service.LegacyWorkflowService;
+import gov.usgs.wma.mlrgateway.service.NotificationService;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(WorkflowController.class)
@@ -37,6 +39,12 @@ public class WorkflowControllerMVCTest {
 
 	@MockBean
 	private LegacyWorkflowService legacy;
+	
+	@MockBean
+	private NotificationService notificationService;
+	
+	@MockBean
+	private NotificationClient notificationClient;
 
 	@MockBean
 	private DdotClient ddotClient;

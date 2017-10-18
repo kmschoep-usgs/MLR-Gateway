@@ -15,6 +15,7 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.service.LegacyWorkflowService;
+import gov.usgs.wma.mlrgateway.service.NotificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -26,12 +27,16 @@ import io.swagger.annotations.ApiResponses;
 public class WorkflowController extends BaseController {
 
 	private LegacyWorkflowService legacy;
+	private NotificationService notificationService;
 	public static final String COMPLETE_WORKFLOW = "Complete Workflow";
+	public static final String COMPLETE_WORKFLOW_SUBJECT = "MLR Report for Submitted Ddot Transaction";
 	public static final String VALIDATE_DDOT_WORKFLOW = "Validate Ddot File";
+	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "MLR Report for Submitted Ddot Validation";
 
 	@Autowired
-	public WorkflowController(LegacyWorkflowService legacy) {
+	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService) {
 		this.legacy = legacy;
+		this.notificationService = notificationService;
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")
@@ -53,6 +58,11 @@ public class WorkflowController extends BaseController {
 				WorkflowController.addStepReport(new StepReport(COMPLETE_WORKFLOW, status, e.getLocalizedMessage(), null, null));
 			}
 		}
+		
+		//Send Notification
+		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
+		
+		//Return report
 		GatewayReport rtn = getReport();
 		response.setStatus(rtn.getStatus());
 		remove();
@@ -72,16 +82,38 @@ public class WorkflowController extends BaseController {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
 				WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_WORKFLOW, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
-				response.setStatus(status);
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 				WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_WORKFLOW, status, e.getLocalizedMessage(), null, null));
-				response.setStatus(status);
 			}
 		}
+		
+		//Send Notification
+		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
+		
+		//Return report
 		GatewayReport rtn = getReport();
+		response.setStatus(rtn.getStatus());
 		remove();
 		return rtn;
 	}
-
+	
+	private int notificationStep(String subject) {
+		int status = -1;
+		
+		//Send Notification
+		try {
+			notificationService.sendNotification("drsteini@usgs.gov", subject, getReport().toString());
+		} catch(Exception e) {
+			if (e instanceof FeignBadResponseWrapper) {
+				 status = ((FeignBadResponseWrapper) e).getStatus();
+				WorkflowController.addStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
+			} else {
+				status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				WorkflowController.addStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, e.getLocalizedMessage(), null, null));
+			}
+		}
+		
+		return status;
+	}
 }

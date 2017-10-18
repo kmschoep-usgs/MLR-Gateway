@@ -33,8 +33,6 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 	private LegacyCruClient legacyCruClient;
 	@MockBean
 	private FileExportClient fileExportClient;
-	@MockBean
-	private NotificationClient notificationClient;
 
 	private ExportWorkflowService service;
 	private MockHttpServletResponse response;
@@ -45,7 +43,7 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 
 	@Before
 	public void init() {
-		service = new ExportWorkflowService(legacyCruClient, fileExportClient, notificationClient);
+		service = new ExportWorkflowService(legacyCruClient, fileExportClient);
 		response = new MockHttpServletResponse();
 		ExportWorkflowController.setReport(new GatewayReport(reportName));
 		mapper = new ObjectMapper();

@@ -17,7 +17,6 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.FileExportClient;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
-import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 
 @Service
@@ -28,7 +27,6 @@ public class LegacyWorkflowService {
 	private TransformService transformService;
 	private LegacyValidatorClient legacyValidatorClient;
 	private FileExportClient fileExportClient;
-	private NotificationClient notificationClient;
 
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";
@@ -48,6 +46,7 @@ public class LegacyWorkflowService {
 	public static final String EXPORT_UPDATE_FAILED = "Export update failed";
 	public static final String VALIDATION_STEP = "Validate";
 	public static final String VALIDATION_SUCCESSFULL = "Transaction validated successfully.";
+	public static final String VALIDATION_FAILED = "Transaction validation failed.";
 	public static final String NOTIFICATION_STEP = "Notification";
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 	public static final String BAD_TRANSACTION_TYPE = "{\"error\":{\"message\":\"Unable to determine transactionType.\"},\"data\":%json%}";
@@ -56,18 +55,17 @@ public class LegacyWorkflowService {
 
 	@Autowired
 	public LegacyWorkflowService(DdotService ddotService, LegacyCruClient legacyCruClient, TransformService transformService, LegacyValidatorClient legacyValidatorClient,
-								 FileExportClient fileExportClient, NotificationClient notificationClient) {
+								 FileExportClient fileExportClient) {
 		this.ddotService = ddotService;
 		this.legacyCruClient = legacyCruClient;
 		this.transformService = transformService;
 		this.legacyValidatorClient = legacyValidatorClient;
 		this.fileExportClient = fileExportClient;
-		this.notificationClient = notificationClient;
 	}
 
 	public void completeWorkflow(MultipartFile file) throws HystrixBadRequestException {
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
-
+		
 		String json = "{}";
 		for (Map<String, Object> ml: ddots) {
 			try {
@@ -85,18 +83,18 @@ public class LegacyWorkflowService {
 				WorkflowController.addStepReport(new StepReport(COMPLETE_WORKFLOW, HttpStatus.SC_INTERNAL_SERVER_ERROR, COMPLETE_WORKFLOW_FAILED,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 			}
 		}
-
-		sendNotification();
 	}
 
 	public void ddotValidation(MultipartFile file) throws HystrixBadRequestException {
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
 
 		for (Map<String, Object> ml: ddots) {
-			transformAndValidate(ml);
+			try {
+				transformAndValidate(ml);
+			} catch (Exception e) {
+				WorkflowController.addStepReport(new StepReport(VALIDATION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, VALIDATION_FAILED, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+			}
 		}
-
-		sendNotification();
 	}
 
 	protected String transformAndValidate(Map<String, Object> ml) {
@@ -168,10 +166,5 @@ public class LegacyWorkflowService {
 			WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, EXPORT_UPDATE_FAILED,  agencyCode, siteNumber));
 
 		}
-	}
-
-	protected void sendNotification() {
-		ResponseEntity<String> notifResp = notificationClient.sendEmail("test", WorkflowController.getReport().toString(), "drsteini@usgs.gov");
-		WorkflowController.addStepReport(new StepReport(NOTIFICATION_STEP, notifResp.getStatusCodeValue(), NOTIFICATION_SUCCESSFULL, null, null));
 	}
 }
