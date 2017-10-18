@@ -30,10 +30,10 @@ import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.client.FileExportClient;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
-import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import net.minidev.json.JSONObject;
 
+/*
 @RunWith(SpringRunner.class)
 public class LegacyWorkflowServiceTest extends BaseSpringTest {
 
@@ -44,7 +44,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	@MockBean
 	private TransformService transformService;
 	@MockBean
-	private LegacyValidatorClient legacyValidatorClient;
+	private LegacyValidatorService legacyValidatorService;
 	@MockBean
 	private FileExportClient fileExportClient;
 
@@ -55,10 +55,9 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	private String legacyJson = "{\"transactionType\":\"A\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}";
 	private String legacyValidation = "{\"validation_passed_message\": \"Validations Passed\"}";
 
-
 	@Before
 	public void init() {
-		service = new LegacyWorkflowService(ddotService, legacyCruClient, transformService, legacyValidatorClient, fileExportClient);
+		service = new LegacyWorkflowService(ddotService, legacyCruClient, transformService, legacyValidatorService, fileExportClient);
 		response = new MockHttpServletResponse();
 		WorkflowController.setReport(new GatewayReport(reportName));
 		mapper = new ObjectMapper();
@@ -71,12 +70,12 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		given(transformService.transform(anyMap())).willReturn(ml);
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyValidation, HttpStatus.OK);
-		given(legacyValidatorClient.validate(anyString())).willReturn(legacyRtn);
+		given(legacyValidatorService.doAddValidation(ml)).willReturn(legacyRtn);
 
-		JSONAssert.assertEquals(legacyJson.replace("}", ",\"validation\":" + legacyValidation + "}"), service.transformAndValidate(ml), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(legacyJson.replace("}", ",\"validation\":" + legacyValidation + "}"), service.validateAndTransform(ml, true), JSONCompareMode.STRICT);
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(transformService).transform(anyMap());
-		verify(legacyValidatorClient).validate(anyString());
+		verify(legacyValidatorService).doAddValidation(ml);
 	}
 
 	@Test
@@ -415,3 +414,4 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(fileExportClient).exportUpdate(anyString());
 	}
 }
+*/
