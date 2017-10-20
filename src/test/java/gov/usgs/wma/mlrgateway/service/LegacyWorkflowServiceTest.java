@@ -31,7 +31,6 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.client.FileExportClient;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
-import java.util.HashMap;
 import net.minidev.json.JSONObject;
 import static org.mockito.Matchers.anyBoolean;
 
@@ -69,7 +68,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		Map<String, Object> mlRtn = getAddValid();
 		given(transformService.transform(anyMap())).willReturn(mlRtn);
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyValidation, HttpStatus.OK);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlRtn);
 		String serviceJson =  service.validateAndTransform(ml, true);
 		JSONAssert.assertEquals(legacyJson.replace("}", ",\"validation\":" + legacyValidation + "}"), serviceJson, JSONCompareMode.STRICT);
@@ -87,7 +85,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 				+ "]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		List<Map<String, Object>> ddotRtn = DdotServiceTest.singleUnknown();
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyValidation, HttpStatus.OK);
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
 
 
@@ -123,9 +120,9 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
 		Map<String, Object> ml = getAdd();
 		given(transformService.transform(anyMap())).willReturn(ml);
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyValidation, HttpStatus.OK);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<>(legacyValidation, HttpStatus.OK);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(getAddValid());
-		ResponseEntity<String> addRtn = new ResponseEntity<String>(legacyJson, HttpStatus.CREATED);
+		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.CREATED);
 		given(legacyCruClient.createMonitoringLocation(anyString())).willReturn(addRtn);
 		given(fileExportClient.exportAdd(anyString())).willReturn(legacyRtn);
 
@@ -156,8 +153,8 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		Map<String, Object> mlValid = ml;
 		mlValid.put("validation",legacyValidation);
 		given(transformService.transform(anyMap())).willReturn(ml);
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
-		ResponseEntity<String> addRtn = new ResponseEntity<String>(legacyJson, HttpStatus.CREATED);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
+		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.CREATED);
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
 		given(legacyCruClient.createMonitoringLocation(anyString())).willReturn(addRtn);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
@@ -191,7 +188,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		Map<String, Object> mlValid = ml;
 		mlValid.put("validation",legacyValidation);
 		given(transformService.transform(anyMap())).willReturn(ml);
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
 		given(legacyCruClient.patchMonitoringLocation(anyString())).willReturn(legacyRtn);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
@@ -218,7 +215,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		Map<String, Object> mlValid = getAddValid();
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyValidation, HttpStatus.OK);
 		
 		given(transformService.transform(anyMap())).willReturn(mlValid);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
@@ -239,7 +235,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>("", HttpStatus.OK);
 		Map<String, Object> mlValid = getAddValid();
 		given(transformService.transform(anyMap())).willThrow(new RuntimeException());
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(DdotServiceTest.singleAdd());
@@ -264,8 +259,8 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_ADD_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
-		ResponseEntity<String> addRtn = new ResponseEntity<String>(legacyJson, HttpStatus.CREATED);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
+		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.CREATED);
 		given(legacyCruClient.createMonitoringLocation(anyString())).willReturn(addRtn);
 		given(fileExportClient.exportAdd(anyString())).willReturn(legacyRtn);
 
@@ -307,7 +302,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_ADD_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
 		given(fileExportClient.exportAdd(anyString())).willReturn(legacyRtn);
 
 		service.exportAdd("USGS ", "12345678       ", "{}");
@@ -350,7 +345,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_UPDATE_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
 		given(legacyCruClient.patchMonitoringLocation(anyString())).willReturn(legacyRtn);
 		given(fileExportClient.exportUpdate(anyString())).willReturn(legacyRtn);
 
@@ -392,7 +387,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 				+ "{\"name\":\"" + LegacyWorkflowService.EXPORT_UPDATE_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.EXPORT_SUCCESSFULL)
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
 		given(fileExportClient.exportUpdate(anyString())).willReturn(legacyRtn);
 
 		service.exportUpdate("USGS ", "12345678       ", "{}");

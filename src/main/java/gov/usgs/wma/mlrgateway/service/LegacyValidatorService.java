@@ -77,7 +77,7 @@ public class LegacyValidatorService {
 				throw new FeignBadResponseWrapper(validationResponse.getStatusCode().value(), null, "{\"error_message\": " + validationResponse.getBody() + "}");	
 			}
 		} else {
-			throw new FeignBadResponseWrapper(validationResponse.getStatusCodeValue(), null, "{\"error_message\": \"An internal error occurred during validation:" + validationResponse.getBody() + "\"}");	
+			throw new FeignBadResponseWrapper(validationResponse.getStatusCodeValue(), null, "{\"error_message\": \"An internal error occurred during validation: " + validationResponse.getBody() + "\"}");	
 		}
 		
 		return ml;
@@ -93,19 +93,20 @@ public class LegacyValidatorService {
 		//Fetch Existing Record
 		String siteNumber = ml.get(LegacyWorkflowService.SITE_NUMBER) != null ? ml.get(LegacyWorkflowService.SITE_NUMBER).toString() : null;
 		String agencyCode = ml.get(LegacyWorkflowService.AGENCY_CODE) != null ? ml.get(LegacyWorkflowService.AGENCY_CODE).toString() : null;
-		ResponseEntity<String> existingRecordResponse = legacyCruClient.getMonitoringLocations(agencyCode, siteNumber);
-		int cruStatus = existingRecordResponse.getStatusCodeValue();
-
-		if(cruStatus == 200){
-			try {
+		
+		try {
+			ResponseEntity<String> existingRecordResponse = legacyCruClient.getMonitoringLocations(agencyCode, siteNumber);
+			int cruStatus = existingRecordResponse.getStatusCodeValue();
+			
+			if(cruStatus == 200) {
 				existingRecordList = mapper.readValue(existingRecordResponse.getBody(), mapType);
 
 				if(!existingRecordList.isEmpty()) {
 					existingRecord = existingRecordList.get(0);
 				}
-			} catch (Exception e) {
-				//Do nothing
 			}
+		} catch (Exception e) {
+			//Do nothing
 		}
 		
 		validationPayload.put(LegacyValidatorClient.NEW_RECORD_PAYLOAD,ml);
