@@ -32,25 +32,16 @@ public class LegacyValidatorService {
 		this.legacyValidatorClient = legacyValidatorClient;
 	}
 	
-	public Map<String,Object> doAddValidation(Map<String, Object> ml) {
-		return doValidation(ml, true);
-	}
-	
-	public Map<String,Object> doUpdateValidation(Map<String, Object> ml) {
-		return doValidation(ml, false);
-	}
-	
-	private Map<String, Object> doValidation(Map<String, Object> ml, boolean isAdd) throws FeignBadResponseWrapper {
+	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction) throws FeignBadResponseWrapper {
 		try {
 			ResponseEntity<String> validationResponse;
 			String validationPayload = preValidation(ml);
-			if(isAdd) {
+			if(isAddTransaction) {
 				validationResponse = legacyValidatorClient.validateAdd(validationPayload);
 			} else {
 				 validationResponse = legacyValidatorClient.validateUpdate(validationPayload);
 			}
-			verifyValidationStatus(ml, validationResponse);
-			ml.put("validation", validationResponse.getBody());
+			ml = verifyValidationStatus(ml, validationResponse);
 			BaseController.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(),  VALIDATION_SUCCESSFUL, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			return ml;
 		} catch (Exception e) {
@@ -65,7 +56,7 @@ public class LegacyValidatorService {
 		}
 	}
 		
-	private void verifyValidationStatus(Map<String,Object> ml, ResponseEntity<String> validationResponse) {
+	private Map<String, Object> verifyValidationStatus(Map<String,Object> ml, ResponseEntity<String> validationResponse) {
 		if(validationResponse.getStatusCode().value() == 200) {
 			ObjectMapper mapper = new ObjectMapper();
 			TypeReference<Map<String, Object>> mapType = new TypeReference<Map<String, Object>>() {};
@@ -73,6 +64,7 @@ public class LegacyValidatorService {
 			
 			try {
 				validationMessage = mapper.readValue(validationResponse.getBody(), mapType);
+				ml.put("validation", validationMessage);
 			} catch (Exception e) {
 				throw new FeignBadResponseWrapper(validationResponse.getStatusCodeValue(), null, "{\"error_message\": \"Unable to deserialize validator response as JSON: " + validationResponse.getBody() + "\"}");
 			}
@@ -87,6 +79,8 @@ public class LegacyValidatorService {
 		} else {
 			throw new FeignBadResponseWrapper(validationResponse.getStatusCodeValue(), null, "{\"error_message\": \"An internal error occurred during validation:" + validationResponse.getBody() + "\"}");	
 		}
+		
+		return ml;
 	}
 		
 	private String preValidation(Map<String, Object> ml) {

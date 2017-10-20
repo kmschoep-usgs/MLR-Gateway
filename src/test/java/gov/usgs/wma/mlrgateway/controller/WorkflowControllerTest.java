@@ -45,7 +45,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	@Test
 	public void happyPath_LegacyWorkflow() throws Exception {
-		String json = "{\"name\":\"" + WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":200,\"steps\":[]}";
+		String json = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"status\":200,\"steps\":[]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
 		GatewayReport rtn = controller.legacyWorkflow(file, response);
@@ -56,7 +56,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@Test
 	public void badBackingServiceRequest_LegacyWorkflow() throws Exception {
 		String badText = "This is really bad.";
-		String json = "{\"name\":\"" + WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":400,\"steps\":[{\"name\":\"" + WorkflowController.COMPLETE_WORKFLOW
+		String json = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"status\":400,\"steps\":[{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW
 				+ "\",\"status\":400,\"details\":\"" + badText + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).completeWorkflow(any(MultipartFile.class));
@@ -70,8 +70,8 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@Test
 	public void serverError_LegacyWorkflow() throws Exception {
 		String badText = "This is really bad.";
-		String json = "{\"name\":\"" + WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":500,\"steps\":[{\"name\":\""
-				+ WorkflowController.COMPLETE_WORKFLOW + "\",\"status\":500,\"details\":\"" + badText + "\"}]}";
+		String json = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"status\":500,\"steps\":[{\"name\":\""
+				+ LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"status\":500,\"details\":\"" + badText + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new HystrixBadRequestException(badText)).given(legacy).completeWorkflow(any(MultipartFile.class));
 
@@ -83,7 +83,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	@Test
 	public void happyPath_LegacyValidationWorkflow() throws Exception {
-		String json = "{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW + "\",\"status\":200,\"steps\":[]}";
+		String json = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"status\":200,\"steps\":[]}";
 
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
@@ -96,7 +96,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@Test
 	public void badDdot_LegacyValidationWorkflow() throws Exception {
 		String badText = "This is really bad.";
-		String json = "{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW + "\",\"status\":400,\"steps\":[{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW
+		String json = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"status\":400,\"steps\":[{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
 				+ "\",\"status\":400,\"details\":\"" + badText + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).ddotValidation(any(MultipartFile.class));
@@ -110,7 +110,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@Test
 	public void serverError_LegacyValidationWorkflow() throws Exception {
 		String badText = "This is really bad.";
-		String json = "{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW + "\",\"status\":500,\"steps\":[{\"name\":\"" + WorkflowController.VALIDATE_DDOT_WORKFLOW
+		String json = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"status\":500,\"steps\":[{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
 				+ "\",\"status\":500,\"details\":\"" + badText + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new HystrixBadRequestException(badText)).given(legacy).ddotValidation(any(MultipartFile.class));

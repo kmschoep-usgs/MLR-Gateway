@@ -22,7 +22,6 @@ import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.client.FileExportClient;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
-import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.controller.ExportWorkflowController;
 import net.minidev.json.JSONObject;
 
@@ -57,8 +56,8 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 				+ "{\"name\":\"" + ExportWorkflowService.EXPORT_ADD_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(ExportWorkflowService.EXPORT_SUCCESSFULL)
 					+ "\",\"agencyCode\":\"USGS\",\"siteNumber\":\"12345678\"}"
 				+ "]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyExportJson, HttpStatus.OK);
-		ResponseEntity<String> addRtn = new ResponseEntity<String>(legacyJson, HttpStatus.OK);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<>(legacyExportJson, HttpStatus.OK);
+		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(addRtn);
 		given(fileExportClient.exportAdd(anyString())).willReturn(legacyRtn);
 
@@ -75,7 +74,7 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 				+ "{\"name\":\"" + ExportWorkflowService.SITE_GET_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(ExportWorkflowService.SITE_GET_DOES_NOT_EXIST)
 					+ "\",\"agencyCode\":\"USGS\",\"siteNumber\":\"1234\"}"
 				+ "]}";
-		ResponseEntity<String> addRtn = new ResponseEntity<String>("[]", HttpStatus.OK);
+		ResponseEntity<String> addRtn = new ResponseEntity<>("[]", HttpStatus.OK);
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(addRtn);
 
 		service.completeWorkflow("USGS", "1234");

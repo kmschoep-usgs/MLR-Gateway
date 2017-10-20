@@ -3,7 +3,6 @@ package gov.usgs.wma.mlrgateway.service;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
@@ -45,7 +44,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 
 	@Test
 	public void happyPath() throws Exception {
-		ResponseEntity<String> emailResp = new ResponseEntity<String>("test", HttpStatus.OK);
+		ResponseEntity<String> emailResp = new ResponseEntity<>("test", HttpStatus.OK);
 		given(notificationClient.sendEmail(anyString())).willReturn(emailResp);
 		service.sendNotification("test", "test", "test");
 		assertEquals(HttpStatus.OK.value(), response.getStatus());

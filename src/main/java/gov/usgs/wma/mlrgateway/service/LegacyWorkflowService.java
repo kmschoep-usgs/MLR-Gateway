@@ -43,15 +43,19 @@ public class LegacyWorkflowService {
 	public static final String EXPORT_SUCCESSFULL = "Transaction File created Successfully.";
 	public static final String EXPORT_ADD_FAILED = "Export add failed";
 	public static final String EXPORT_UPDATE_FAILED = "Export update failed";
-	public static final String BAD_TRANSACTION_TYPE = "{\"error\":{\"message\":\"Unable to determine transactionType.\"},\"data\":%json%}";
+	public static final String BAD_TRANSACTION_TYPE = "Unable to determine transaction type.";
 	public static final String COMPLETE_WORKFLOW = "Complete Workflow";
 	public static final String COMPLETE_WORKFLOW_FAILED = "Complete workflow failed";
-	public static final String TRANSACTION_STEP = "Process Single D dot Transaction";
-	public static final String TRANSACTION_STEP_SUCCESS = "D dot Transaction Processed";
+	public static final String VALIDATE_DDOT_WORKFLOW = "Validate D dot File";
+	public static final String VALIDATE_DDOT_TRANSACTION_STEP = "Validate Single D dot Transaction";
+	public static final String VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS = "Single transaction validation passed.";
+	public static final String VALIDATE_DDOT_TRANSACTION_STEP_FAILURE = "Single transaction validation failed.";
+	public static final String COMPLETE_TRANSACTION_STEP = "Process Single D dot Transaction";
+	public static final String COMPLETE_TRANSACTION_STEP_SUCCESS = "D dot Transaction Processed";
 
 	@Autowired
-	public LegacyWorkflowService(DdotService ddotService, LegacyCruClient legacyCruClient, TransformService transformService, LegacyValidatorService legacyValidatorService,
-								 FileExportClient fileExportClient) {
+	public LegacyWorkflowService(DdotService ddotService, LegacyCruClient legacyCruClient, TransformService transformService, 
+			LegacyValidatorService legacyValidatorService, FileExportClient fileExportClient) {
 		this.ddotService = ddotService;
 		this.legacyCruClient = legacyCruClient;
 		this.transformService = transformService;
@@ -75,16 +79,16 @@ public class LegacyWorkflowService {
 						updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 					}
 				} else {
-					WorkflowController.addStepReport(new StepReport(LegacyValidatorService.VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, BAD_TRANSACTION_TYPE.replace("%json%", json), ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
-					throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Validation failed.\"}");
+					WorkflowController.addStepReport(new StepReport(LegacyValidatorService.VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, BAD_TRANSACTION_TYPE, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"Validation failed due to a missing transaction type.\"}");
 				}
 				
-				WorkflowController.addStepReport(new StepReport(TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_OK,TRANSACTION_STEP_SUCCESS,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+				WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_OK,COMPLETE_TRANSACTION_STEP_SUCCESS,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 			} catch (Exception e) {
 				if(e instanceof FeignBadResponseWrapper){
-					WorkflowController.addStepReport(new StepReport(TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_INTERNAL_SERVER_ERROR, ((FeignBadResponseWrapper)e).getBody(),  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", ((FeignBadResponseWrapper)e).getStatus(), ((FeignBadResponseWrapper)e).getBody(),  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 				} else {
-					WorkflowController.addStepReport(new StepReport(TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_INTERNAL_SERVER_ERROR, "{\"error_message\": \"" + e.getMessage() + "\"}",  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 				}
 			}
 		}
@@ -92,30 +96,43 @@ public class LegacyWorkflowService {
 
 	public void ddotValidation(MultipartFile file) throws HystrixBadRequestException {
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
-
-		for (Map<String, Object> ml: ddots) {
+		String json = "{}";
+		
+		for (int i = 0; i < ddots.size(); i++) {
+			Map<String, Object> ml = ddots.get(i);
 			try {
-				validateAndTransform(ml, true);
+				if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
+					if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
+						json = validateAndTransform(ml, true);
+					} else {
+						json = validateAndTransform(ml, false);
+					}
+				} else {
+					WorkflowController.addStepReport(new StepReport(LegacyValidatorService.VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, BAD_TRANSACTION_TYPE, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"Validation failed due to a missing transaction type.\"}");
+				}		
+				
+				WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_OK,VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 			} catch (Exception e) {
-				//Continue validating remaining transactions
+				if(e instanceof FeignBadResponseWrapper){
+					WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", ((FeignBadResponseWrapper)e).getStatus(), ((FeignBadResponseWrapper)e).getBody(),  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+				} else {
+					WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_INTERNAL_SERVER_ERROR, "{\"error_message\": \"" + e.getMessage() + "\"}",  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+				}
 			}
 		}
 	}
 
-	protected String validateAndTransform(Map<String, Object> ml, boolean addTransaction) {
+	protected String validateAndTransform(Map<String, Object> ml, boolean isAddTransaction) {
 		//Note that this does not inspect the input for cross-field dependencies (like latitude, longitude, and coordinateDatumCode) We will probably need to 
 		//handle the case where one, but not all of the fields are present in the update. 
 		ObjectMapper mapper = new ObjectMapper();
 		String json = "";
 				
-		if(addTransaction) {
-			ml = legacyValidatorService.doAddValidation(ml);
-		} else {
-			ml = legacyValidatorService.doUpdateValidation(ml);
-		}
+		ml = legacyValidatorService.doValidation(ml, isAddTransaction);
 		
 		//Ensure validation occurred before continuing
-		if(ml.containsKey("validation") && ml.get("validation").toString().contains(LegacyValidatorService.VALIDATION_SUCCESSFUL)){
+		if(ml.containsKey("validation") && !ml.get("validation").toString().contains(LegacyValidatorService.VALIDATION_FAILED)){
 			ml = transformService.transform(ml);
 			
 			try {
@@ -153,8 +170,7 @@ public class LegacyWorkflowService {
 			WorkflowController.addStepReport(new StepReport(EXPORT_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, EXPORT_ADD_FAILED,  agencyCode, siteNumber));
 		}
 	}
-
-
+	
 	protected void updateTransaction(Object agencyCode, Object siteNumber, String json) {
 		//catch bad updates and exports (new stepreport)
 		try {
