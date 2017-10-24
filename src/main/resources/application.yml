@@ -4,9 +4,16 @@ server:
 security.sessions: NEVER
 
 zuul:
+  retryable: true
+  ribbonIsolationStrategy: SEMAPHORE
   routes:
-    legacyCru:
+    legacyCruBase:
+      path: /monitoringLocations**
+      serviceId: legacyCru
+      stripPrefix: false
+    legacyCruPlus:
       path: /monitoringLocations/**
+      serviceId: legacyCru
       stripPrefix: false
 
 ddot:
@@ -54,6 +61,7 @@ hystrix:
     default:
       execution:
         isolation:
+          strategy: SEMAPHORE
           thread:
             timeoutInMilliseconds: ${mlrgateway_hystrixThreadTimeout}
 
