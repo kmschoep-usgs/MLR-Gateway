@@ -16,6 +16,8 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationManager;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationProcessingFilter;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
 import feign.RequestInterceptor;
@@ -53,7 +55,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2ClientContext oauth2ClientContext, OAuth2ProtectedResourceDetails resource){
 		return new OAuth2FeignRequestInterceptor(oauth2ClientContext, resource);
 	}
+	
+	@Autowired
+	public void setJwtAccessTokenConverter(JwtAccessTokenConverter jwtAccessTokenConverter) {
+		jwtAccessTokenConverter.setAccessTokenConverter(defaultAccessTokenConverter());
+	}
 
+	@Bean
+	DefaultAccessTokenConverter defaultAccessTokenConverter() {
+		return new WaterAuthJwtConverter();
+	}
+	
 	@Bean
 	public TaskScheduler taskScheduler() {
 		return new ConcurrentTaskScheduler();

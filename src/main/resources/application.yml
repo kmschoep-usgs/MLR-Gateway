@@ -1,6 +1,9 @@
 server:
   port: 8080
 
+dbDriverClassName: org.postgresql.Driver
+dbSchemaType: postgresql
+dbInitializerEnabled: true
 security.sessions: NEVER
 
 zuul:
