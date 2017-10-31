@@ -115,11 +115,6 @@ public class LegacyValidatorService {
 		try {
 			String json = mapper.writeValueAsString(validationPayload);
 			
-			//If there was no existing location then add it as an empty object to the end of the JSON
-			if(existingRecord.isEmpty()){
-				json = json.substring(0,json.length()-2) + ",\"existingLocation\":{}}";
-			}
-			
 			return json;
 		} catch(Exception e) {
 			// Unable to determine when this might actually happen, but the api says it can...
