@@ -23,7 +23,7 @@ The default profile, which is run when either no profile is provided or the prof
 The localDev profile, which is run when the profile name "localDev" is provided, is setup to require no external database - Sessions are stored internally.
 
 ## Spring Security Client and Session Storage
-This service by default stores session data within a database rather than within the applicaiton itself. This allows for multiple running instances of this service to share session information, thereby making the service stateless. 
+This service by default stores session data within a database rather than within the application itself. This allows for multiple running instances of this service to share session information, thereby making the service stateless. 
 
 When the application first starts it attempts to connect to the configured database and run a set of initialization scripts to create the relevant tables if they don't already exist
 
