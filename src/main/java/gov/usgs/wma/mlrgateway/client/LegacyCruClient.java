@@ -22,5 +22,7 @@ public interface LegacyCruClient {
 	
 	@RequestMapping(method=RequestMethod.GET, value="monitoringLocations", consumes="application/json")
 	ResponseEntity<String> getMonitoringLocations(@RequestParam("agencyCode") String agencyCode, @RequestParam("siteNumber") String siteNumber);
-
+	
+	@RequestMapping(method=RequestMethod.GET, value="monitoringLocations/{id}", consumes="application/json")
+	ResponseEntity<String> getMonitoringLocations(@PathVariable("id") String id);
 }

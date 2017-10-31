@@ -22,6 +22,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.authorizeRequests()
 				.antMatchers("/workflows/**").permitAll()
 				.antMatchers("/legacy/**").permitAll()
+				.antMatchers("/validations/**").permitAll()
 				.antMatchers("/monitoringLocations/**").permitAll()
 				.antMatchers("/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/v2/**").permitAll()
 				.antMatchers("/health/**", "/hystrix/**", "/hystrix.stream**", "/proxy.stream**", "/favicon.ico").permitAll()
