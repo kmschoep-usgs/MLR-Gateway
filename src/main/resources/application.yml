@@ -1,22 +1,18 @@
 server:
   port: 8080
 
+mlrServicePassword: ${mlrgateway_mlrServicePassword}
+temporaryNotificationEmail: ${mlrgateway_temporaryNotificationEmail}
+
 dbDriverClassName: org.postgresql.Driver
 dbSchemaType: postgresql
 dbInitializerEnabled: true
 security.sessions: NEVER
 
 zuul:
-  retryable: true
-  ribbonIsolationStrategy: SEMAPHORE
   routes:
-    legacyCruBase:
-      path: /monitoringLocations**
-      serviceId: legacyCru
-      stripPrefix: false
-    legacyCruPlus:
+    legacyCru:
       path: /monitoringLocations/**
-      serviceId: legacyCru
       stripPrefix: false
 
 ddot:
@@ -59,12 +55,10 @@ ribbon:
   OkToRetryOnAllOperations: true
 
 hystrix:
-  shareSecurityContext: true
   command:
     default:
       execution:
         isolation:
-          strategy: SEMAPHORE
           thread:
             timeoutInMilliseconds: ${mlrgateway_hystrixThreadTimeout}
 

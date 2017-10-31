@@ -60,7 +60,7 @@ public class TransformService {
 		ResponseEntity<String> response = legacyTransformerClient.decimalLocation(json);
 
 		try {
-			transforms = mapper.readValue(response.getBody().toString(), mapType);
+			transforms = mapper.readValue(response.getBody(), mapType);
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, GEO_SUCCESS, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 		} catch (Exception e) {
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, GEO_FAILURE, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
@@ -78,7 +78,7 @@ public class TransformService {
 		ResponseEntity<String> response = legacyTransformerClient.stationIx(json);
 
 		try {
-			transforms = mapper.readValue(response.getBody().toString(), mapType);
+			transforms = mapper.readValue(response.getBody(), mapType);
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, STATION_IX_SUCCESS, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 		} catch (Exception e) {
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, STATION_IX_FAILURE, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
