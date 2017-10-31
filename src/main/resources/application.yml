@@ -55,6 +55,7 @@ ribbon:
   OkToRetryOnAllOperations: true
 
 hystrix:
+  shareSecurityContext: true
   command:
     default:
       execution:
