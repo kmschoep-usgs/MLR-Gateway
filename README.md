@@ -15,6 +15,28 @@ Swagger API Documentation is available at http://localhost:8080/swagger-ui.html
 
 ctrl-c will stop the application.
 
+### localDev Profile
+This application has two built-in Spring Profiles to aid with local development. 
+
+The default profile, which is run when either no profile is provided or the profile name "default" is provided, is setup to require the database for Session storage.
+
+The localDev profile, which is run when the profile name "localDev" is provided, is setup to require no external database - Sessions are stored internally.
+
+## Spring Security Client and Session Storage
+This service by default stores session data within a database rather than within the application itself. This allows for multiple running instances of this service to share session information, thereby making the service stateless. 
+
+When the application first starts it attempts to connect to the configured PostgreSQL database and run a set of initialization scripts to create the relevant tables if they don't already exist
+
+The related environment variables are listed below:
+
+- **dbConnectionUrl** - The full JDBC-qualified database URL that the application should connect to. Example: jdbc:postgresql://192.168.99.100:5432/mydb
+
+- **dbUsername** - The username that should be used by the application when connecting to the database.
+
+- **dbPassword** - The password that should be used by the application when connecting to the database.
+
+- **dbInitializerEnabled** - Whether or not the database initialization scripts should run on application startup. The default value is true.
+
 ## Using Docker
 To build the image you will need to provide the location of the jar within 
 https://cida.usgs.gov/artifactory/mlr-maven/gov/usgs/wma/mlrgateway as follows:

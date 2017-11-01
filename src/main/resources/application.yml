@@ -2,8 +2,10 @@ server:
   port: 8080
 
 mlrServicePassword: ${mlrgateway_mlrServicePassword}
-
 temporaryNotificationEmail: ${mlrgateway_temporaryNotificationEmail}
+
+dbInitializerEnabled: true
+security.sessions: NEVER
 
 zuul:
   routes:
@@ -51,6 +53,7 @@ ribbon:
   OkToRetryOnAllOperations: true
 
 hystrix:
+  shareSecurityContext: true
   command:
     default:
       execution:
