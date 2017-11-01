@@ -65,3 +65,17 @@ logging:
   level:
     org:
       springframework: ${mlrgateway_springFrameworkLogLevel}
+
+security:
+  basic:
+    enabled: false
+  oauth2:
+    client:
+      clientId: ${oauthClientId}
+      clientSecret: ${oauthClientSecret}
+      accessTokenUri: ${oauthClientAccessTokenUri}
+      userAuthorizationUri: ${oauthClientAuthorizationUri}
+    resource:
+      id: ${oauthResourceId}
+      jwt:
+        keyUri: ${oauthResourceTokenKeyUri}
