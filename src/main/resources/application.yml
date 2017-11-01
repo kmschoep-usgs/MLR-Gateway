@@ -4,8 +4,6 @@ server:
 mlrServicePassword: ${mlrgateway_mlrServicePassword}
 temporaryNotificationEmail: ${mlrgateway_temporaryNotificationEmail}
 
-dbDriverClassName: org.postgresql.Driver
-dbSchemaType: postgresql
 dbInitializerEnabled: true
 security.sessions: NEVER
 

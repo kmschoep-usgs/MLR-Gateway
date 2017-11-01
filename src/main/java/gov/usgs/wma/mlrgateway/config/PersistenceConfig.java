@@ -16,8 +16,6 @@ import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHtt
 @Profile("default")
 @EnableJdbcHttpSession
 public class PersistenceConfig {
-	@Value("${dbDriverClassName}")
-	private String dbDriverClassName;
 	@Value("${dbConnectionUrl}")
 	private String dbConnectionUrl;
 	@Value("${dbUsername}")
@@ -26,14 +24,12 @@ public class PersistenceConfig {
 	private String dbPassword;
 	@Value("${dbInitializerEnabled:true}")
 	private Boolean dbInitializerEnabled;
-	@Value("${dbSchemaType}")
-	private String dbSchemaType;
 	
 	@Primary
 	@Bean
 	public DataSource dataSource() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
-		dataSource.setDriverClassName(dbDriverClassName);
+		dataSource.setDriverClassName("org.postgresql.Driver");
 		dataSource.setUrl(dbConnectionUrl);
 		dataSource.setUsername(dbUsername);
 		dataSource.setPassword(dbPassword);
@@ -50,7 +46,7 @@ public class PersistenceConfig {
 		ResourceDatabasePopulator databasePopulator = new ResourceDatabasePopulator();
 		dataSourceInitializer.setDatabasePopulator(databasePopulator);
 
-		String sessionSchema = "org/springframework/session/jdbc/schema-" + dbSchemaType +".sql";
+		String sessionSchema = "org/springframework/session/jdbc/schema-postgresql.sql";
 		databasePopulator.addScript(new ClassPathResource(sessionSchema));
 		
 		databasePopulator.setContinueOnError(true);
