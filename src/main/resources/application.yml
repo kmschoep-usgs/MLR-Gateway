@@ -3,11 +3,11 @@ server:
 
 mlrServicePassword: ${mlrgateway_mlrServicePassword}
 temporaryNotificationEmail: ${mlrgateway_temporaryNotificationEmail}
-
 dbInitializerEnabled: true
-security.sessions: NEVER
 
 zuul:
+  retryable: true
+  ribbonIsolationStrategy: SEMAPHORE
   routes:
     legacyCru:
       path: /monitoringLocations/**
@@ -58,6 +58,7 @@ hystrix:
     default:
       execution:
         isolation:
+          strategy: SEMAPHORE
           thread:
             timeoutInMilliseconds: ${mlrgateway_hystrixThreadTimeout}
 
