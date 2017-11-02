@@ -22,6 +22,21 @@ The default profile, which is run when either no profile is provided or the prof
 
 The localDev profile, which is run when the profile name "localDev" is provided, is setup to require no external database - Sessions are stored internally.
 
+## Spring Security Client Configuration
+This is a secured application that must connect to a running instance of the Water Auth Server in order to work. The following environment variables are used to configure the connection to the water auth server via OAuth2.
+
+- **oauthClientId** - The ID of the Client that has been configured in the Water Auth Server for this application.
+
+- **oauthClientSecret** - The secret associated with the Client that has been configured in the Water Auth Server for this application.
+
+- **oauthClientAccessTokenUri** - The OAuth2 Token URI that this application should connect to.
+
+- **oauthClientAuthorizationUri** -  The OAuth2 Authorization URI that this application should connect to.
+
+- **oauthResourceId** - The resource ID associated with the Client that has been configured in the Water Auth Server for this application.
+
+- **oauthResourceTokenKeyUri** - The OAuth2 Token Key URI that this application should connect to.
+
 ## Spring Security Client and Session Storage
 This service by default stores session data within a database rather than within the application itself. This allows for multiple running instances of this service to share session information, thereby making the service stateless. 
 
