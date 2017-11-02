@@ -65,7 +65,7 @@ public class LegacyWorkflowService {
 
 	public void completeWorkflow(MultipartFile file) throws HystrixBadRequestException {
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
-		
+
 		String json = "{}";
 		for (int i = 0; i < ddots.size(); i++) {
 			Map<String, Object> ml = ddots.get(i);
@@ -82,13 +82,13 @@ public class LegacyWorkflowService {
 					WorkflowController.addStepReport(new StepReport(LegacyValidatorService.VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, BAD_TRANSACTION_TYPE, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 					throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"Validation failed due to a missing transaction type.\"}");
 				}
-				
-				WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_OK,COMPLETE_TRANSACTION_STEP_SUCCESS,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+
+				WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_OK,COMPLETE_TRANSACTION_STEP_SUCCESS, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 			} catch (Exception e) {
 				if(e instanceof FeignBadResponseWrapper){
-					WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", ((FeignBadResponseWrapper)e).getStatus(), ((FeignBadResponseWrapper)e).getBody(),  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP + " (" + (i+1) + "/" + ddots.size() + ")", ((FeignBadResponseWrapper)e).getStatus(), ((FeignBadResponseWrapper)e).getBody(), ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 				} else {
-					WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_INTERNAL_SERVER_ERROR, "{\"error_message\": \"" + e.getMessage() + "\"}",  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_INTERNAL_SERVER_ERROR, "{\"error_message\": \"" + e.getMessage() + "\"}",  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 				}
 			}
 		}
@@ -96,28 +96,27 @@ public class LegacyWorkflowService {
 
 	public void ddotValidation(MultipartFile file) throws HystrixBadRequestException {
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
-		String json = "{}";
-		
+
 		for (int i = 0; i < ddots.size(); i++) {
 			Map<String, Object> ml = ddots.get(i);
 			try {
 				if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
 					if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
-						json = validateAndTransform(ml, true);
+						validateAndTransform(ml, true);
 					} else {
-						json = validateAndTransform(ml, false);
+						validateAndTransform(ml, false);
 					}
 				} else {
 					WorkflowController.addStepReport(new StepReport(LegacyValidatorService.VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, BAD_TRANSACTION_TYPE, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 					throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"Validation failed due to a missing transaction type.\"}");
-				}		
-				
-				WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_OK,VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+				}
+
+				WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_OK,VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS, ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 			} catch (Exception e) {
 				if(e instanceof FeignBadResponseWrapper){
-					WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", ((FeignBadResponseWrapper)e).getStatus(), ((FeignBadResponseWrapper)e).getBody(),  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP + " (" + (i+1) + "/" + ddots.size() + ")", ((FeignBadResponseWrapper)e).getStatus(), ((FeignBadResponseWrapper)e).getBody(), ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 				} else {
-					WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_INTERNAL_SERVER_ERROR, "{\"error_message\": \"" + e.getMessage() + "\"}",  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
+					WorkflowController.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_INTERNAL_SERVER_ERROR, "{\"error_message\": \"" + e.getMessage() + "\"}", ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 				}
 			}
 		}
@@ -128,13 +127,13 @@ public class LegacyWorkflowService {
 		//handle the case where one, but not all of the fields are present in the update. 
 		ObjectMapper mapper = new ObjectMapper();
 		String json = "";
-				
+
 		ml = legacyValidatorService.doValidation(ml, isAddTransaction);
-		
+
 		//Ensure validation occurred before continuing
 		if(ml.containsKey("validation") && !ml.get("validation").toString().contains(LegacyValidatorService.VALIDATION_FAILED)){
 			ml = transformService.transform(ml);
-			
+
 			try {
 				json = mapper.writeValueAsString(ml);
 			} catch (Exception e) {
@@ -156,7 +155,11 @@ public class LegacyWorkflowService {
 			WorkflowController.addStepReport(new StepReport(SITE_ADD_STEP, cruStatus, 201 == cruStatus ? SITE_ADD_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
 			exportAdd(agencyCode, siteNumber, cruResp.getBody());
 		} catch (Exception e) {
-			WorkflowController.addStepReport(new StepReport(SITE_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_ADD_FAILED,  agencyCode, siteNumber));
+			if (e instanceof FeignBadResponseWrapper) {
+				WorkflowController.addStepReport(new StepReport(SITE_ADD_STEP, ((FeignBadResponseWrapper) e).getStatus(), ((FeignBadResponseWrapper) e).getBody(), agencyCode, siteNumber));
+			} else {
+				WorkflowController.addStepReport(new StepReport(SITE_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_ADD_FAILED, agencyCode, siteNumber));
+			}
 		}
 
 	}
@@ -167,10 +170,10 @@ public class LegacyWorkflowService {
 			int exportStatus = exportResp.getStatusCodeValue();
 			WorkflowController.addStepReport(new StepReport(EXPORT_ADD_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
 		} catch (Exception e) {
-			WorkflowController.addStepReport(new StepReport(EXPORT_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, EXPORT_ADD_FAILED,  agencyCode, siteNumber));
+			WorkflowController.addStepReport(new StepReport(EXPORT_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, EXPORT_ADD_FAILED, agencyCode, siteNumber));
 		}
 	}
-	
+
 	protected void updateTransaction(Object agencyCode, Object siteNumber, String json) {
 		//catch bad updates and exports (new stepreport)
 		try {
@@ -179,11 +182,12 @@ public class LegacyWorkflowService {
 			WorkflowController.addStepReport(new StepReport(SITE_UPDATE_STEP, cruStatus, 200 == cruStatus ? SITE_UPDATE_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
 			exportUpdate(agencyCode, siteNumber, cruResp.getBody());
 		} catch (Exception e){
-			WorkflowController.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_UPDATE_FAILED,  agencyCode, siteNumber));
-
+			if (e instanceof FeignBadResponseWrapper) {
+				WorkflowController.addStepReport(new StepReport(SITE_UPDATE_STEP, ((FeignBadResponseWrapper) e).getStatus(), ((FeignBadResponseWrapper) e).getBody(), agencyCode, siteNumber));
+			} else {
+				WorkflowController.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_UPDATE_FAILED, agencyCode, siteNumber));
+			}
 		}
-
-
 	}
 
 	protected void exportUpdate(Object agencyCode, Object siteNumber, String json) {
@@ -192,8 +196,8 @@ public class LegacyWorkflowService {
 			int exportStatus = exportResp.getStatusCodeValue();
 			WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
 		} catch (Exception e) {
-			WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, EXPORT_UPDATE_FAILED,  agencyCode, siteNumber));
-
+			WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, EXPORT_UPDATE_FAILED, agencyCode, siteNumber));
 		}
 	}
+
 }

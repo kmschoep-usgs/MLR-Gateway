@@ -24,7 +24,7 @@ public class PersistenceConfig {
 	private String dbPassword;
 	@Value("${dbInitializerEnabled:true}")
 	private Boolean dbInitializerEnabled;
-	
+
 	@Primary
 	@Bean
 	public DataSource dataSource() {
@@ -35,7 +35,7 @@ public class PersistenceConfig {
 		dataSource.setPassword(dbPassword);
 		return dataSource;
 	}
-	
+
 	@Bean
 	public DataSourceInitializer waterauthSourceInitializer(DataSource dataSource) 
 	{
@@ -48,9 +48,9 @@ public class PersistenceConfig {
 
 		String sessionSchema = "org/springframework/session/jdbc/schema-postgresql.sql";
 		databasePopulator.addScript(new ClassPathResource(sessionSchema));
-		
+
 		databasePopulator.setContinueOnError(true);
-		
+
 		return dataSourceInitializer;
 	}
 }
