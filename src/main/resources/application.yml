@@ -3,9 +3,7 @@ server:
 
 mlrServicePassword: ${mlrgateway_mlrServicePassword}
 temporaryNotificationEmail: ${mlrgateway_temporaryNotificationEmail}
-
 dbInitializerEnabled: true
-security.sessions: NEVER
 
 zuul:
   retryable: true

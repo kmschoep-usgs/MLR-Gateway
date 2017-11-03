@@ -22,12 +22,21 @@ The default profile, which is run when either no profile is provided or the prof
 
 The localDev profile, which is run when the profile name "localDev" is provided, is setup to require no external database - Sessions are stored internally.
 
+## SSL Configuration
+This application must communicate with the Water Auth Server for Authentication and this must be done over https. In order for this to work correctly the Water Auth Server SSL cert must be trusted by the Gateway. The following environemnt variables are used to confirue this store.
+
+- **sslStorePassword_file** - The path to the mounted secret file of the SSL trust store password.
+
+- **water_auth_cert_file** - The path to the mounted secret file of the Water Auth Server Public Cert.
+
 ## Spring Security Client Configuration
 This is a secured application that must connect to a running instance of the Water Auth Server in order to work. The following environment variables are used to configure the connection to the water auth server via OAuth2.
 
 - **oauthClientId** - The ID of the Client that has been configured in the Water Auth Server for this application.
 
 - **oauthClientSecret** - The secret associated with the Client that has been configured in the Water Auth Server for this application.
+
+- **oauthClientSecret_file** - The path to the mounted secret file containing the secret associated with the Client that has been configured in the Water Auth Server for this application.
 
 - **oauthClientAccessTokenUri** - The OAuth2 Token URI that this application should connect to.
 
@@ -49,6 +58,8 @@ The related environment variables are listed below:
 - **dbUsername** - The username that should be used by the application when connecting to the database.
 
 - **dbPassword** - The password that should be used by the application when connecting to the database.
+
+- **dbPassword_file** - The path to the mounted secret file containing the password that should be used by the application when connecting to the database.
 
 - **dbInitializerEnabled** - Whether or not the database initialization scripts should run on application startup. The default value is true.
 
