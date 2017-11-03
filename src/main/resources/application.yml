@@ -16,26 +16,32 @@ zuul:
 ddot:
   ribbon:
     listOfServers: ${mlrgateway_ddotServers}
+    IsSecure: ${mlrgateway_ddotServers_IsSecure}
 
 legacyTransformer:
   ribbon:
     listOfServers: ${mlrgateway_legacyTransformerServers}
+    IsSecure: ${mlrgateway_legacyTransformerServers_IsSecure}
 
 legacyValidator:
   ribbon:
     listOfServers: ${mlrgateway_legacyValidatorServers}
+    IsSecure: ${mlrgateway_legacyValidatorServers_IsSecure}
 
 legacyCru:
   ribbon:
     listOfServers: ${mlrgateway_legacyCruServers}
+    IsSecure: ${mlrgateway_legacyCruServers_IsSecure}
 
 fileExport:
   ribbon:
     listOfServers: ${mlrgateway_fileExportServers}
+    IsSecure: ${mlrgateway_fileExportServers_IsSecure}
 
 notification:
   ribbon:
     listOfServers: ${mlrgateway_notificationServers}
+    IsSecure: ${mlrgateway_notificationServers_IsSecure}
 
 eureka:
   client:
