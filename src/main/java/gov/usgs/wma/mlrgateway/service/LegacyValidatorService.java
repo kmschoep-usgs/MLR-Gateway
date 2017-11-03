@@ -69,7 +69,7 @@ public class LegacyValidatorService {
 				validationMessage = mapper.readValue(validationResponse.getBody(), mapType);
 				ml.put("validation", validationMessage);
 			} catch (Exception e) {
-				throw new FeignBadResponseWrapper(validationResponse.getStatusCodeValue(), null, "{\"error_message\": \"Unable to deserialize validator response as JSON: " + validationResponse.getBody() + "\"}");
+				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to deserialize validator response as JSON: " + validationResponse.getBody() + "\"}");
 			}
 						
 			if((!validationMessage.containsKey(LegacyValidatorClient.RESPONSE_PASSED_MESSAGE) &&
