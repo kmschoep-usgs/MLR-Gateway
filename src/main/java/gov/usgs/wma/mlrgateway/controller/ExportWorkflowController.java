@@ -22,10 +22,6 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags={"Export Workflow"})
 @RestController
 public class ExportWorkflowController extends BaseController {
-
-	@Value("${temporaryNotificationEmail}")
-	private String temporaryNotificationEmail;
-
 	private ExportWorkflowService export;
 	private NotificationService notificationService;
 	public static final String COMPLETE_WORKFLOW = "Complete Export Workflow";
@@ -60,7 +56,7 @@ public class ExportWorkflowController extends BaseController {
 		}
 		
 		//Send Notification
-		notificationStep(EXPORT_WORKFLOW_SUBJECT);
+		notificationStep(notificationService,EXPORT_WORKFLOW_SUBJECT);
 		
 		//Return Report
 		GatewayReport rtn = getReport();
@@ -69,22 +65,5 @@ public class ExportWorkflowController extends BaseController {
 		return rtn;
 	}
 	
-	private int notificationStep(String subject) {
-		int status = -1;
-		
-		//Send Notification
-		try {
-			notificationService.sendNotification(temporaryNotificationEmail, subject, getReport().toString());
-		} catch(Exception e) {
-			if (e instanceof FeignBadResponseWrapper) {
-				 status = ((FeignBadResponseWrapper) e).getStatus();
-				WorkflowController.addStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
-			} else {
-				status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.addStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, e.getLocalizedMessage(), null, null));
-			}
-		}
-		
-		return status;
-	}
+	
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import org.apache.http.HttpStatus;
 
@@ -25,16 +25,12 @@ public class NotificationService {
 		this.notificationClient = notificationClient;
 	}
 
-	public void sendNotification(String recipient, String subject, String reportBody) {
+	public void sendNotification(List<String> recipientList, String subject, String reportBody) {
 		ObjectMapper mapper = new ObjectMapper();
 		String messageJson = "";
 		HashMap<String, Object> messageMap = new HashMap<>();
-		
-		//Build Email Message
-		ArrayList<String> toList = new ArrayList<>();
-		toList.add(recipient);
-		
-		messageMap.put(NotificationClient.MESSAGE_TO_KEY, toList);
+				
+		messageMap.put(NotificationClient.MESSAGE_TO_KEY, recipientList);
 		messageMap.put(NotificationClient.MESSAGE_SUBJECT_KEY, subject);
 		messageMap.put(NotificationClient.MESSAGE_TEXT_BODY_KEY, reportBody);
 		

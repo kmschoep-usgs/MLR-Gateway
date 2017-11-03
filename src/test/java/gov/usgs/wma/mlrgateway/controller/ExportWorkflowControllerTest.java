@@ -21,6 +21,7 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.service.ExportWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import static org.mockito.Matchers.anyList;
 
 @RunWith(SpringRunner.class)
 public class ExportWorkflowControllerTest extends BaseSpringTest {
@@ -50,7 +51,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 		verify(export).completeWorkflow(anyString(), anyString());
-		verify(notificationService).sendNotification(anyString(), anyString(), anyString());
+		verify(notificationService).sendNotification(anyList(), anyString(), anyString());
 	}
 
 	@Test
