@@ -20,7 +20,7 @@ import com.netflix.hystrix.exception.HystrixBadRequestException;
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
-import gov.usgs.wma.mlrgateway.service.LegacyWorkflowService;
+import gov.usgs.wma.mlrgateway.service.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import static org.mockito.Mockito.verify;
 
