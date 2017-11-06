@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.service;
 
+import gov.usgs.wma.mlrgateway.service.workflow.LegacyWorkflowService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -106,7 +107,8 @@ public class LegacyValidatorService {
 				}
 			}
 		} catch (Exception e) {
-			//Do nothing
+			//An error occurred checking for an existing record
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"An error occurred while checking for an existing record.\"}");
 		}
 		
 		validationPayload.put(LegacyValidatorClient.NEW_RECORD_PAYLOAD,ml);

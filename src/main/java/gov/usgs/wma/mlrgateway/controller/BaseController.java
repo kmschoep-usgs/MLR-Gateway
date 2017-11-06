@@ -18,7 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 public class BaseController {
-	@Value("${additionalNotificationRecipients}")
+	@Value("${additionalNotificationRecipients:}")
 	private String additionalNotificationRecipientsString;
 	
 	private Logger log = Logger.getLogger(BaseController.class);

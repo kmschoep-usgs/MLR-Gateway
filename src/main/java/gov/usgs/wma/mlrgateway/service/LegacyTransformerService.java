@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.service;
 
+import gov.usgs.wma.mlrgateway.service.workflow.LegacyWorkflowService;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,14 +11,14 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.hystrix.exception.HystrixBadRequestException;
+import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyTransformerClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 
 @Service
-public class TransformService {
+public class LegacyTransformerService {
 
 	private LegacyTransformerClient legacyTransformerClient;
 
@@ -32,11 +33,11 @@ public class TransformService {
 	protected static final String STATION_NAME = "stationName";
 
 	@Autowired
-	public TransformService(LegacyTransformerClient legacyTransformerClient) {
+	public LegacyTransformerService(LegacyTransformerClient legacyTransformerClient) {
 		this.legacyTransformerClient = legacyTransformerClient;
 	}
 
-	public Map<String, Object> transform(Map<String, Object> ml) throws HystrixBadRequestException {
+	public Map<String, Object> transform(Map<String, Object> ml) {
 		Map<String, Object> transformed = new HashMap<>();
 		transformed.putAll(ml);
 
@@ -57,13 +58,14 @@ public class TransformService {
 		Map<String, Object> transforms = new HashMap<>();
 		TypeReference<Map<String, Object>> mapType = new TypeReference<Map<String, Object>>() {};
 
-		ResponseEntity<String> response = legacyTransformerClient.decimalLocation(json);
-
 		try {
+			ResponseEntity<String> response = legacyTransformerClient.decimalLocation(json);
 			transforms = mapper.readValue(response.getBody(), mapType);
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, GEO_SUCCESS, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 		} catch (Exception e) {
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, GEO_FAILURE, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+			
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + GEO_FAILURE + "\"}");	
 		}
 
 		return transforms;
@@ -82,6 +84,8 @@ public class TransformService {
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, STATION_IX_SUCCESS, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 		} catch (Exception e) {
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, STATION_IX_FAILURE, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+			
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + STATION_IX_FAILURE + "\"}");	
 		}
 
 		return transforms;
