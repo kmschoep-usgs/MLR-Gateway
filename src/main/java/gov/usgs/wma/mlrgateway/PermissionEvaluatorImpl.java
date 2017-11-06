@@ -18,11 +18,16 @@ public class PermissionEvaluatorImpl implements PermissionEvaluator {
 
 	@Override
 	public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
+		if (null == authentication || null == authentication.getAuthorities() || null == roles) {
+			return false;
+		}
+
 		//This little bit of Java 8 voodoo compares the acceptable roles with the user's authorities and returns
 		// true if there is a match on any of them.
 		List<?> intersect = authentication.getAuthorities().stream()
 				.filter(auth -> Arrays.stream(roles).anyMatch(role -> role.equalsIgnoreCase(auth.getAuthority())))
 				.collect(Collectors.toList());
+
 		if (intersect.isEmpty()) {
 			return false;
 		} else {
