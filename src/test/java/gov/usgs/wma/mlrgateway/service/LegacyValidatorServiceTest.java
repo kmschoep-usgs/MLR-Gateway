@@ -38,7 +38,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	private LegacyValidatorService service;
 	private ObjectMapper mapper;
 	private String reportName = "TEST VALIDATOR";
-	public static String LEVACY_VALIDATION_ERROR_BODY = "{\"error_message\": \""+LegacyValidatorService.VALIDATION_FAILED+"\"}";
+	public static String LEGACY_VALIDATION_ERROR_BODY = "{\"error_message\": \""+LegacyValidatorService.VALIDATION_FAILED+"\"}";
 	
 	@Before
 	public void init() {
@@ -201,16 +201,16 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doValidation(ml, true);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 500);
-			assertTrue(LEVACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertTrue(e.getStatus() == 400);
+			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
 		}
 		
 		//Verify Report Contents
-		String epxectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"{\\\"error_message\\\": {\\\"fatal_error_message\\\": \\\"Fatal Error.\\\"}}"
+		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":["
+				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"{\\\"error_message\\\": {\\\"fatal_error_message\\\": \\\"Fatal Error.\\\"}}"
 				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
 				+ "]}";
-		JSONAssert.assertEquals(epxectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
 	}
 	
 	@Test
@@ -227,15 +227,15 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertTrue(e.getStatus() == 500);
-			assertTrue(LEVACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
 		}
 		
 		//Verify Report Contents
-		String epxectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"{\\\"error_message\\\": {}}"
+		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
+				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":500,\"details\":\"{\\\"error_message\\\": {}}"
 				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
 				+ "]}";
-		JSONAssert.assertEquals(epxectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
 	}
 	
 	@Test
@@ -252,12 +252,12 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertTrue(e.getStatus() == 500);
-			assertTrue(LEVACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
 		}
 		
 		//Verify Report Contents
-		String epxectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"{\\\"error_message\\\": {\\\"invalid_key\\\":\\\"some data\\\"}}"
+		String epxectedReport = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
+				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":500,\"details\":\"{\\\"error_message\\\": {\\\"invalid_key\\\":\\\"some data\\\"}}"
 				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
 				+ "]}";
 		JSONAssert.assertEquals(epxectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
@@ -276,16 +276,16 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doValidation(ml, true);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 500);
-			assertTrue(LEVACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertTrue(e.getStatus() == 400);
+			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
 		}
 		
 		//Verify Report Contents
-		String epxectedReport = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":["
+		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":["
 				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"{\\\"error_message\\\": \\\"An internal error occurred during validation: Bad Request\\\"}"
 				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
 				+ "]}";
-		JSONAssert.assertEquals(epxectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
 	}
 	
 	@Test
@@ -302,12 +302,12 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertTrue(e.getStatus() == 500);
-			assertTrue(LEVACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
 		}
 		
 		//Verify Report Contents
-		String epxectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"{\\\"error_message\\\": \\\"Unable to deserialize validator response as JSON: I'm Not JSON\\\"}"
+		String epxectedReport = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
+				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":500,\"details\":\"{\\\"error_message\\\": \\\"Unable to deserialize validator response as JSON: I'm Not JSON\\\"}"
 				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
 				+ "]}";
 		JSONAssert.assertEquals(epxectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);

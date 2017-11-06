@@ -21,14 +21,17 @@ zuul:
 ddot:
   ribbon:
     listOfServers: ${mlrgateway_ddotServers}
+    IsSecure: true
 
 legacyTransformer:
   ribbon:
     listOfServers: ${mlrgateway_legacyTransformerServers}
+    IsSecure: true
 
 legacyValidator:
   ribbon:
     listOfServers: ${mlrgateway_legacyValidatorServers}
+    IsSecure: true
 
 legacyCru:
   ribbon:
@@ -37,6 +40,7 @@ legacyCru:
 fileExport:
   ribbon:
     listOfServers: ${mlrgateway_fileExportServers}
+    IsSecure: true
 
 notification:
   ribbon:
