@@ -46,14 +46,17 @@ public class LegacyValidatorService {
 			BaseController.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(),  VALIDATION_SUCCESSFUL, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			return ml;
 		} catch (Exception e) {
+			int status;
 			if(e instanceof FeignBadResponseWrapper) {
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, ((FeignBadResponseWrapper)e).getStatus(),  ((FeignBadResponseWrapper)e).getBody(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				status = ((FeignBadResponseWrapper)e).getStatus();
+				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  ((FeignBadResponseWrapper)e).getBody(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			} else {
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			}
 			
 			//Throw error to stop additional transaction processing
-			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + VALIDATION_FAILED + "\"}");	
+			throw new FeignBadResponseWrapper(status, null, "{\"error_message\": \"" + VALIDATION_FAILED + "\"}");	
 		}
 	}
 		
@@ -67,15 +70,17 @@ public class LegacyValidatorService {
 				validationMessage = mapper.readValue(validationResponse.getBody(), mapType);
 				ml.put("validation", validationMessage);
 			} catch (Exception e) {
-				throw new FeignBadResponseWrapper(validationResponse.getStatusCodeValue(), null, "{\"error_message\": \"Unable to deserialize validator response as JSON: " + validationResponse.getBody() + "\"}");
+				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to deserialize validator response as JSON: " + validationResponse.getBody() + "\"}");
 			}
 						
 			if((!validationMessage.containsKey(LegacyValidatorClient.RESPONSE_PASSED_MESSAGE) &&
 			     !validationMessage.containsKey(LegacyValidatorClient.RESPONSE_WARNING_MESSAGE) &&
 			     !validationMessage.containsKey(LegacyValidatorClient.RESPONSE_ERROR_MESSAGE)) || 
-			      validationMessage.containsKey(LegacyValidatorClient.RESPONSE_ERROR_MESSAGE) ||
 			      validationMessage.isEmpty()) {
-				throw new FeignBadResponseWrapper(validationResponse.getStatusCode().value(), null, "{\"error_message\": " + validationResponse.getBody() + "}");	
+				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": " + validationResponse.getBody() + "}");	
+			}
+			else if (validationMessage.containsKey(LegacyValidatorClient.RESPONSE_ERROR_MESSAGE)) {
+				throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": " + validationResponse.getBody() + "}");
 			}
 		} else {
 			throw new FeignBadResponseWrapper(validationResponse.getStatusCodeValue(), null, "{\"error_message\": \"An internal error occurred during validation: " + validationResponse.getBody() + "\"}");	
