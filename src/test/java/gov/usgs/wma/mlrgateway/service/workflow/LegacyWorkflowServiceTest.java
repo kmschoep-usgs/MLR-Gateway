@@ -99,7 +99,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
 				+ "{\"name\":\"" + LegacyWorkflowService.COMPLETE_TRANSACTION_STEP + " (1/2)\",\"status\":400,\"details\":\"" + "{\\\"error_message\\\": \\\"Validation failed due to a missing transaction type.\\\"}"
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"},"
-				+ "{\"name\":\"" + LegacyWorkflowService.COMPLETE_TRANSACTION_STEP + " (2/2)\",\"status\":200,\"details\":\"" + LegacyWorkflowService.COMPLETE_TRANSACTION_STEP_SUCCESS
+				+ "{\"name\":\"" + LegacyWorkflowService.COMPLETE_TRANSACTION_STEP + " (2/2)\",\"status\":201,\"details\":\"" + LegacyWorkflowService.COMPLETE_TRANSACTION_STEP_SUCCESS
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
@@ -127,7 +127,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	@Test
 	public void oneAddTransaction_completeWorkflow_thenReturnCreated() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyWorkflowService.COMPLETE_TRANSACTION_STEP + " (1/1)\",\"status\":200,\"details\":\"" + LegacyWorkflowService.COMPLETE_TRANSACTION_STEP_SUCCESS
+				+ "{\"name\":\"" + LegacyWorkflowService.COMPLETE_TRANSACTION_STEP + " (1/1)\",\"status\":201,\"details\":\"" + LegacyWorkflowService.COMPLETE_TRANSACTION_STEP_SUCCESS
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());

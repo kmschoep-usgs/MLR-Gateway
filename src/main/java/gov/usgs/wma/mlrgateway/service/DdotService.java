@@ -16,11 +16,13 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.DdotClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
+import org.apache.log4j.Logger;
 
 @Service
 public class DdotService {
 
 	private DdotClient ddotClient;
+	private Logger log = Logger.getLogger(DdotService.class);
 
 	protected static final String STEP_NAME = "Ingest D dot File";
 	protected static final String SUCCESS_MESSAGE = "D dot file parsed successfully.";
@@ -44,6 +46,7 @@ public class DdotService {
 		} catch (Exception e) {
 			int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, status, INTERNAL_ERROR_MESSAGE, null, null));
+			log.error(STEP_NAME + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(status, null, INTERNAL_ERROR_MESSAGE);
 		}
 

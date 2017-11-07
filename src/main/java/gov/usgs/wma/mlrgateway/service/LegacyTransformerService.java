@@ -16,11 +16,13 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyTransformerClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
+import org.apache.log4j.Logger;
 
 @Service
 public class LegacyTransformerService {
 
 	private LegacyTransformerClient legacyTransformerClient;
+	private Logger log = Logger.getLogger(LegacyTransformerService.class);
 
 	protected static final String STEP_NAME = "Transform Data";
 	protected static final String GEO_SUCCESS = "Decimal Location Transformed Successfully.";
@@ -64,7 +66,7 @@ public class LegacyTransformerService {
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, GEO_SUCCESS, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 		} catch (Exception e) {
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, GEO_FAILURE, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
-			
+			log.error(STEP_NAME + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + GEO_FAILURE + "\"}");	
 		}
 
@@ -84,7 +86,7 @@ public class LegacyTransformerService {
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, STATION_IX_SUCCESS, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 		} catch (Exception e) {
 			WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, STATION_IX_FAILURE, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
-			
+			log.error(STEP_NAME + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + STATION_IX_FAILURE + "\"}");	
 		}
 

@@ -12,13 +12,17 @@ import gov.usgs.wma.mlrgateway.controller.BaseController;
 import java.util.List;
 import java.util.HashMap;
 import org.apache.http.HttpStatus;
+import org.apache.log4j.Logger;
 
 @Service
 public class NotificationService {
 
 	private NotificationClient notificationClient;
+	private Logger log = Logger.getLogger(FileExportService.class);
+	
 	public static final String NOTIFICATION_STEP = "Notification";
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
+	public static final String NOTIFICATION_FAILURE = "Notification failed to send.";
 	
 	@Autowired
 	public NotificationService(NotificationClient notificationClient){
@@ -36,13 +40,12 @@ public class NotificationService {
 		
 		try {
 			messageJson = mapper.writeValueAsString(messageMap);
+			ResponseEntity<String> notifResp = notificationClient.sendEmail(messageJson);
+			BaseController.addStepReport(new StepReport(NOTIFICATION_STEP, notifResp.getStatusCodeValue(), NOTIFICATION_SUCCESSFULL, null, null));
 		} catch(Exception e) {
-			// Unable to determine when this might actually happen, but the api says it can...
-			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize notification message.\"}");
+			BaseController.addStepReport(new StepReport(NOTIFICATION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, NOTIFICATION_FAILURE, null, null));
+			log.error(NOTIFICATION_STEP + ": " + e.getMessage());
 		}
-		
-		ResponseEntity<String> notifResp = notificationClient.sendEmail(messageJson);
-		BaseController.addStepReport(new StepReport(NOTIFICATION_STEP, notifResp.getStatusCodeValue(), NOTIFICATION_SUCCESSFULL, null, null));
 	}
 
 }

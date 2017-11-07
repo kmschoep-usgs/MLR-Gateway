@@ -25,7 +25,6 @@ import static org.mockito.Mockito.never;
 
 @RunWith(SpringRunner.class)
 public class ExportWorkflowServiceTest extends BaseSpringTest {
-
 	@MockBean
 	private LegacyCruService legacyCruService;
 	@MockBean

@@ -5,6 +5,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.FileExportClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import org.apache.http.HttpStatus;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class FileExportService {
 	private FileExportClient fileExportClient;
+	private Logger log = Logger.getLogger(FileExportService.class);
 	
 	public static final String STEP_NAME = "";
 	public static final String EXPORT_ADD_STEP = "Export Add Transaction File";
@@ -32,7 +34,7 @@ public class FileExportService {
 			WorkflowController.addStepReport(new StepReport(EXPORT_ADD_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
 		} catch (Exception e) {
 			WorkflowController.addStepReport(new StepReport(EXPORT_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, EXPORT_ADD_FAILED,  agencyCode, siteNumber));
-			
+			log.error(EXPORT_ADD_STEP + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + EXPORT_ADD_FAILED + "\"}");	
 		}
 	}
@@ -44,7 +46,7 @@ public class FileExportService {
 			WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, exportStatus, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody(), agencyCode, siteNumber));
 		} catch (Exception e) {
 			WorkflowController.addStepReport(new StepReport(EXPORT_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, EXPORT_UPDATE_FAILED,  agencyCode, siteNumber));
-			
+			log.error(EXPORT_UPDATE_STEP + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + EXPORT_UPDATE_FAILED + "\"}");	
 		}
 	}

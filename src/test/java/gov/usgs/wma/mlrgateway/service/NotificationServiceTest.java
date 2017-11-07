@@ -22,6 +22,7 @@ import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
 import java.util.ArrayList;
 import java.util.List;
+import static org.junit.Assert.fail;
 
 
 @RunWith(SpringRunner.class)
@@ -56,6 +57,14 @@ public class NotificationServiceTest extends BaseSpringTest {
 		
 		ResponseEntity<String> rtn = notificationClient.sendEmail("test");
 		assertEquals(rtn.getBody(), emailResp.getBody());
+	}
+	
+	@Test
+	public void notificationService_sendEmail_handlesError() {
+		given(notificationClient.sendEmail(anyString())).willThrow(new RuntimeException());
+		List<String> recipientList = new ArrayList<>();
+		recipientList.add("test");
+		service.sendNotification(recipientList, "test", "test");
 	}
 
 }
