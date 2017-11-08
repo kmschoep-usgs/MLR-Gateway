@@ -9,19 +9,19 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 
 public class WaterAuthJwtConverter extends DefaultAccessTokenConverter  {
-	private final String EMAIL_JWT_KEY="email";
-	
+	private final String EMAIL_JWT_KEY = "email";
+
 	@Override
 	public OAuth2Authentication extractAuthentication(Map<String, ?> map) {
 		OAuth2Authentication oauth = super.extractAuthentication(map);
 		OAuth2Request request = oauth.getOAuth2Request();
 		Authentication auth = oauth.getUserAuthentication();
-		
+
 		if(auth != null && auth.getPrincipal() != null && auth.isAuthenticated()) {
 			Map<String, Serializable> extensions = new HashMap<>();
-			 
+
 			extensions.put(EMAIL_JWT_KEY, String.valueOf(map.get(EMAIL_JWT_KEY)));
-			
+
 			OAuth2Request extendedRequest = new OAuth2Request(
 				request.getRequestParameters(),
 				request.getClientId(),
@@ -33,10 +33,10 @@ public class WaterAuthJwtConverter extends DefaultAccessTokenConverter  {
 				request.getResponseTypes(),
 				extensions
 			);
-			
+
 			return new OAuth2Authentication(extendedRequest, auth);
 		}
-		
+
 		return null;
 	}
 }
