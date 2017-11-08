@@ -26,13 +26,13 @@ public class LegacyValidatorService {
 	public static final String VALIDATION_STEP = "Validate";
 	public static final String VALIDATION_SUCCESSFUL = "Transaction validated successfully.";
 	public static final String VALIDATION_FAILED = "Transaction validation failed.";
-		
+
 	@Autowired
 	public LegacyValidatorService(LegacyCruClient legacyCruClient, LegacyValidatorClient legacyValidatorClient){
 		this.legacyCruClient = legacyCruClient;
 		this.legacyValidatorClient = legacyValidatorClient;
 	}
-	
+
 	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction) throws FeignBadResponseWrapper {
 		try {
 			ResponseEntity<String> validationResponse;
@@ -54,25 +54,25 @@ public class LegacyValidatorService {
 				status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			}
-			
+
 			//Throw error to stop additional transaction processing
 			throw new FeignBadResponseWrapper(status, null, "{\"error_message\": \"" + VALIDATION_FAILED + "\"}");	
 		}
 	}
-		
+
 	private Map<String, Object> verifyValidationStatus(Map<String,Object> ml, ResponseEntity<String> validationResponse) {
 		if(validationResponse.getStatusCode().value() == 200) {
 			ObjectMapper mapper = new ObjectMapper();
 			TypeReference<Map<String, Object>> mapType = new TypeReference<Map<String, Object>>() {};
 			Map<String, Object> validationMessage = new HashMap<>();
-			
+
 			try {
 				validationMessage = mapper.readValue(validationResponse.getBody(), mapType);
 				ml.put("validation", validationMessage);
 			} catch (Exception e) {
 				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to deserialize validator response as JSON: " + validationResponse.getBody() + "\"}");
 			}
-						
+
 			if((!validationMessage.containsKey(LegacyValidatorClient.RESPONSE_PASSED_MESSAGE) &&
 			     !validationMessage.containsKey(LegacyValidatorClient.RESPONSE_WARNING_MESSAGE) &&
 			     !validationMessage.containsKey(LegacyValidatorClient.RESPONSE_ERROR_MESSAGE)) || 
@@ -85,25 +85,25 @@ public class LegacyValidatorService {
 		} else {
 			throw new FeignBadResponseWrapper(validationResponse.getStatusCodeValue(), null, "{\"error_message\": \"An internal error occurred during validation: " + validationResponse.getBody() + "\"}");	
 		}
-		
+
 		return ml;
 	}
-		
+
 	private String preValidation(Map<String, Object> ml) {
 		TypeReference<ArrayList<Map<String, Object>>> mapType = new TypeReference<ArrayList<Map<String, Object>>>() {};
 		ArrayList<Map<String, Object>> existingRecordList = new ArrayList<>();
 		Map<String, Object> existingRecord = new HashMap<>();
 		Map<String, Object> validationPayload = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
-		
+
 		//Fetch Existing Record
 		String siteNumber = ml.get(LegacyWorkflowService.SITE_NUMBER) != null ? ml.get(LegacyWorkflowService.SITE_NUMBER).toString() : null;
 		String agencyCode = ml.get(LegacyWorkflowService.AGENCY_CODE) != null ? ml.get(LegacyWorkflowService.AGENCY_CODE).toString() : null;
-		
+
 		try {
 			ResponseEntity<String> existingRecordResponse = legacyCruClient.getMonitoringLocations(agencyCode, siteNumber);
 			int cruStatus = existingRecordResponse.getStatusCodeValue();
-			
+
 			if(cruStatus == 200) {
 				existingRecordList = mapper.readValue(existingRecordResponse.getBody(), mapType);
 
@@ -115,13 +115,13 @@ public class LegacyValidatorService {
 			//An error occurred checking for an existing record
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"An error occurred while checking for an existing record.\"}");
 		}
-		
+
 		validationPayload.put(LegacyValidatorClient.NEW_RECORD_PAYLOAD,ml);
 		validationPayload.put(LegacyValidatorClient.EXISTING_RECORD_PAYLOAD,existingRecord);
-		
+
 		try {
 			String json = mapper.writeValueAsString(validationPayload);
-			
+
 			return json;
 		} catch(Exception e) {
 			// Unable to determine when this might actually happen, but the api says it can...

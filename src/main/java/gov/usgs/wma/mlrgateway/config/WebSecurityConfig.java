@@ -40,7 +40,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.cors().and()
 			.authorizeRequests()
 				.antMatchers("/swagger-resources/**", "/webjars/**", "/v2/**").permitAll()
-				.antMatchers("/health/**", "/hystrix/**", "/hystrix.stream**", "/proxy.stream**", "/favicon.ico").permitAll()
+				.antMatchers("/info**", "/health/**", "/hystrix/**", "/hystrix.stream**", "/proxy.stream**", "/favicon.ico").permitAll()
 				.anyRequest().fullyAuthenticated()
 			.and()
 				.logout().permitAll()
@@ -55,7 +55,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2ClientContext oauth2ClientContext, OAuth2ProtectedResourceDetails resource){
 		return new OAuth2FeignRequestInterceptor(oauth2ClientContext, resource);
 	}
-	
+
 	@Autowired
 	public void setJwtAccessTokenConverter(JwtAccessTokenConverter jwtAccessTokenConverter) {
 		jwtAccessTokenConverter.setAccessTokenConverter(defaultAccessTokenConverter());
@@ -65,7 +65,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	DefaultAccessTokenConverter defaultAccessTokenConverter() {
 		return new WaterAuthJwtConverter();
 	}
-	
+
 	@Bean
 	public TaskScheduler taskScheduler() {
 		return new ConcurrentTaskScheduler();
@@ -78,7 +78,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		return oAuth2AuthenticationProcessingFilter;
 	}
-
 
 	private AuthenticationManager oauthAuthenticationManager() {
 		OAuth2AuthenticationManager oauthAuthenticationManager = new OAuth2AuthenticationManager();

@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -40,6 +41,7 @@ public class WorkflowController extends BaseController {
 			@ApiResponse(code=400, message="Bad Request"),
 			@ApiResponse(code=401, message="Unauthorized"),
 			@ApiResponse(code=403, message="Forbidden")})
+	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/ddots")
 	public GatewayReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW));
@@ -54,10 +56,9 @@ public class WorkflowController extends BaseController {
 				WorkflowController.addStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW, status, e.getLocalizedMessage(), null, null));
 			}
 		}
-		
+
 		//Send Notification
 		notificationStep(notificationService,VALIDATE_DDOT_WORKFLOW_SUBJECT);
-		
 		//Return report
 		GatewayReport rtn = getReport();
 		response.setStatus(rtn.getStatus());
@@ -83,10 +84,9 @@ public class WorkflowController extends BaseController {
 				WorkflowController.addStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, status, e.getLocalizedMessage(), null, null));
 			}
 		}
-		
+
 		//Send Notification
 		notificationStep(notificationService,VALIDATE_DDOT_WORKFLOW_SUBJECT);
-		
 		//Return report
 		GatewayReport rtn = getReport();
 		response.setStatus(rtn.getStatus());

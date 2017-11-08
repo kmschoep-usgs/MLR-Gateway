@@ -1,7 +1,11 @@
 server:
-  port: 8080
+  port: 8443
+  use-forward-headers: true
+  ssl:
+    key-store: ${keystoreLocation}
+    key-store-password: ${keystorePassword}
+    key-password: ${keystorePassword}
 
-mlrServicePassword: ${mlrgateway_mlrServicePassword}
 temporaryNotificationEmail: ${mlrgateway_temporaryNotificationEmail}
 dbInitializerEnabled: true
 
@@ -9,8 +13,13 @@ zuul:
   retryable: true
   ribbonIsolationStrategy: SEMAPHORE
   routes:
-    legacyCru:
+    legacyCruBase:
+      path: /monitoringLocations**
+      serviceId: legacyCru
+      stripPrefix: false
+    legacyCruPlus:
       path: /monitoringLocations/**
+      serviceId: legacyCru
       stripPrefix: false
 
 ddot:
@@ -72,6 +81,7 @@ logging:
       springframework: ${mlrgateway_springFrameworkLogLevel}
 
 security:
+  require-ssl: true
   basic:
     enabled: false
   oauth2:
@@ -84,3 +94,9 @@ security:
       id: ${oauthResourceId}
       jwt:
         keyUri: ${oauthResourceTokenKeyUri}
+
+spring:
+  profiles:
+    active: default, swagger
+
+maintenanceRoles: ROLE_DBA_55

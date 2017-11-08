@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +40,7 @@ public class ExportWorkflowController extends BaseController {
 			@ApiResponse(code=400, message="Bad Request"),
 			@ApiResponse(code=401, message="Unauthorized"),
 			@ApiResponse(code=403, message="Forbidden")})
+	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/legacy/location/{agencyCode}/{siteNumber}")
 	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response) {
 		setReport(new GatewayReport(COMPLETE_WORKFLOW));
@@ -62,7 +64,5 @@ public class ExportWorkflowController extends BaseController {
 		response.setStatus(rtn.getStatus());
 		remove();
 		return rtn;
-	}
-	
-	
+	}	
 }
