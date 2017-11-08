@@ -27,6 +27,6 @@ keytool -importcert -file $water_auth_cert_file -keystore ssl_trust_store.jks -s
 keytool -v -importkeystore -deststorepass $keystorePassword -destkeystore ssl_trust_store.jks -deststoretype JKS -srckeystore oauth.p12 -srcstorepass $keystorePassword -srcstoretype PKCS12 --noprompt
 keytool -v -importkeystore -deststorepass $keystorePassword -destkeystore ssl_trust_store.jks -srckeystore tomcat.p12 -srcstoretype PKCS12
 
-java -Djava.security.egd=file:/dev/./urandom -DdbPassword=$MYSQL_PASSWORD_VAL -DoauthClientSecret=$OAUTH_CLIENT_SECRET_VAL -Djavax.net.ssl.trustStore=ssl_trust_store.jks -Djavax.net.ssl.trustStorePassword=$SSL_TRUST_STORE_PASSWORD -jar app.jar
+java -Djava.security.egd=file:/dev/./urandom -DdbPassword=$MYSQL_PASSWORD_VAL -DoauthClientSecret=$OAUTH_CLIENT_SECRET_VAL -Djavax.net.ssl.trustStore=ssl_trust_store.jks -Djavax.net.ssl.trustStorePassword=$keystorePassword -jar app.jar
 
 exec $?
