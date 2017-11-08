@@ -25,30 +25,32 @@ zuul:
 ddot:
   ribbon:
     listOfServers: ${mlrgateway_ddotServers}
-    IsSecure: true
+    IsSecure: ${ddotIsSecure:true}
 
 legacyTransformer:
   ribbon:
     listOfServers: ${mlrgateway_legacyTransformerServers}
-    IsSecure: true
+    IsSecure: ${legacyTransformerIsSecure:true}
 
 legacyValidator:
   ribbon:
     listOfServers: ${mlrgateway_legacyValidatorServers}
-    IsSecure: true
+    IsSecure: ${legacyValidatorIsSecure:true}
 
 legacyCru:
   ribbon:
     listOfServers: ${mlrgateway_legacyCruServers}
+    IsSecure: ${legacyCruIsSecure:true}
 
 fileExport:
   ribbon:
     listOfServers: ${mlrgateway_fileExportServers}
-    IsSecure: true
+    IsSecure: ${fileExportIsSecure:true}
 
 notification:
   ribbon:
     listOfServers: ${mlrgateway_notificationServers}
+    IsSecure: ${notificationIsSecure:true}
 
 eureka:
   client:
@@ -84,16 +86,30 @@ security:
   require-ssl: true
   basic:
     enabled: false
-  oauth2:
-    client:
-      clientId: ${oauthClientId}
-      clientSecret: ${oauthClientSecret}
-      accessTokenUri: ${oauthClientAccessTokenUri}
-      userAuthorizationUri: ${oauthClientAuthorizationUri}
-    resource:
-      id: ${oauthResourceId}
-      jwt:
-        keyUri: ${oauthResourceTokenKeyUri}
+#  oauth2:
+#    client:
+#      clientId: ${oauthClientId}
+#      clientSecret: ${oauthClientSecret}
+#      accessTokenUri: ${oauthClientAccessTokenUri}
+#      userAuthorizationUri: ${oauthClientAuthorizationUri}
+#    resource:
+#      id: ${oauthResourceId}
+#      jwt:
+#        keyUri: ${oauthResourceTokenKeyUri}
+
+nwis:
+  client:
+    clientId: ${oauthClientId}
+    clientSecret: ${oauthClientSecret}
+    accessTokenUri: ${oauthClientAccessTokenUri}
+    userAuthorizationUri: ${oauthClientAuthorizationUri}
+    tokenName: oauth_token
+    authenticationScheme: query
+    clientAuthenticationScheme: form
+  resource:
+    id: ${oauthResourceId}
+    jwt:
+      keyUri: ${oauthResourceTokenKeyUri}
 
 spring:
   profiles:
