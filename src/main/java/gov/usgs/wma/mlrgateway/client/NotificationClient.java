@@ -20,6 +20,6 @@ public interface NotificationClient {
 	public static final String MESSAGE_REPLY_TO_KEY = "replyTo";
 
 	@RequestMapping(method=RequestMethod.POST, value="notification/email", consumes="application/json")
-	ResponseEntity<String>  sendEmail(@RequestBody String messageJson);
+	ResponseEntity<String> sendEmail(@RequestBody String messageJson);
 
 }
