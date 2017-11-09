@@ -1,5 +1,5 @@
 FROM openjdk:8-jdk-alpine
-RUN set -x & apk update && apk upgrade && apk add --no-cache curl
+RUN set -x & apk update && apk upgrade && apk add --no-cache curl && apk --no-cache add openssl
 ARG mlr_version
 
 ADD docker-entrypoint.sh entrypoint.sh
