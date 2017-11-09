@@ -1,4 +1,4 @@
-package gov.usgs.wma.mlrgateway.service.workflow;
+package gov.usgs.wma.mlrgateway.workflow;
 
 import java.util.List;
 import java.util.Map;

@@ -12,17 +12,25 @@ import java.util.Arrays;
 import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
-public class BaseController {
+public abstract class BaseController {
+	private NotificationService notificationService;
+	
 	@Value("${additionalNotificationRecipients:}")
 	private String additionalNotificationRecipientsString;
 	
-	private Logger log = Logger.getLogger(BaseController.class);
+	private Logger log = LoggerFactory.getLogger(BaseController.class);
 	private static ThreadLocal<GatewayReport> gatewayReport = new ThreadLocal<>();
+	
+	public BaseController() {};
+	public BaseController(NotificationService notificationService) {
+		this.notificationService = notificationService;
+	}
 
 	public static GatewayReport getReport() {
 		return gatewayReport.get();
@@ -42,7 +50,7 @@ public class BaseController {
 		gatewayReport.remove();
 	}
 	
-	protected int notificationStep(NotificationService notificationService, String subject) {
+	protected int notificationStep(String subject) {
 		int status = -1;
 		List<String> notificationRecipientList;
 		
@@ -59,7 +67,7 @@ public class BaseController {
 				Map<String, Serializable> oauthExtensions = ((OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication()).getOAuth2Request().getExtensions();
 				String userEmail = (String)oauthExtensions.get(WaterAuthJwtConverter.EMAIL_JWT_KEY);
 				
-				if(userEmail!= null && userEmail.length() > 0){
+				if(userEmail != null && userEmail.length() > 0){
 					notificationRecipientList.add(userEmail);
 				} else {
 					log.warn("No User Email present in the Web Security Context when sending the Notification Email!");

@@ -1,7 +1,6 @@
 package gov.usgs.wma.mlrgateway.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -12,13 +11,14 @@ import gov.usgs.wma.mlrgateway.controller.BaseController;
 import java.util.List;
 import java.util.HashMap;
 import org.apache.http.HttpStatus;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class NotificationService {
 
 	private NotificationClient notificationClient;
-	private Logger log = Logger.getLogger(FileExportService.class);
+	private Logger log = LoggerFactory.getLogger(NotificationService.class);
 	
 	public static final String NOTIFICATION_STEP = "Notification";
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";

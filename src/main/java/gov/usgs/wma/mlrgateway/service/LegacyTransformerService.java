@@ -1,6 +1,6 @@
 package gov.usgs.wma.mlrgateway.service;
 
-import gov.usgs.wma.mlrgateway.service.workflow.LegacyWorkflowService;
+import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,13 +16,14 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyTransformerClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class LegacyTransformerService {
 
 	private LegacyTransformerClient legacyTransformerClient;
-	private Logger log = Logger.getLogger(LegacyTransformerService.class);
+	private Logger log = LoggerFactory.getLogger(LegacyTransformerService.class);
 
 	protected static final String STEP_NAME = "Transform Data";
 	protected static final String GEO_SUCCESS = "Decimal Location Transformed Successfully.";

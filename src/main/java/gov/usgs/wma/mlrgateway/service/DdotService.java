@@ -16,13 +16,14 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.DdotClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class DdotService {
 
 	private DdotClient ddotClient;
-	private Logger log = Logger.getLogger(DdotService.class);
+	private Logger log = LoggerFactory.getLogger(DdotService.class);
 
 	protected static final String STEP_NAME = "Ingest D dot File";
 	protected static final String SUCCESS_MESSAGE = "D dot file parsed successfully.";

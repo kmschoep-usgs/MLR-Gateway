@@ -1,6 +1,6 @@
 package gov.usgs.wma.mlrgateway.service;
 
-import gov.usgs.wma.mlrgateway.service.workflow.LegacyWorkflowService;
+import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

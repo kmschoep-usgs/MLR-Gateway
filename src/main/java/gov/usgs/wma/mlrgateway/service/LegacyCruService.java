@@ -11,12 +11,13 @@ import java.util.Map;
 import org.apache.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class LegacyCruService {
 	private LegacyCruClient legacyCruClient;
-	private Logger log = Logger.getLogger(LegacyCruService.class);
+	private Logger log = LoggerFactory.getLogger(LegacyCruService.class);
 		
 	public static final String SITE_ADD_STEP = "Site Add";
 	public static final String SITE_ADD_SUCCESSFULL = "Site Added Successfully";

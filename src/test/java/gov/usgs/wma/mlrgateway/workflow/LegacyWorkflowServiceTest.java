@@ -1,5 +1,6 @@
-package gov.usgs.wma.mlrgateway.service.workflow;
+package gov.usgs.wma.mlrgateway.workflow;
 
+import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;

@@ -1,5 +1,6 @@
-package gov.usgs.wma.mlrgateway.service.workflow;
+package gov.usgs.wma.mlrgateway.workflow;
 
+import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;

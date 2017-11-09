@@ -5,7 +5,8 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.FileExportClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import org.apache.http.HttpStatus;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class FileExportService {
 	private FileExportClient fileExportClient;
-	private Logger log = Logger.getLogger(FileExportService.class);
+	private Logger log = LoggerFactory.getLogger(FileExportService.class);
 	
 	public static final String STEP_NAME = "";
 	public static final String EXPORT_ADD_STEP = "Export Add Transaction File";

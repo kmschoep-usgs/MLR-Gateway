@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
-import gov.usgs.wma.mlrgateway.service.workflow.ExportWorkflowService;
+import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,16 +23,13 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 public class ExportWorkflowController extends BaseController {
 	private ExportWorkflowService export;
-	private NotificationService notificationService;
 	public static final String COMPLETE_WORKFLOW = "Complete Export Workflow";
 	public static final String EXPORT_WORKFLOW_SUBJECT = "MLR Transaction File for requested location";
-	public static final String NOTIFICATION_STEP = "Notification";
-	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 
 	@Autowired
 	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService) {
+		super(notificationService);
 		this.export = export;
-		this.notificationService = notificationService;
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including retrieving record from Legacy CRU and returning the Transaction file.")
@@ -57,7 +54,7 @@ public class ExportWorkflowController extends BaseController {
 		}
 		
 		//Send Notification
-		notificationStep(notificationService,EXPORT_WORKFLOW_SUBJECT);
+		notificationStep(EXPORT_WORKFLOW_SUBJECT);
 		
 		//Return Report
 		GatewayReport rtn = getReport();

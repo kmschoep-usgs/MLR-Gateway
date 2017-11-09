@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
-import gov.usgs.wma.mlrgateway.service.workflow.LegacyWorkflowService;
+import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,14 +26,13 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping("/workflows")
 public class WorkflowController extends BaseController {
 	private LegacyWorkflowService legacy;
-	private NotificationService notificationService;
 	public static final String COMPLETE_WORKFLOW_SUBJECT = "MLR Report for Submitted Ddot Transaction";
 	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "MLR Report for Submitted Ddot Validation";
 
 	@Autowired
 	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService) {
+		super(notificationService);
 		this.legacy = legacy;
-		this.notificationService = notificationService;
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")
@@ -58,7 +57,7 @@ public class WorkflowController extends BaseController {
 		}
 
 		//Send Notification
-		notificationStep(notificationService,VALIDATE_DDOT_WORKFLOW_SUBJECT);
+		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
 		//Return report
 		GatewayReport rtn = getReport();
 		response.setStatus(rtn.getStatus());
@@ -86,7 +85,7 @@ public class WorkflowController extends BaseController {
 		}
 
 		//Send Notification
-		notificationStep(notificationService,VALIDATE_DDOT_WORKFLOW_SUBJECT);
+		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
 		//Return report
 		GatewayReport rtn = getReport();
 		response.setStatus(rtn.getStatus());

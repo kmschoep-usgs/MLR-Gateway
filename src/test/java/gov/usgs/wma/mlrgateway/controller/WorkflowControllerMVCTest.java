@@ -26,7 +26,7 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.client.DdotClient;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.client.NotificationClient;
-import gov.usgs.wma.mlrgateway.service.workflow.LegacyWorkflowService;
+import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 
 @RunWith(SpringRunner.class)
