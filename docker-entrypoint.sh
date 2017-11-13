@@ -16,7 +16,7 @@ fi
 keystorePassword=`cat $keystore_password_path`
 
 openssl pkcs12 -export -in $token_cert_path -inkey $token_key_path -name $keystoreOAuthKey -out oauth.p12 -password pass:$keystorePassword
-openssl pkcs12 -export -in $ssl_cert_path -inkey $ssl_key_path -name tomcat -out tomcat.p12
+openssl pkcs12 -export -in $ssl_cert_path -inkey $ssl_key_path -name tomcat -out tomcat.p12 -password pass:$keystorePassword
 
 
 keytool -importcert -file $water_auth_cert_file -keystore ssl_trust_store.jks -storepass $keystorePassword -alias auth.nwis.usgs.gov -noprompt
