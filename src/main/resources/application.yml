@@ -5,6 +5,7 @@ server:
     key-store: ${keystoreLocation}
     key-store-password: ${keystorePassword}
     key-password: ${keystorePassword}
+    key-alias: ${keystoreSSLKey:tomcat}
 
 temporaryNotificationEmail: ${mlrgateway_temporaryNotificationEmail}
 dbInitializerEnabled: true
@@ -96,24 +97,9 @@ security:
       id: ${oauthResourceId}
       jwt:
         keyUri: ${oauthResourceTokenKeyUri}
-  maintenanceRoles: ROLE_DBA_55
-
-#nwis:
-#  client:
-#    clientId: ${oauthClientId}
-#    clientSecret: ${oauthClientSecret}
-#    accessTokenUri: ${oauthClientAccessTokenUri}
-#    userAuthorizationUri: ${oauthClientAuthorizationUri}
-#    tokenName: oauth_token
-#    authenticationScheme: query
-#    clientAuthenticationScheme: form
-#  resource:
-#    id: ${oauthResourceId}
-#    jwt:
-#      keyUri: ${oauthResourceTokenKeyUri}
 
 spring:
   profiles:
     active: default, swagger
 
-
+maintenanceRoles: ROLE_DBA_55
