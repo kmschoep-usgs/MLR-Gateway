@@ -5,8 +5,8 @@ server:
     key-store: ${keystoreLocation}
     key-store-password: ${keystorePassword}
     key-password: ${keystorePassword}
+    key-alias: ${keystoreSSLKey:tomcat}
 
-temporaryNotificationEmail: ${mlrgateway_temporaryNotificationEmail}
 dbInitializerEnabled: true
 
 zuul:

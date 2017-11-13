@@ -19,8 +19,9 @@ import com.netflix.hystrix.exception.HystrixBadRequestException;
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
-import gov.usgs.wma.mlrgateway.service.ExportWorkflowService;
+import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import static org.mockito.Matchers.anyList;
 
 @RunWith(SpringRunner.class)
 public class ExportWorkflowControllerTest extends BaseSpringTest {
@@ -49,8 +50,8 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		String json = "{\"name\":\"" + ExportWorkflowController.COMPLETE_WORKFLOW + "\",\"status\":200,\"steps\":[]}";
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
-		verify(export).completeWorkflow(anyString(), anyString());
-		verify(notificationService).sendNotification(anyString(), anyString(), anyString());
+		verify(export).exportWorkflow(anyString(), anyString());
+		verify(notificationService).sendNotification(anyList(), anyString(), anyString());
 	}
 
 	@Test
@@ -58,12 +59,12 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		String badText = "This is really bad.";
 		String json = "{\"name\":\"" + ExportWorkflowController.COMPLETE_WORKFLOW + "\",\"status\":400,\"steps\":[{\"name\":\"" + ExportWorkflowController.COMPLETE_WORKFLOW
 				+ "\",\"status\":400,\"details\":\"" + badText + "\"}]}";
-		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(export).completeWorkflow(anyString(), anyString());
+		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(export).exportWorkflow(anyString(), anyString());
 
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 
-		verify(export).completeWorkflow(anyString(), anyString());
+		verify(export).exportWorkflow(anyString(), anyString());
 	}
 
 	@Test
@@ -71,12 +72,12 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		String badText = "This is really bad.";
 		String json = "{\"name\":\"" + ExportWorkflowController.COMPLETE_WORKFLOW + "\",\"status\":500,\"steps\":[{\"name\":\""
 				+ ExportWorkflowController.COMPLETE_WORKFLOW + "\",\"status\":500,\"details\":\"" + badText + "\"}]}";
-		willThrow(new HystrixBadRequestException(badText)).given(export).completeWorkflow(anyString(), anyString());
+		willThrow(new HystrixBadRequestException(badText)).given(export).exportWorkflow(anyString(), anyString());
 
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
 		JSONAssert.assertEquals(json, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 
-		verify(export).completeWorkflow(anyString(), anyString());
+		verify(export).exportWorkflow(anyString(), anyString());
 	}
 
 }
