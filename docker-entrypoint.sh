@@ -25,6 +25,6 @@ keytool -v -importkeystore -deststorepass $keystorePassword -destkeystore ssl_tr
 
 keytool -list -keystore ssl_trust_store.jks -storepass $keystorePassword
 
-java -Djava.security.egd=file:/dev/./urandom -DdbPassword=$MYSQL_PASSWORD_VAL -DoauthClientSecret=$OAUTH_CLIENT_SECRET_VAL -DkeystoreLocation=ssl_trust_store.jks DkeystorePassword=$keystorePassword -Djavax.net.ssl.trustStore=ssl_trust_store.jks -Djavax.net.ssl.trustStorePassword=$keystorePassword -jar app.jar
+java -Djava.security.egd=file:/dev/./urandom -DdbPassword=$MYSQL_PASSWORD_VAL -DoauthClientSecret=$OAUTH_CLIENT_SECRET_VAL -DkeystoreLocation=ssl_trust_store.jks -DkeystorePassword=$keystorePassword -Djavax.net.ssl.trustStore=ssl_trust_store.jks -Djavax.net.ssl.trustStorePassword=$keystorePassword -jar app.jar
 
 exec $?
