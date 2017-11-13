@@ -72,14 +72,14 @@ public class LegacyWorkflowService {
 						ml = legacyValidatorService.doValidation(ml, true);
 						ml = transformService.transform(ml);
 						json = mlToJson(ml);
-						legacyCruService.addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
+						json = legacyCruService.addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 						fileExportService.exportAdd(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 						WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_CREATED,COMPLETE_TRANSACTION_STEP_SUCCESS,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 					} else {
 						ml = legacyValidatorService.doValidation(ml, false);
 						ml = transformService.transform(ml);
 						json = mlToJson(ml);
-						legacyCruService.updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
+						json = legacyCruService.updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 						fileExportService.exportUpdate(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 						WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_OK,COMPLETE_TRANSACTION_STEP_SUCCESS,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 					}

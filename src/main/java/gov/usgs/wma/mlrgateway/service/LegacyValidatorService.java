@@ -17,9 +17,12 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class LegacyValidatorService {
+	private Logger log = LoggerFactory.getLogger(LegacyTransformerService.class);
 
 	private LegacyCruClient legacyCruClient;
 	private LegacyValidatorClient legacyValidatorClient;
@@ -70,6 +73,7 @@ public class LegacyValidatorService {
 				validationMessage = mapper.readValue(validationResponse.getBody(), mapType);
 				ml.put("validation", validationMessage);
 			} catch (Exception e) {
+				log.error(VALIDATION_STEP + ": " + e.getMessage());
 				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to deserialize validator response as JSON: " + validationResponse.getBody() + "\"}");
 			}
 
@@ -112,7 +116,7 @@ public class LegacyValidatorService {
 				}
 			}
 		} catch (Exception e) {
-			//An error occurred checking for an existing record
+			log.error(VALIDATION_STEP + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"An error occurred while checking for an existing record.\"}");
 		}
 
@@ -124,7 +128,7 @@ public class LegacyValidatorService {
 
 			return json;
 		} catch(Exception e) {
-			// Unable to determine when this might actually happen, but the api says it can...
+			log.error(VALIDATION_STEP + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize input as validator payload.\"}");
 		}
 	}

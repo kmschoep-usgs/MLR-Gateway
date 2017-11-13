@@ -34,11 +34,12 @@ public class LegacyCruService {
 		this.legacyCruClient = legacyCruClient;
 	}
 	
-	public void addTransaction(Object agencyCode, Object siteNumber, String json) {
+	public String addTransaction(Object agencyCode, Object siteNumber, String json) {
 		try {
 			ResponseEntity<String> cruResp = legacyCruClient.createMonitoringLocation(json);
 			int cruStatus = cruResp.getStatusCodeValue();
 			BaseController.addStepReport(new StepReport(SITE_ADD_STEP, cruStatus, 201 == cruStatus ? SITE_ADD_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+			return cruResp.getBody();
 		} catch (Exception e) {
 			BaseController.addStepReport(new StepReport(SITE_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_ADD_FAILED,  agencyCode, siteNumber));
 			log.error(SITE_ADD_STEP + ": " + SITE_ADD_FAILED + ":" +  e.getMessage());			
@@ -46,11 +47,12 @@ public class LegacyCruService {
 		}
 	}
 	
-	public void updateTransaction(Object agencyCode, Object siteNumber, String json) {
+	public String updateTransaction(Object agencyCode, Object siteNumber, String json) {
 		try {
 			ResponseEntity<String> cruResp = legacyCruClient.patchMonitoringLocation(json);
 			int cruStatus = cruResp.getStatusCodeValue();
 			BaseController.addStepReport(new StepReport(SITE_UPDATE_STEP, cruStatus, 200 == cruStatus ? SITE_UPDATE_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+			return cruResp.getBody();
 		} catch (Exception e){
 			BaseController.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_UPDATE_FAILED,  agencyCode, siteNumber));
 			log.error(SITE_UPDATE_STEP + ": " + SITE_UPDATE_FAILED + ":" +  e.getMessage());			
