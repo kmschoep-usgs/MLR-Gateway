@@ -60,30 +60,30 @@ public class LegacyCruService {
 		}
 	}
 	
-	public List<Map<String, Object>> getMonitoringLocations(Object agencyCode, Object siteNumber) {
-		List<Map<String, Object>> sites = null;
+	public Map<String, Object> getMonitoringLocations(Object agencyCode, Object siteNumber) {
+		Map<String, Object> site = null;
 		ObjectMapper mapper = new ObjectMapper();
-		TypeReference<List<Map<String, Object>>> mapType = new TypeReference<List<Map<String, Object>>>() {};
+		TypeReference<Map<String, Object>> mapType = new TypeReference<Map<String, Object>>() {};
 		String json = "";
 		
 		ResponseEntity<String> cruResp = legacyCruClient.getMonitoringLocations((String)agencyCode, (String)siteNumber);
 		int cruStatus = cruResp.getStatusCodeValue();
 		
 		try {
-			sites = mapper.readValue(cruResp.getBody(), mapType);
+			site = mapper.readValue(cruResp.getBody(), mapType);
 		} catch (Exception e) {
 			BaseController.addStepReport(new StepReport(SITE_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_GET_STEP_FAILED, null, null));
 			log.error(SITE_GET_STEP + ": " + SITE_GET_STEP_FAILED + ":" +  e.getMessage());			
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_GET_STEP_FAILED);
 		}
 		
-		if (sites.isEmpty()) {
+		if (site == null) {
 			BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus, 200 == cruStatus ? SITE_GET_DOES_NOT_EXIST : cruResp.getBody(), agencyCode, siteNumber));
 		}
 		else {
 			BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus, 200 == cruStatus ? SITE_GET_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
 		}
 		
-		return sites;
+		return site;
 	}
 }

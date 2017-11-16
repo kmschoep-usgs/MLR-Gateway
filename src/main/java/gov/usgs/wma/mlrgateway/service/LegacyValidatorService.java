@@ -94,8 +94,7 @@ public class LegacyValidatorService {
 	}
 
 	private String preValidation(Map<String, Object> ml) {
-		TypeReference<ArrayList<Map<String, Object>>> mapType = new TypeReference<ArrayList<Map<String, Object>>>() {};
-		ArrayList<Map<String, Object>> existingRecordList = new ArrayList<>();
+		TypeReference<Map<String, Object>> mapType = new TypeReference<Map<String, Object>>() {};
 		Map<String, Object> existingRecord = new HashMap<>();
 		Map<String, Object> validationPayload = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
@@ -109,11 +108,7 @@ public class LegacyValidatorService {
 			int cruStatus = existingRecordResponse.getStatusCodeValue();
 
 			if(cruStatus == 200) {
-				existingRecordList = mapper.readValue(existingRecordResponse.getBody(), mapType);
-
-				if(!existingRecordList.isEmpty()) {
-					existingRecord = existingRecordList.get(0);
-				}
+				existingRecord = mapper.readValue(existingRecordResponse.getBody(), mapType);
 			}
 		} catch (Exception e) {
 			log.error(VALIDATION_STEP + ": " + e.getMessage());

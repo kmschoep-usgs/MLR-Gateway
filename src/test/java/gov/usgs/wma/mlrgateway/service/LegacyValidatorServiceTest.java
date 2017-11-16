@@ -50,7 +50,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_addValidData() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> cruResponse = new ResponseEntity<> ("[{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}]", HttpStatus.OK);
+		ResponseEntity<String> cruResponse = new ResponseEntity<> ("{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}", HttpStatus.OK);
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(cruResponse);
@@ -63,17 +63,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
 		
 		//Verify Report Contents
-		String epxectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
 				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
 				+ "]}";
-		JSONAssert.assertEquals(epxectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
 	}
 	
 	@Test
 	public void validatorService_doValidation_updateValidData() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> cruResponse = new ResponseEntity<> ("[{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}]", HttpStatus.OK);
+		ResponseEntity<String> cruResponse = new ResponseEntity<> ("{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}", HttpStatus.OK);
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(cruResponse);
@@ -96,7 +96,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_nonExisting() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> cruResponse = new ResponseEntity<> ("[]", HttpStatus.OK);
+		ResponseEntity<String> cruResponse = new ResponseEntity<> (null, HttpStatus.NOT_FOUND);
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(cruResponse);
@@ -109,11 +109,11 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
 		
 		//Verify Report Contents
-		String epxectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
 				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
 				+ "]}";
-		JSONAssert.assertEquals(epxectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
 	}
 	
 	@Test
@@ -143,7 +143,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_addWarningData() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> cruResponse = new ResponseEntity<> ("[{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}]", HttpStatus.OK);
+		ResponseEntity<String> cruResponse = new ResponseEntity<> ("{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}", HttpStatus.OK);
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}", HttpStatus.OK);
 		
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(cruResponse);
@@ -167,7 +167,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_updateWarningData() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> cruResponse = new ResponseEntity<> ("[{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}]", HttpStatus.OK);
+		ResponseEntity<String> cruResponse = new ResponseEntity<> ("{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}", HttpStatus.OK);
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings\"}", HttpStatus.OK);
 		
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(cruResponse);
@@ -191,7 +191,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_InvalidData() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> cruResponse = new ResponseEntity<> ("[{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}]", HttpStatus.OK);
+		ResponseEntity<String> cruResponse = new ResponseEntity<> ("{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}", HttpStatus.OK);
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"fatal_error_message\": \"Fatal Error.\"}", HttpStatus.OK);
 		
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(cruResponse);
@@ -216,7 +216,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_EmptyValidatorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> cruResponse = new ResponseEntity<> ("[{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}]", HttpStatus.OK);
+		ResponseEntity<String> cruResponse = new ResponseEntity<> ("{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}", HttpStatus.OK);
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{}", HttpStatus.OK);
 		
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(cruResponse);
@@ -241,7 +241,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_UnknownValidatorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> cruResponse = new ResponseEntity<> ("[{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}]", HttpStatus.OK);
+		ResponseEntity<String> cruResponse = new ResponseEntity<> ("{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}", HttpStatus.OK);
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"invalid_key\":\"some data\"}", HttpStatus.OK);
 		
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(cruResponse);
@@ -266,7 +266,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_ValidatorErrorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> cruResponse = new ResponseEntity<> ("[{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}]", HttpStatus.OK);
+		ResponseEntity<String> cruResponse = new ResponseEntity<> ("{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}", HttpStatus.OK);
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("Bad Request", HttpStatus.BAD_REQUEST);
 		
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(cruResponse);
@@ -291,7 +291,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_InvalidValidatorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> cruResponse = new ResponseEntity<> ("[{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}]", HttpStatus.OK);
+		ResponseEntity<String> cruResponse = new ResponseEntity<> ("{\"agencyCode\":\"USGS\", \"siteNumber\": \"1\"}", HttpStatus.OK);
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("I'm Not JSON", HttpStatus.OK);
 		
 		given(legacyCruClient.getMonitoringLocations(anyString(), anyString())).willReturn(cruResponse);

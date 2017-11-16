@@ -20,6 +20,7 @@ import gov.usgs.wma.mlrgateway.controller.ExportWorkflowController;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static org.mockito.Mockito.never;
@@ -46,10 +47,10 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 
 	@Test
 	public void completeWorkflow_goodSite() throws Exception {
-		List<Map<String,Object>> siteList = new ArrayList<>();
-		siteList.add(getAdd());
+		Map<String,Object> site;
+		site = getAdd();
 		
-		given(legacyCruService.getMonitoringLocations(anyString(), anyString())).willReturn(siteList);
+		given(legacyCruService.getMonitoringLocations(anyString(), anyString())).willReturn(site);
 
 		service.exportWorkflow("USGS", "12345678");
 		
@@ -59,8 +60,7 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 	
 	@Test
 	public void completeWorkflow_siteDoesNotExist() throws Exception {
-		List<Map<String,Object>> siteList = new ArrayList<>();
-		given(legacyCruService.getMonitoringLocations(anyString(), anyString())).willReturn(siteList);
+		given(legacyCruService.getMonitoringLocations(anyString(), anyString())).willReturn(null);
 		
 		service.exportWorkflow("USGS", "1234");
 		
