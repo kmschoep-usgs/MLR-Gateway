@@ -57,36 +57,6 @@ function postDdot(url, success, error) {
 	}
 }
 
-function fetchToken() {
-	var url = "util/token";
-	$('#token-response').show();
-	$('#token-text').hide();
-	$("#fetch-token").hide();
-	$('#token-spinner').addClass('spinner');
-	
-	//Perform Upload
-	$.ajax({
-		url: url,
-		type: 'GET',
-		success: function(data) {
-			$('#token-text').show();
-			$('#token-text').text(data);
-			$('#token-spinner').removeClass('spinner');
-		},
-		error: function(response) {
-			if(response.status > 0){
-				$('#token-text').text(JSON.stringify(response));
-			} else {
-				$('#token-text').text("Connection Error with Gateway Service. If this issue persists please contact the support team.");
-			}
-			$('#token-text').show();
-			$('#token-text').css("color: red");
-			$('#token-spinner').removeClass('spinner');
-			$("#fetch-token").show();
-		}
-	});
-}
-
 function validateDdot() {
 	postDdot("workflows/ddots/validate", generalDdotSuccess, generalDdotError)
 }

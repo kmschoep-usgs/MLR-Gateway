@@ -48,29 +48,6 @@
 					</div>
 				</div>
 				<br/>
-				<div>
-					<h3 id="token-header" class="ddot-header">User Token</h3>
-					<div>
-						<p>
-							Use this to get your current login token. This token can be used to execute the above
-							workflow commands from a command-line (non-web-browser) environment. Note
-							that <b>your token will expire</b> after a set amount of time and will need to be renewed
-							by visiting this page via a web browser.<br/>
-							You should not share your token with anyone - treat it almost like a password. When
-							an action is performed using your token it will be done as your user. 
-							<b><span style="color: red">If someone else gets a hold of your token then they 
-							will be able to execute commands as your user.</span></b>
-						</p>
-						<button id="fetch-token" class="btn btn-xs btn-primary" onclick="fetchToken()">Fetch Token</button>
-						<div id="token-response" style="display: none">
-							<div class="spinner-container">
-								<span id="token-spinner"></span>
-							</div>
-							<p id="token-text"></p>
-						</div>
-					</div>
-				</div>
-				<br/>
 			</div>
 		</div>
 		
