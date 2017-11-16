@@ -24,6 +24,10 @@ public abstract class BaseController {
 	@Value("${additionalNotificationRecipients:}")
 	private String additionalNotificationRecipientsString;
 	
+	@Value("${environmentTier:}")
+	protected String environmentTier;
+	protected String SUBJECT_PREFIX = "[%environment%] MLR Report for ";
+		
 	private Logger log = LoggerFactory.getLogger(BaseController.class);
 	private static ThreadLocal<GatewayReport> gatewayReport = new ThreadLocal<>();
 	
@@ -53,6 +57,7 @@ public abstract class BaseController {
 	protected int notificationStep(String subject) {
 		int status = -1;
 		List<String> notificationRecipientList;
+		String userName = "Unknown";
 		
 		//Send Notification
 		try {
@@ -66,6 +71,7 @@ public abstract class BaseController {
 			if(SecurityContextHolder.getContext().getAuthentication() != null){
 				Map<String, Serializable> oauthExtensions = ((OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication()).getOAuth2Request().getExtensions();
 				String userEmail = (String)oauthExtensions.get(WaterAuthJwtConverter.EMAIL_JWT_KEY);
+				userName = SecurityContextHolder.getContext().getAuthentication().getName();
 				
 				if(userEmail != null && userEmail.length() > 0){
 					notificationRecipientList.add(userEmail);
@@ -75,8 +81,8 @@ public abstract class BaseController {
 			} else {
 				log.warn("No Authentication present in the Web Security Context when sending the Notification Email!");
 			}
-			
-			notificationService.sendNotification(notificationRecipientList, subject, getReport().toString());
+			String fullSubject = SUBJECT_PREFIX.replace("%environment%", environmentTier != null && environmentTier.length() > 0 ? environmentTier : "") + subject;
+			notificationService.sendNotification(notificationRecipientList, fullSubject, userName, getReport());
 		} catch(Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				 status = ((FeignBadResponseWrapper) e).getStatus();
