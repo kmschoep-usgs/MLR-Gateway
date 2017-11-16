@@ -30,7 +30,5 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 						CacheControl.maxAge(30L, TimeUnit.DAYS).cachePublic())
 				.resourceChain(true)
 				.addResolver(new WebJarsResourceResolver());
-		registry.addResourceHandler("/resources/**")
-				.addResourceLocations("/resources/");
 	}
 }
