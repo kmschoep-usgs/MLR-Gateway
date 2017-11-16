@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Monitoring Location Registry</title>
+		<!-- Load CSS -->
+		<link rel="stylesheet" href="resources/ui.css" />
+		<link rel="stylesheet" href="resources/usgs_style.css" />
+		<link rel="stylesheet" href="static/bootstrap/css/bootstrap.min.css" />
+	</head>
+	<body>
+		<div id="usgs-header-panel" class='${param["header-class"]}'>
+			<div id="header">
+				<div id="banner-area">
+					<h1>U.S. Geological Survey</h1>
+					<!-- Not actually visible unless printed -->
+					<div id="usgs-header-logo">
+						<a href="https://www.usgs.gov" title="Link to the US Geological Survey main web page">
+							<img alt="USGS Logo" src='resources/usgs_logo.jpg' />
+						</a>
+					</div>
+					<div id="ccsa-area">
+						<h4 class="access-help">Top Level USGS Links</h4>
+						<br /><a href="https://www.usgs.gov/" title="Link to main USGS page">USGS Home</a>
+						<br /><a href="https://answers.usgs.gov/cgi-bin/gsanswers?tmplt=2" title="Link to main USGS contact page">Contact USGS</a>
+					</div>
+				</div><!-- End content -->
+
+				<h2 id="site-title"><span>Monitoring Location Registry</span></h2>
+			</div><!-- /header -->
+		</div><!--/header panel-->
+
+		<div class="mlr-container">
+			<div class="mlr-content">
+				<div>
+					<h3 id="upload-header" class="ddot-header">Ddot File Upload</h3>
+					<form name=ddotForm" id="ddotForm" method="POST" enctype="multipart/form-data">
+						<label for="ddotFile">Select Ddot File to Upload</label>
+						<input id="file" type="file" name="file" class="uploadDdotFile"><br>
+						<input type="button" value="Validate Selected File" class="btn btn-xs btn-primary uploadDdotFile" onclick="validateDdot()">&nbsp;
+						<input type="button" value="Update Records Using Selected File" class="btn btn-xs btn-primary uploadDdotFile" onclick="uploadDdot()">
+					</form>
+					<div id="ddot-response" style="display: none">
+						<h4 id="response-header" class="ddot-header">Upload Response</h4>
+						<div class="spinner-container">
+							<span id="loading-spinner"></span>
+						</div>
+						<span id="response-text"></span>
+					</div>
+				</div>
+				<br/>
+			</div>
+		</div>
+		
+		<div id="usgs-footer-panel">
+			<div id="footer" style="width: 100%; margin-right: -1em;">
+				<div id="usgs-policy-links">
+					<h4 class="access-help">USGS Policy Information Links</h4>
+					<ul class="hnav">
+						<li><a href="https://www.usgs.gov/accessibility.html" title="USGS web accessibility policy">Accessibility</a></li>
+						<li><a href="https://www.usgs.gov/foia/" title="USGS Freedom of Information Act information">FOIA</a></li>
+						<li><a href="https://www.usgs.gov/privacy.html" title="USGS privacy policies">Privacy</a></li>
+						<li><a href="https://www.usgs.gov/policies_notices.html" title="USGS web policies and notices">Policies and Notices</a></li>
+					</ul>
+				</div><!-- end usgs-policy-links -->
+				<div class="content">
+					<div id="page-info">
+						<p id="footer-doi-links">
+							<span class="vcard">
+								<a class="url fn org" href="https://www.doi.gov/" title="Link to the main DOI web site">U.S. Department of the Interior</a>
+								<span class="adr">
+									<span class="street-address">1849 C Street, N.W.</span><br />
+									<span class="locality">Washington</span>, <span class="region">DC</span>
+									<span class="postal-code">20240</span>
+								</span>
+								<span class="tel">202-208-3100</span>
+							</span><!-- vcard -->
+							<span class="vcard">
+								<a class="url fn org" href="https://www.usgs.gov" title="Link to the main USGS web site">U.S. Geological Survey</a>
+								<span class="adr">
+									<span class="post-office-box">Box 25286</span><br />
+									<span class="locality">Denver</span>, <span class="region">CO</span>
+									<span class="postal-code">8022</span>
+								</span>
+							</span><!-- vcard -->
+						</p>
+						<p id="footer-contact-info">Page Contact Information: <a href='mailto:mlr-devs@usgs.gov'>MLR Team</a></p>
+					</div><!-- /page-info -->
+					<div id="gov-buttons">
+						<a title="link to the official US Government web portal" href="https://firstgov.gov/">
+							<img src='resources/footer_graphic_firstGov.jpg' alt="FirstGov button"/>
+						</a>
+					</div><!-- /gov-buttons -->
+				</div><!-- /content -->
+			</div><!-- /footer -->
+		</div><!-- /footer panel -->
+		
+		
+		<!-- WebJars -->
+		<script src="static/jquery/jquery.min.js"></script>
+		<script src="static/bootstrap/js/bootstrap.min.js"></script>
+				
+		<!-- Application -->
+		<script src="resources/ui.js"></script>
+	</body>
+</html>
