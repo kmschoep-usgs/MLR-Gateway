@@ -44,7 +44,7 @@ public class LegacyCruServiceTest {
 				+ "{\"name\":\"" + LegacyCruService.SITE_ADD_STEP + "\",\"status\":201,\"details\":\"" + JSONObject.escape(LegacyCruService.SITE_ADD_SUCCESSFULL)
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
+		
 		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.CREATED);
 		given(legacyCruClient.createMonitoringLocation(anyString())).willReturn(addRtn);
 

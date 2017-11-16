@@ -1,12 +1,10 @@
 package gov.usgs.wma.mlrgateway.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
-import java.util.List;
 import java.util.Map;
 import org.apache.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,17 +58,15 @@ public class LegacyCruService {
 		}
 	}
 	
-	public Map<String, Object> getMonitoringLocations(Object agencyCode, Object siteNumber) {
+	public Map<String, Object> getMonitoringLocation(Object agencyCode, Object siteNumber) {
 		Map<String, Object> site = null;
 		ObjectMapper mapper = new ObjectMapper();
-		TypeReference<Map<String, Object>> mapType = new TypeReference<Map<String, Object>>() {};
-		String json = "";
 		
-		ResponseEntity<String> cruResp = legacyCruClient.getMonitoringLocations((String)agencyCode, (String)siteNumber);
+		ResponseEntity<String> cruResp = legacyCruClient.getMonitoringLocation((String)agencyCode, (String)siteNumber);
 		int cruStatus = cruResp.getStatusCodeValue();
 		
 		try {
-			site = mapper.readValue(cruResp.getBody(), mapType);
+			site = mapper.readValue(cruResp.getBody(), Map.class);
 		} catch (Exception e) {
 			BaseController.addStepReport(new StepReport(SITE_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_GET_STEP_FAILED, null, null));
 			log.error(SITE_GET_STEP + ": " + SITE_GET_STEP_FAILED + ":" +  e.getMessage());			

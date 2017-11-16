@@ -50,21 +50,21 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 		Map<String,Object> site;
 		site = getAdd();
 		
-		given(legacyCruService.getMonitoringLocations(anyString(), anyString())).willReturn(site);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(site);
 
 		service.exportWorkflow("USGS", "12345678");
 		
-		verify(legacyCruService).getMonitoringLocations(anyString(), anyString());
+		verify(legacyCruService).getMonitoringLocation(anyString(), anyString());
 		verify(fileExportService).exportAdd(anyString(), anyString(), anyString());
 	}
 	
 	@Test
 	public void completeWorkflow_siteDoesNotExist() throws Exception {
-		given(legacyCruService.getMonitoringLocations(anyString(), anyString())).willReturn(null);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(null);
 		
 		service.exportWorkflow("USGS", "1234");
 		
-		verify(legacyCruService).getMonitoringLocations(anyString(), anyString());
+		verify(legacyCruService).getMonitoringLocation(anyString(), anyString());
 		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString());
 	}
 

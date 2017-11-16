@@ -1,6 +1,5 @@
 package gov.usgs.wma.mlrgateway.workflow;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpStatus;
@@ -30,7 +29,7 @@ public class ExportWorkflowService {
 	public void exportWorkflow(String agencyCode, String siteNumber) throws HystrixBadRequestException {
 		String json = "{}";
 		ObjectMapper mapper = new ObjectMapper();
-		Map<String, Object> site = legacyCruService.getMonitoringLocations(agencyCode, siteNumber);
+		Map<String, Object> site = legacyCruService.getMonitoringLocation(agencyCode, siteNumber);
 		
 		if (site != null) {
 			try {
