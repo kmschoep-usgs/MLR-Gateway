@@ -1,0 +1,136 @@
+#header { background-color: #fff; padding: 0; }
+
+#header #banner-area {
+  position: relative; overflow:	hidden; width: 100%; height: 72px;
+	margin: 1px 0; padding: 0;
+	color: #fff; background-color: #141414;
+	background-position: 178px 0px;
+	background-repeat: no-repeat;
+}
+
+#banner-area h1 { /* USGS Title - not displayed b/c its replaced w/ the logo */
+	position: absolute; top: -400px;
+	padding: 0; margin: 0;
+}
+
+/* Logo appears in the banner-area */
+#usgs-header-logo { float: left; border: none; padding: 0; margin: 0;  margin-left: 10px;}
+#usgs-header-logo a, #usgs-header-logo img { border: none; padding: 0; margin: 0;}
+
+/* Standard Customer Service Area
+	Almost directly copied from USGS std's site. Sits in the upper rt corner of the page
+*/
+#ccsa-area {
+	float: right;
+	height: 72px;
+	color:	 #fff; 
+  background-color: #000;
+  
+}
+
+#ccsa-area a {
+  font-family: Verdana,Arial,Helvetica,sans-serif;
+  font-size: 1em;
+  padding-right: 1em;
+  line-height: 1.0;
+	margin-left: 4px; 
+  /*padding: 0;*/
+	color:	#fff; 
+  background-color: transparent;
+  
+}
+#ccsa-area a:visited, #ccsa-area a:active { margin-left: 4px; color: #fff; }
+#ccsa-area a:hover { text-decoration: underline;}
+
+/* For screen reader items 
+(doesn't seem to work for legend tags) */
+.access-help {
+	display: none;
+}
+
+/* site-title is the title for the entire site (more then just a single page) */
+#site-title {
+	display: block;
+	margin: 1px 0; padding: 5px 0 5px 3px;
+	color:	#fff; background-color: #345280;
+	font-size: 120%; font-weight: bold;
+}
+
+#site-title span {
+	margin-left: 10px;
+}
+
+#site-title a, #site-title a:visited, #site-title a:active, #site-title a:link
+{ color:	inherit; background-color: transparent; font-weight: inherit; font-size: inherit; }
+#site-title a:hover { color: #ccf; }
+
+/* ===STANDARD CONTENT===*/
+body {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: small;
+	color: #000000;
+	background-color: #ffffff;
+}
+th, td {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: small;
+}
+
+/* =footer
+	The layout and format of the footer is defined by USGS spec.  Do not modify.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+#footer {
+	position: relative; width: 100%; padding: 0; margin-top: 0px; float: left;
+	background-color: #fff;
+}
+
+#footer .content { position: relative; width: auto; margin:	.3em 0 0 0; }
+
+/* for internal pages, the footer has a grey border instead of accessabality links */
+.internal #footer {
+	border-top: solid #666 24px;
+}
+#footer #page-info {  }
+#page-info p { padding: 0; margin: 0; }
+
+/* This is the contact info for the DOI and USGS in the footer */
+#footer-doi-links .vcard .adr, #footer-doi-links .vcard .tel { display: none; }
+#footer-doi-links .vcard { display: inline; border: none; margin: inherit; padding: inherit; }
+
+/* These are the 'First Gov' and 'Take Pride in America' buttons (bottom right) */
+#footer #gov-buttons { position: absolute; right: 0; top: 0; text-align: right; margin-right: 10px;}
+#gov-buttons a { margin: 0; padding: 0; }
+#gov-buttons a img { vertical-align: top; margin-left: 2px; border-width: 0px; }
+
+/*
+	This is the horizontal navigation area at the top of the footer.
+	See the horizontal navigation styles for how the hnav class is defined.
+	DO NOT MODIFY THIS OR ANY OTHER FOOTER SECTION.
+*/
+
+#usgs-policy-links {
+	background-color: #666;
+}
+
+#usgs-policy-links ul.hnav {
+	display: block; 
+	margin-left: 10px !important;
+	list-style-type: none; 
+	clear: both;
+	margin: 0; padding: 0;
+}
+#usgs-policy-links .hnav li {
+	display: inline-block;
+	margin: 0 2em 0 0; padding: 0;
+	background-image:	none; /* Turn of the bkg image (a dot) that is used by default */
+}
+#usgs-policy-links .hnav a, #usgs-policy-links .hnav a:visited { font-weight: normal; color: #fff; }
+#usgs-policy-links .hnav li a:hover {
+	color:	#fff; background-color:	transparent;
+	text-decoration: underline;
+}
+
+#footer .content {
+	margin-left: 10px;
+}

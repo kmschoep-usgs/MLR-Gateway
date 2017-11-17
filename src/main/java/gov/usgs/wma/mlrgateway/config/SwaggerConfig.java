@@ -23,7 +23,7 @@ public class SwaggerConfig {
 				.tags(new Tag("Workflow", "Process D dot files"), new Tag("Export Workflow", "Generate Add Transaction File"))
 				.useDefaultResponseMessages(false)
 				.select()
-					.paths(Predicates.or(PathSelectors.ant("/workflows/**"), PathSelectors.ant("/info/**"), PathSelectors.ant("/health/**"), PathSelectors.ant("/legacy/**")))
+					.paths(Predicates.or(PathSelectors.ant("/workflows/**"), PathSelectors.ant("/info/**"), PathSelectors.ant("/health/**"), PathSelectors.ant("/legacy/**"), PathSelectors.ant("/util/**")))
 				.build()
 			;
 	}
