@@ -57,4 +57,13 @@ public class GatewayReport {
 			return "Unable to get Report";
 		}
 	}
+	
+	public String toPrettyPrintString() {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+		} catch (JsonProcessingException e) {
+			return "Unable to get Report";
+		}
+	}
 }

@@ -26,8 +26,8 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping("/workflows")
 public class WorkflowController extends BaseController {
 	private LegacyWorkflowService legacy;
-	public static final String COMPLETE_WORKFLOW_SUBJECT = "MLR Report for Submitted Ddot Transaction";
-	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "MLR Report for Submitted Ddot Validation";
+	public static final String COMPLETE_WORKFLOW_SUBJECT = "Submitted Ddot Transaction";
+	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "Submitted Ddot Validation";
 
 	@Autowired
 	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService) {
