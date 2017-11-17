@@ -107,4 +107,21 @@ public class LegacyCruServiceTest {
 		verify(legacyCruClient, never()).createMonitoringLocation(anyString());
 		verify(legacyCruClient).patchMonitoringLocation(anyString());
 	}
+	
+	@Test
+	public void getLocation_callsBackingServices() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+				+ "{\"name\":\"" + LegacyCruService.SITE_GET_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyCruService.SITE_GET_SUCCESSFULL)
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		
+		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
+		given(legacyCruClient.getMonitoringLocation(anyString(), anyString())).willReturn(addRtn);
+
+		service.getMonitoringLocation("USGS ", "12345678       ");
+		
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(legacyCruClient).getMonitoringLocation(anyString(), anyString());
+	}
+	
 }
