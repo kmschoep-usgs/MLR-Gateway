@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags={"Util Controller"})
 @RestController
 @RequestMapping("/util")
-public class UtilController extends BaseController {	
+public class UtilController extends BaseController {
 	@Autowired
 	public UtilController() {
 		super();
@@ -29,7 +29,7 @@ public class UtilController extends BaseController {
 			@ApiResponse(code=403, message="Forbidden")})
 	@GetMapping("/token")
 	public String getToken() {
-		if(!environmentTier.equals(ConfigurationValues.ENVIRONMENT_PRODUCTION)) {
+		if(environmentTier != null && !environmentTier.equals(ConfigurationValues.ENVIRONMENT_PRODUCTION)) {
 			if(SecurityContextHolder.getContext().getAuthentication() != null){
 				String jwtToken = ((OAuth2AuthenticationDetails) ((OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication()).getDetails()).getTokenValue();
 				return jwtToken;

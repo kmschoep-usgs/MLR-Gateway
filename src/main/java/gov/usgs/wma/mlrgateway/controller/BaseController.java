@@ -54,8 +54,7 @@ public abstract class BaseController {
 		gatewayReport.remove();
 	}
 	
-	protected int notificationStep(String subject) {
-		int status = -1;
+	protected void notificationStep(String subject) {
 		List<String> notificationRecipientList;
 		String userName = "Unknown";
 		
@@ -85,15 +84,12 @@ public abstract class BaseController {
 			notificationService.sendNotification(notificationRecipientList, fullSubject, userName, getReport());
 		} catch(Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
-				 status = ((FeignBadResponseWrapper) e).getStatus();
+				int status = ((FeignBadResponseWrapper) e).getStatus();
 				WorkflowController.addStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
 			} else {
-				status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 				WorkflowController.addStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, e.getLocalizedMessage(), null, null));
 			}
 		}
-		
-		return status;
 	}
-
 }
