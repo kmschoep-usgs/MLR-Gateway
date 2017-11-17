@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiResponses;
 public class ExportWorkflowController extends BaseController {
 	private ExportWorkflowService export;
 	public static final String COMPLETE_WORKFLOW = "Complete Export Workflow";
-	public static final String EXPORT_WORKFLOW_SUBJECT = "MLR Transaction File for requested location";
+	public static final String EXPORT_WORKFLOW_SUBJECT = "Transaction File Generation for Requested Location";
 
 	@Autowired
 	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService) {

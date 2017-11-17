@@ -50,7 +50,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		List<String> recipientList = new ArrayList<>();
 		recipientList.add("test");
 		given(notificationClient.sendEmail(anyString())).willReturn(emailResp);
-		service.sendNotification(recipientList, "test", "test");
+		service.sendNotification(recipientList, "test", "test", BaseController.getReport());
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
 		verify(notificationClient).sendEmail(anyString());
 		
@@ -63,7 +63,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		given(notificationClient.sendEmail(anyString())).willThrow(new RuntimeException());
 		List<String> recipientList = new ArrayList<>();
 		recipientList.add("test");
-		service.sendNotification(recipientList, "test", "test");
+		service.sendNotification(recipientList, "test", "test", BaseController.getReport());
 	}
 
 }
