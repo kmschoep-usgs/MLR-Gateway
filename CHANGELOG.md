@@ -31,12 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 0.1 - 2017-10-02
 ### Added
-- GET a list of all Monitoring Locations, optionally filtered by Agency Code and/or Site Number.
-- GET a Monitoring Location by it's URI.
-- POST (create) a new Monitoring Location.
-- PUT (update) an existing Monitoring Location.
-- Swagger Documentation.
-- Spring Boot Actuator Monitoring.
+- Initial release - happy path - dDot injest and CRU only.
 
 [Unreleased]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.3.0...master
 [0.3.0]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.2.1...mlrgateway-0.3.0
