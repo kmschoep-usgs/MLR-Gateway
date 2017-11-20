@@ -124,4 +124,20 @@ public class LegacyCruServiceTest {
 		verify(legacyCruClient).getMonitoringLocation(anyString(), anyString());
 	}
 	
+	@Test
+	public void getLocation_nullSite () throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":404,\"steps\":["
+				+ "{\"name\":\"" + LegacyCruService.SITE_GET_STEP + "\",\"status\":404,\"details\":\"" + JSONObject.escape(LegacyCruService.SITE_GET_DOES_NOT_EXIST)
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		
+		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.NOT_FOUND);
+		given(legacyCruClient.getMonitoringLocation(anyString(), anyString())).willReturn(addRtn);
+
+		service.getMonitoringLocation("USGS ", "12345678       ");
+		
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(legacyCruClient).getMonitoringLocation(anyString(), anyString());
+	}
+	
 }
