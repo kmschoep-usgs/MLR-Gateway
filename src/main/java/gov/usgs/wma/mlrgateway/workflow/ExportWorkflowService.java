@@ -1,6 +1,5 @@
 package gov.usgs.wma.mlrgateway.workflow;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpStatus;
@@ -30,11 +29,11 @@ public class ExportWorkflowService {
 	public void exportWorkflow(String agencyCode, String siteNumber) throws HystrixBadRequestException {
 		String json = "{}";
 		ObjectMapper mapper = new ObjectMapper();
-		List<Map<String, Object>> sites = legacyCruService.getMonitoringLocations(agencyCode, siteNumber);
+		Map<String, Object> site = legacyCruService.getMonitoringLocation(agencyCode, siteNumber);
 		
-		if (!sites.isEmpty()) {
+		if (site != null) {
 			try {
-				json = mapper.writeValueAsString(sites.get(0));
+				json = mapper.writeValueAsString(site);
 			} catch (Exception e) {
 				// Unable to determine when this might actually happen, but the api says it can...
 				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "Unable to serialize site as JSON");
