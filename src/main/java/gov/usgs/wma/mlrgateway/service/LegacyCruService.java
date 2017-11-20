@@ -71,7 +71,7 @@ public class LegacyCruService {
   		} else {
 
 			try {
-			site = mapper.readValue(cruResp.getBody(), Map.class);
+				site = mapper.readValue(cruResp.getBody(), Map.class);
 			} catch (Exception e) {
 				BaseController.addStepReport(new StepReport(SITE_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_GET_STEP_FAILED, null, null));
 				log.error(SITE_GET_STEP + ": " + SITE_GET_STEP_FAILED + ":" +  e.getMessage());			
