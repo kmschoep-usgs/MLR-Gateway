@@ -31,7 +31,7 @@ public class ExportWorkflowService {
 		ObjectMapper mapper = new ObjectMapper();
 		Map<String, Object> site = legacyCruService.getMonitoringLocation(agencyCode, siteNumber);
 		
-		if (site != null) {
+		if (!site.isEmpty()) {
 			try {
 				json = mapper.writeValueAsString(site);
 			} catch (Exception e) {

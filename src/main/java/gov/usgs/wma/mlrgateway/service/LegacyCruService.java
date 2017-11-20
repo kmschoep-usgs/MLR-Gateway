@@ -5,6 +5,7 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
+import java.util.HashMap;
 import java.util.Map;
 import org.apache.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,27 +60,26 @@ public class LegacyCruService {
 	}
 	
 	public Map<String, Object> getMonitoringLocation(Object agencyCode, Object siteNumber) {
-		Map<String, Object> site = null;
+		Map<String, Object> site = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ResponseEntity<String> cruResp = legacyCruClient.getMonitoringLocation((String)agencyCode, (String)siteNumber);
 		int cruStatus = cruResp.getStatusCodeValue();
 		
-		try {
-			site = mapper.readValue(cruResp.getBody(), Map.class);
-		} catch (Exception e) {
-			BaseController.addStepReport(new StepReport(SITE_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_GET_STEP_FAILED, null, null));
-			log.error(SITE_GET_STEP + ": " + SITE_GET_STEP_FAILED + ":" +  e.getMessage());			
-			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_GET_STEP_FAILED);
-		}
-		
-		if (site == null) {
-			BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus, 200 == cruStatus ? SITE_GET_DOES_NOT_EXIST : cruResp.getBody(), agencyCode, siteNumber));
-		}
-		else {
+		if (cruStatus == 404) {
+			BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus,  SITE_GET_DOES_NOT_EXIST , agencyCode, siteNumber));
+  		} else {
+
+			try {
+				site = mapper.readValue(cruResp.getBody(), Map.class);
+			} catch (Exception e) {
+				BaseController.addStepReport(new StepReport(SITE_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_GET_STEP_FAILED, null, null));
+				log.error(SITE_GET_STEP + ": " + SITE_GET_STEP_FAILED + ":" +  e.getMessage());			
+				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_GET_STEP_FAILED);
+			}
+
 			BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus, 200 == cruStatus ? SITE_GET_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
 		}
-		
 		return site;
 	}
 }
