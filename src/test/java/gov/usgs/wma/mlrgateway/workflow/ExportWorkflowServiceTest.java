@@ -60,7 +60,7 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 	
 	@Test
 	public void completeWorkflow_siteDoesNotExist() throws Exception {
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(new HashMap());
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(new HashMap<>());
 		
 		service.exportWorkflow("USGS", "1234");
 		

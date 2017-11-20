@@ -60,7 +60,7 @@ public class LegacyCruService {
 	}
 	
 	public Map<String, Object> getMonitoringLocation(Object agencyCode, Object siteNumber) {
-		Map<String, Object> site = new HashMap();
+		Map<String, Object> site = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ResponseEntity<String> cruResp = legacyCruClient.getMonitoringLocation((String)agencyCode, (String)siteNumber);
