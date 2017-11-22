@@ -31,23 +31,34 @@
 
 		<div class="mlr-container">
 			<div class="mlr-content">
-				<div>
-					<h3 id="upload-header" class="ddot-header">Ddot File Upload</h3>
-					<form name=ddotForm" id="ddotForm" method="POST" enctype="multipart/form-data">
-						<label for="ddotFile">Select Ddot File to Upload</label>
-						<input id="file" type="file" name="file" class="uploadDdotFile"><br>
-						<input type="button" value="Validate Selected File" class="btn btn-xs btn-primary uploadDdotFile" onclick="validateDdot()">&nbsp;
-						<input type="button" value="Update Records Using Selected File" class="btn btn-xs btn-primary uploadDdotFile" onclick="uploadDdot()">
-					</form>
-					<div id="ddot-response" style="display: none">
-						<h4 id="response-header" class="ddot-header">Upload Response</h4>
-						<div class="spinner-container">
-							<span id="loading-spinner"></span>
-						</div>
-						<span id="response-text"></span>
+				<div class="mlr-actions">
+					<div class="mlr-action" id="mlr-ddot">
+						<h3 id="ddot-header" class="mlr-action-header">Upload and Process a Ddot File</h3>
+						<form name="ddotForm" id="ddotForm" method="POST" enctype="multipart/form-data">
+							<label for="ddotFile">Select Ddot File to Upload</label>
+							<input id="ddotFile" type="file" name="ddotFile" class="uploadDdotFile">
+							<input type="button" value="Validate" class="btn btn-xs btn-primary uploadDdotFile mlr-button-input" onclick="validateDdot()">&nbsp;
+							<input type="button" value="Validate and Update Records" class="btn btn-xs btn-primary uploadDdotFile mlr-button-input" onclick="uploadDdot()">
+						</form>
+					</div>
+					<div class="mlr-action" id="mlr-export">
+						<h3 id="export-header" class="mlr-action-header">Export a Location to a New Host</h3>
+						<form name="exportForm" id="exportForm">
+							<label for="exportAgency">Agency Code:</label>
+							<input id="exportAgency" type="text" name="exportAgency" class="mlr-text-input"><br>
+							<label for="exportSite">Site Number:</label>
+							<input id="exportSite" type="text" name="exportSite" class="mlr-text-input"><br>
+							<input type="button" id="export-button" value="Export" class="btn btn-xs btn-primary mlr-button-input" onclick="exportLocation()">
+						</form>
 					</div>
 				</div>
-				<br/>
+				<div class="mlr-response" style="display: none">
+					<h4 class="mlr-response-header">MLR Response</h4>
+					<div class="spinner-container">
+						<span id="mlr-loading-spinner"></span>
+					</div>
+					<p class="mlr-response-text"></p>
+				</div>
 			</div>
 		</div>
 		
@@ -94,12 +105,12 @@
 			</div><!-- /footer -->
 		</div><!-- /footer panel -->
 		
-		
 		<!-- WebJars -->
 		<script src="static/jquery/jquery.min.js"></script>
 		<script src="static/bootstrap/js/bootstrap.min.js"></script>
-				
+		
 		<!-- Application -->
 		<script src="ui.js"></script>
+				
 	</body>
 </html>

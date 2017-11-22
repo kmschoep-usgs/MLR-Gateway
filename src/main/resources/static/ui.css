@@ -27,32 +27,50 @@
 }
 
 .mlr-content {
-	margin-left: 15px;
 	margin-right: 15px;
 	padding-top: 10px;
 }
 
-#token-text {
-	background-color: #fff9ec;
-	border: 1px solid #666;
-	padding: 5px;
-	border-radius: 5px;
-	font-size: smaller;
-	font-style: oblique;
-	color: #0030ff;
-	word-wrap: break-word;
+.mlr-action {
+	display: inline-grid;
+	margin-left: 15px;
+	padding-right: 18px;
+	height: 135px;
+	margin-bottom: 10px;
 }
 
-.ddot-header {
-	font-size: 22px;    
+#mlr-ddot {
+	border-right: 1px solid lightgrey;
+}
+
+.mlr-action-header {
+	font-size: 22px;
 	margin-bottom: 15px;
 	margin-top: 5px;
 }
 
-#ddot-response {
-	margin-top: 25px;
+.mlr-response {
+	margin-left: 15px;
+	border-top: 1px solid lightgrey;
+	padding-bottom: 12px;
 }
 
-#response-text {
+.mlr-response-text {
 	margin-left: 1px;
+}
+
+#exportForm label {
+	width: 35%;
+}
+
+.mlr-button-input {
+	margin-top: 15px;
+}
+
+#export-button {
+	margin-top: 10px;
+}
+
+#export-header {
+	margin-bottom: 10px;
 }
