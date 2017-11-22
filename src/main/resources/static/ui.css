@@ -33,18 +33,18 @@
 
 .mlr-action {
 	display: inline-grid;
-    margin-left: 15px;
-    padding-right: 18px;
-    height: 135px;
+	margin-left: 15px;
+	padding-right: 18px;
+	height: 135px;
 	margin-bottom: 10px;
 }
 
 #mlr-ddot {
-    border-right: 1px solid lightgrey;
+	border-right: 1px solid lightgrey;
 }
 
 .mlr-action-header {
-	font-size: 22px;    
+	font-size: 22px;
 	margin-bottom: 15px;
 	margin-top: 5px;
 }
