@@ -1,30 +1,71 @@
-function generalDdotSuccess (response) {
-	$("#ddotForm :input").prop("disabled", false);
-	$('#loading-spinner').removeClass('spinner');
-	$('#response-header').text("Upload Response - Success");
-	$('#response-text').text(JSON.stringify(response));
+function startLoading(headerText) {
+	$("#ddotForm :input").prop("disabled", true);
+	$("#exportForm :input").prop("disabled", true);
+	$('.mlr-response').show();
+	$('#mlr-loading-spinner').addClass('spinner');
+	$('.mlr-response-text').text("");
+	$('.mlr-response-header').text(headerText);
 }
 
-function generalDdotError (response) {
+function stopLoading(headerText, responseText) {
 	$("#ddotForm :input").prop("disabled", false);
-	$('#loading-spinner').removeClass('spinner');
+	$("#exportForm :input").prop("disabled", false);
+	$('.mlr-response').show();
+	$('#mlr-loading-spinner').removeClass('spinner');
+	$('.mlr-response-header').text(headerText);
+	$('.mlr-response-text').html(responseText);
+}
+
+function generalSuccess (response) {
+	stopLoading($('.mlr-response-header').text() + " - Success", formatJsonResponse(response));
+}
+
+function generalError (response) {
+	var responseText;
 	
 	if(response.status > 0){
-		$('#response-header').text("Upload Response - Failure");
 		if(response.hasOwnProperty("responseJSON")){
-			$('#response-text').text(JSON.stringify(response.responseJSON));
+			responseText = formatJsonResponse(response.responseJSON);
 		} else if(response.hasOwnProperty("responseText")) {
-			$('#response-text').text(JSON.stringify(JSON.parse(response.responseText)));
+			responseText = formatJsonResponse(JSON.parse(response.responseText));
 		} else {
-			$('#response-text').text(JSON.stringify(response));
+			responseText = formatJsonResponse(response);
 		}
 	} else {
-		$('#response-header').text("Upload Response - Error");
-		$('#response-text').text("Connection Error with Gateway Service. If this issue persists please contact the support team.");
+		responseText = "Connection Error with Gateway Service. If this issue persists please contact the support team.";
+	}
+	
+	stopLoading($('.mlr-response-header').text() + " - Failure", responseText);
+}
+
+function postExport(responseHeader, success, error) {
+	var agencyCode = $("#exportAgency").val();
+	var siteNumber= $("#exportSite").val();
+		
+	if(agencyCode !== null && agencyCode.length > 0 && siteNumber !== null && siteNumber.length > 0) {
+		//Build URL
+		
+		var url = "legacy/location/" + agencyCode + "/" + siteNumber;
+
+		//Adjust UI
+		startLoading(responseHeader);
+
+		//Perform Export
+		$.ajax({
+			url: url,
+			type: 'POST',
+			contentType: false,
+			cache: false,
+			processData: false,
+			success: success,
+			error: error
+		});
+	} else {
+		stopLoading(responseHeader + " - Error", "Site export parameters incomplete.");
 	}
 }
 
-function postDdot(url, success, error) {
+function postDdot(url, responseHeader, success, error) {
 	//Grab File to Upload
 	var documentData = new FormData($("#ddotForm")[0]);
 	documentData.append('file', $('input[type=file]')[0].files[0]);
@@ -32,11 +73,7 @@ function postDdot(url, success, error) {
 	//Check selected file
 	if($('input[type=file]')[0].files.length > 0){
 		//Adjust UI
-		$("#ddotForm :input").prop("disabled", true);
-		$('#ddot-response').show();
-		$('#loading-spinner').addClass('spinner');
-		$('#response-text').text("");
-		$('#response-header').text("Upload Response");
+		startLoading(responseHeader);
 
 		//Perform Upload
 		$.ajax({
@@ -51,16 +88,22 @@ function postDdot(url, success, error) {
 			error: error
 		});
 	} else {
-		$('#ddot-response').show();
-		$('#response-text').text("No file selected.");
-		$('#response-header').text("Upload Response - Error");
+		stopLoading(responseHeader + " - Error", "No file selected.");
 	}
 }
 
 function validateDdot() {
-	postDdot("workflows/ddots/validate", generalDdotSuccess, generalDdotError)
+	postDdot("workflows/ddots/validate", "Ddot Validation Response", generalSuccess, generalError);
 }
 
 function uploadDdot() {
-	postDdot("workflows/ddots", generalDdotSuccess, generalDdotError)
+	postDdot("workflows/ddots", "Ddot Validate and Update Response", generalSuccess, generalError);
+}
+
+function exportLocation() {
+	postExport("Export Site Response", generalSuccess, generalError);
+}
+
+function formatJsonResponse(response) {
+	return JSON.stringify(response, null, 4).split("\n").join("<br/>").split(" ").join("&nbsp;");
 }
