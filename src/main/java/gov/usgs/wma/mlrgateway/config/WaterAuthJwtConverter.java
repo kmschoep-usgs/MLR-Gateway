@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConv
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 
-public class WaterAuthJwtConverter extends DefaultAccessTokenConverter  {
+public class WaterAuthJwtConverter extends DefaultAccessTokenConverter {
 	public static final String EMAIL_JWT_KEY = "email";
 
 	@Override

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PermissionEvaluatorImpl implements PermissionEvaluator {
 
-	@Value("${maintenanceRoles}")
+	@Value("${security.maintenanceRoles}")
 	private String[] roles;
 
 	@Override

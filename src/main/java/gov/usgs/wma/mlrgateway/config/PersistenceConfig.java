@@ -16,13 +16,13 @@ import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHtt
 @Profile("default")
 @EnableJdbcHttpSession
 public class PersistenceConfig {
-	@Value("${dbConnectionUrl}")
+	@Value("${spring.datasource.url}")
 	private String dbConnectionUrl;
-	@Value("${dbUsername}")
+	@Value("${spring.datasource.username}")
 	private String dbUsername;
-	@Value("${dbPassword}")
+	@Value("${spring.datasource.password}")
 	private String dbPassword;
-	@Value("${dbInitializerEnabled:true}")
+	@Value("${spring.session.jdbc.initializer.enabled}")
 	private Boolean dbInitializerEnabled;
 
 	@Primary
@@ -37,8 +37,7 @@ public class PersistenceConfig {
 	}
 
 	@Bean
-	public DataSourceInitializer waterauthSourceInitializer(DataSource dataSource) 
-	{
+	public DataSourceInitializer waterauthSourceInitializer(DataSource dataSource) {
 		DataSourceInitializer dataSourceInitializer = new DataSourceInitializer();
 		dataSourceInitializer.setDataSource(dataSource);
 		dataSourceInitializer.setEnabled(dbInitializerEnabled);

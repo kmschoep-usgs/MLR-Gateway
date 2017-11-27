@@ -7,6 +7,8 @@ server:
     key-password: ${keystorePassword}
     key-alias: ${keystoreSSLKey:tomcat}
 
+additionalNotificationRecipients: ${mlrgateway_additionalNotificationRecipients:}
+
 dbInitializerEnabled: true
 
 zuul:
@@ -25,32 +27,32 @@ zuul:
 ddot:
   ribbon:
     listOfServers: ${mlrgateway_ddotServers}
-    IsSecure: ${mlrgateway_ddotServers_IsSecure}
+    IsSecure: ${mlrgateway_ddotIsSecure:true}
 
 legacyTransformer:
   ribbon:
     listOfServers: ${mlrgateway_legacyTransformerServers}
-    IsSecure: ${mlrgateway_legacyTransformerServers_IsSecure}
+    IsSecure: ${mlrgateway_legacyTransformerIsSecure:true}
 
 legacyValidator:
   ribbon:
     listOfServers: ${mlrgateway_legacyValidatorServers}
-    IsSecure: ${mlrgateway_legacyValidatorServers_IsSecure}
+    IsSecure: ${mlrgateway_legacyValidatorIsSecure:true}
 
 legacyCru:
   ribbon:
     listOfServers: ${mlrgateway_legacyCruServers}
-    IsSecure: ${mlrgateway_legacyCruServers_IsSecure}
+    IsSecure: ${mlrgateway_legacyCruIsSecure:true}
 
 fileExport:
   ribbon:
     listOfServers: ${mlrgateway_fileExportServers}
-    IsSecure: ${mlrgateway_fileExportServers_IsSecure}
+    IsSecure: ${mlrgateway_fileExportIsSecure:true}
 
 notification:
   ribbon:
     listOfServers: ${mlrgateway_notificationServers}
-    IsSecure: ${mlrgateway_notificationServers_IsSecure}
+    IsSecure: ${mlrgateway_notificationIsSecure:true}
 
 eureka:
   client:
@@ -96,9 +98,9 @@ security:
       id: ${oauthResourceId}
       jwt:
         keyUri: ${oauthResourceTokenKeyUri}
+  maintenanceRoles: ${maintenanceRoles:}
 
 spring:
   profiles:
     active: default, swagger
 
-maintenanceRoles: ROLE_DBA_55
