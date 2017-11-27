@@ -5,8 +5,10 @@ ARG mlr_version
 ADD docker-entrypoint.sh entrypoint.sh
 RUN ["chmod", "+x", "entrypoint.sh"]
 
-RUN  curl -k -X GET "https://cida.usgs.gov/artifactory/mlr-maven-centralized/gov/usgs/wma/mlrgateway/$mlr_version/mlrgateway-$mlr_version.jar" > app.jar
+RUN curl -k -X GET "https://cida.usgs.gov/artifactory/mlr-maven-centralized/gov/usgs/wma/mlrgateway/$mlr_version/mlrgateway-$mlr_version.jar" > app.jar
 
 EXPOSE 8443
 
 ENTRYPOINT [ "/entrypoint.sh" ]
+
+HEALTHCHECK CMD curl -k 'https://127.0.0.1:8443/health' | grep -q '{"status":"UP"}' || exit 1
