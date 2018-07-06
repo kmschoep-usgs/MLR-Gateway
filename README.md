@@ -63,16 +63,6 @@ The related environment variables are listed below:
 
 - **dbInitializerEnabled** - Whether or not the database initialization scripts should run on application startup. The default value is true.
 
-## Using Docker
-To build the image you will need to provide the location of the jar within 
-https://cida.usgs.gov/artifactory/mlr-maven/gov/usgs/wma/mlrgateway as follows:
-``` 
-% docker build --build-arg=0.1-SNAPSHOT/mlrgateway-0.1-SNAPSHOT.jar .
-```
-
-To run the image, you will need to provide as environment variables the substitution variables in the application.yml. The application
-will be available on part 8080 within the container.
-
 ## Substitution Variables
 * mlrgateway_mlrServicePassword - password for the monitoring user (deprecated)
 * mlrgateway_ddotServers - comma separated list of url(s) for the D dot Ingester Microservice
