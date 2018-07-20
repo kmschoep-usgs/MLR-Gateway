@@ -6,8 +6,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>10</maven.compiler.source>
+        <maven.compiler.target>10</maven.compiler.target>
         <additionalparam>-Xdoclint:none</additionalparam>
         <springfox.version>2.7.0</springfox.version>
         <wma.artifactory.url>https://cida.usgs.gov/artifactory</wma.artifactory.url>
@@ -194,7 +194,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
+                <version>0.8.1</version>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
