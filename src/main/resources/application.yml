@@ -9,6 +9,8 @@ server:
 
 additionalNotificationRecipients: ${mlrgateway_additionalNotificationRecipients:}
 
+dbInitializerEnabled: true
+
 zuul:
   retryable: true
   ribbonIsolationStrategy: SEMAPHORE

@@ -1,7 +1,4 @@
 language: java
 
-jdk:
-  - openjdk10
-
 script:
   - mvn clean verify jacoco:report coveralls:report
