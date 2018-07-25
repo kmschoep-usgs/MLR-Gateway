@@ -103,4 +103,12 @@ security:
 spring:
   profiles:
     active: default, swagger
+  datasource:
+    url: ${dbConnectionUrl}
+    username: ${dbUsername}
+    password: ${dbPassword}
+  session:
+    jdbc:
+      initializer:
+        enabled: ${dbInitializerEnabled:true}
 
