@@ -36,7 +36,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http
 			.httpBasic().disable()
-			.anonymous().disable()
 			.cors().and()
 			.authorizeRequests()
 				.antMatchers("/swagger-resources/**", "/webjars/**", "/v2/**").permitAll()
