@@ -209,7 +209,7 @@
     
     <scm>
         <connection>scm:git:https://github.com/USGS-CIDA/MLR-Gateway.git</connection>
-        <developerConnection>scm:git:https://github.com/USGS-CIDA/MLR-Gateway.git</developerConnection>
+        <developerConnection>scm:git:https://${env.GITHUB_USER}:${env.GITHUB_PASS}@github.com/USGS-CIDA/MLR-Gateway.git</developerConnection>
         <url>https://github.com/USGS-CIDA/MLR-Gateway</url>
         <tag>HEAD</tag>
     </scm>
