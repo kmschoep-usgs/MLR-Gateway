@@ -110,6 +110,7 @@ spring:
     username: ${dbUsername}
     password: ${dbPassword}
   session:
+    timeout: ${sessionTimeout:43200}
     jdbc:
       initializer:
         enabled: ${dbInitializerEnabled:true}
