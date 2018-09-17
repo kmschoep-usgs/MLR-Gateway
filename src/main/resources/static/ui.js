@@ -28,8 +28,13 @@ function generalError (response) {
 			responseText = formatJsonResponse(response.responseJSON);
 		} else if(response.hasOwnProperty("responseText")) {
 			responseText = formatJsonResponse(JSON.parse(response.responseText));
+		} else if(response.status == 401) {
+			// Got a 401 before a response map could be built, so warn of a potential expired session.
+			responseText = "It appears that your session may have expired or you are not logged in. Please refresh " + 
+				"the page and try again. If this issue persists please contact the support team.";
 		} else {
-			responseText = formatJsonResponse(response);
+			responseText = "An unknown error occurred while trying to process your request (status code: " + response.status + ")." +
+				"If this issue persists please contact the support team with the status code listed above.";
 		}
 	} else {
 		responseText = "Connection Error with Gateway Service. If this issue persists please contact the support team.";
