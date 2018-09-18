@@ -10,11 +10,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.DataSourceInitializer;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
-import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 
 @Configuration
 @Profile("default")
-@EnableJdbcHttpSession
 public class PersistenceConfig {
 	@Value("${spring.datasource.url}")
 	private String dbConnectionUrl;
