@@ -98,7 +98,8 @@ function postExport(responseHeader, success, error) {
 			error: error
 		});
 	} else {
-		stopLoading(responseHeader + " - Error", "Site export parameters incomplete.");
+		handleResponseTest("Site export parameters incomplete.");
+		stopLoading(responseHeader + " - Error");
 	}
 }
 
