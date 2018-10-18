@@ -7,11 +7,15 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.tomcat.util.http.fileupload.FileUploadBase.FileSizeLimitExceededException;
+import org.apache.tomcat.util.http.fileupload.FileUploadBase.SizeLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Component;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -19,10 +23,14 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MultipartException;
 
 @ControllerAdvice
 public class GlobalDefaultExceptionHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(GlobalDefaultExceptionHandler.class);
+
+	@Value("${SPRING_HTTP_MULTIPART_MAX_FILE_SIZE:1MB}")
+	private String MAX_FILE_SIZE;
 	
 	static final String ERROR_MESSAGE_KEY = "Error Message";
 
@@ -45,6 +53,15 @@ public class GlobalDefaultExceptionHandler {
 			} else {
 				responseMap.put(ERROR_MESSAGE_KEY, ex.getLocalizedMessage().replaceAll("([a-zA-Z]+\\.)+",""));
 			}
+		} else if (ex instanceof MultipartException && 
+			(
+				((MultipartException)ex).getRootCause() instanceof FileSizeLimitExceededException || 
+				((MultipartException)ex).getRootCause() instanceof SizeLimitExceededException
+			)
+		) {
+			response.setStatus(HttpStatus.BAD_REQUEST.value());
+			responseMap.put(ERROR_MESSAGE_KEY, "The file you tried to upload exceeds the maximum allowed size for a single file ("+ MAX_FILE_SIZE + 
+				"). Please split your transaction into multiple files or contact the support team for assistance.");
 		} else {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			int hashValue = response.hashCode();

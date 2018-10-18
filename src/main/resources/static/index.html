@@ -35,8 +35,8 @@
 					<div class="mlr-action" id="mlr-ddot">
 						<h3 id="ddot-header" class="mlr-action-header">Upload and Process a Ddot File</h3>
 						<form name="ddotForm" id="ddotForm" method="POST" enctype="multipart/form-data">
-							<label for="ddotFile">Select Ddot File to Upload</label>
-							<input id="ddotFile" type="file" name="ddotFile" class="uploadDdotFile">
+							<label for="file">Select Ddot File to Upload</label>
+							<input id="file" type="file" name="file" class="uploadDdotFile">
 							<input type="button" value="Validate" class="btn btn-xs btn-primary uploadDdotFile mlr-button-input" onclick="validateDdot()">&nbsp;
 							<input type="button" value="Validate and Update Records" class="btn btn-xs btn-primary uploadDdotFile mlr-button-input" onclick="uploadDdot()">
 						</form>
@@ -57,7 +57,8 @@
 					<div class="spinner-container">
 						<span id="mlr-loading-spinner"></span>
 					</div>
-					<p class="mlr-response-text"></p>
+					<p class="mlr-response-text" hidden="hidden"></p>
+					<a id="mlr-response-link" hidden="hidden" href="" target="_blank" download="mlr-results.json">Download the Full Step Report</a>
 				</div>
 			</div>
 		</div>

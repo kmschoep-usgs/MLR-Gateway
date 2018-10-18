@@ -57,6 +57,9 @@
 
 .mlr-response-text {
 	margin-left: 1px;
+	max-height: 640px;
+	word-wrap: break-word;
+	overflow-y: scroll;
 }
 
 #exportForm label {
