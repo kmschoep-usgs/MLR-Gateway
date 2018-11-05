@@ -1,6 +1,5 @@
 package gov.usgs.wma.mlrgateway.workflow;
 
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
@@ -39,6 +38,7 @@ import gov.usgs.wma.mlrgateway.service.LegacyTransformerService;
 import java.util.HashMap;
 import net.minidev.json.JSONObject;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
 
 @RunWith(SpringRunner.class)
 public class LegacyWorkflowServiceTest extends BaseSpringTest {
@@ -186,7 +186,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	}
 
 	@Test
-	public void ddotValidation_callsBackingServices() throws Exception {
+	public void ddotAddValidation_callsCorrectBackingServices() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP + " (1/1)\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS)
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
@@ -200,12 +200,39 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
 		
 		service.ddotValidation(file);
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		String actual = mapper.writeValueAsString(WorkflowController.getReport());
+		JSONAssert.assertEquals(msg, actual, JSONCompareMode.STRICT);
 
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean());
+		verify(transformService).transformStationIx(anyMap());
+		verify(legacyValidatorService).doValidation(anyMap(), eq(true));
+		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(false));
 	}
 
+	@Test
+	public void ddotUpdateValidation_callsCorrectBackingServices() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP + " (1/1)\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS)
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		Map<String, Object> ml = getUpdate();
+		Map<String, Object> mlValid = getUpdateValid();
+		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
+
+		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(DdotServiceTest.singleUpdate());
+		given(transformService.transformStationIx(anyMap())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
+		
+		service.ddotValidation(file);
+		String actual = mapper.writeValueAsString(WorkflowController.getReport());
+		JSONAssert.assertEquals(msg, actual, JSONCompareMode.STRICT);
+
+		verify(ddotService).parseDdot(any(MultipartFile.class));
+		verify(transformService).transformStationIx(anyMap());
+		verify(legacyValidatorService).doValidation(anyMap(), eq(false));
+		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(true));
+	}
+	
 	@Test
 	public void ddotValidation_throwsException() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
