@@ -27,6 +27,7 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.client.LegacyTransformerClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import net.minidev.json.JSONObject;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
@@ -145,7 +146,19 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 		verify(legacyTransformerClient, never()).decimalLocation(anyString());
 		verify(legacyTransformerClient).stationIx(anyString());
 	}
-
+	
+	@Test
+	public void ifLocationLacksStationName_thenReturnAsIs() {
+		Map<String, Object> transformed = service.transformStationIx(addGeo(getAdd()));
+		assertEquals(addGeo(getAdd()), transformed);
+	}
+	
+	@Test
+	public void ifLocationLacksGeo_thenReturnAsIs() {
+		Map<String, Object> transformed = service.transformGeo(addIX(getAdd()));
+		assertEquals(addIX(getAdd()), transformed);
+	}
+	
 	public static Map<String, Object> addGeo(Map<String, Object> baseMap) {
 		Map<String, Object> rtn = new HashMap<>();
 		rtn.putAll(baseMap);
