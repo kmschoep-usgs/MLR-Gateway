@@ -122,7 +122,7 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
 		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
 
-		Map<String, Object> rtn = service.transform(addGeo(getAdd()));
+		Map<String, Object> rtn = service.transformGeo(addGeo(getAdd()));
 
 		JSONAssert.assertEquals(legacyJsonGeo, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
@@ -138,29 +138,11 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
 		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
 
-		Map<String, Object> rtn = service.transform(addIX(getAdd()));
+		Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()));
 
 		JSONAssert.assertEquals(legacyJsonIX, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(legacyTransformerClient, never()).decimalLocation(anyString());
-		verify(legacyTransformerClient).stationIx(anyString());
-	}
-
-	@Test
-	public void happyPathBoth_transform_thenReturnTransformed() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":200,\"details\":\""
-				+ JSONObject.escape(LegacyTransformerService.GEO_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"},"
-				+ "{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":200,\"details\":\""
-				+ JSONObject.escape(LegacyTransformerService.STATION_IX_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJsonBoth, HttpStatus.OK);
-		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
-		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
-
-		Map<String, Object> rtn = service.transform(addIX(addGeo(getAdd())));
-
-		JSONAssert.assertEquals(legacyJsonBoth, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
-		verify(legacyTransformerClient).decimalLocation(anyString());
 		verify(legacyTransformerClient).stationIx(anyString());
 	}
 
