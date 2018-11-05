@@ -18,7 +18,6 @@ import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import java.util.Map;
-import net.minidev.json.JSONObject;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.skyscreamer.jsonassert.JSONAssert;

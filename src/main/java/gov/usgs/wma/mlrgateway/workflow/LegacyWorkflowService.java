@@ -62,7 +62,6 @@ public class LegacyWorkflowService {
 		
 		//1. Parse Ddot File
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
-		
 		//2. Process Individual Transactions
 		for (int i = 0; i < ddots.size(); i++) {
 			Map<String, Object> ml = ddots.get(i);
