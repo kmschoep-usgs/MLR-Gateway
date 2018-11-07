@@ -19,9 +19,7 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.controller.ExportWorkflowController;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import static org.mockito.Mockito.never;
 

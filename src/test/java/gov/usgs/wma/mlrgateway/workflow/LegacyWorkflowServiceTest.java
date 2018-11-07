@@ -1,6 +1,5 @@
 package gov.usgs.wma.mlrgateway.workflow;
 
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
@@ -36,8 +35,10 @@ import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import gov.usgs.wma.mlrgateway.service.LegacyValidatorService;
 import gov.usgs.wma.mlrgateway.service.LegacyTransformerService;
+import java.util.HashMap;
 import net.minidev.json.JSONObject;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
 
 @RunWith(SpringRunner.class)
 public class LegacyWorkflowServiceTest extends BaseSpringTest {
@@ -84,9 +85,9 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		System.out.println("\n\n" + mapper.writeValueAsString(WorkflowController.getReport()) + "\n\n");
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService, never()).transform(anyMap());
+		verify(transformService, never()).transformStationIx(anyMap());
 		verify(legacyValidatorService, never()).doValidation(anyMap(), anyBoolean());
-		verify(legacyValidatorService, never()).doValidation(anyMap(), anyBoolean());
+		verify(transformService, never()).transformGeo(anyMap());
 		verify(legacyCruService, never()).addTransaction(anyString(), anyString(), anyString());
 		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString());
 		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString());
@@ -108,17 +109,18 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
-		given(transformService.transform(anyMap())).willReturn(ml);
+		given(transformService.transformStationIx(anyMap())).willReturn(ml);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(getAddValid());
-
+		given(transformService.transformGeo(anyMap())).willReturn(getAddValid());
 		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.CREATED);
 
 		service.completeWorkflow(file);
 
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService).transform(anyMap());
+		verify(transformService).transformStationIx(anyMap());
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean());
+		verify(transformService).transformGeo(anyMap());
 		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString());
 		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString());
 		verify(fileExportService).exportAdd(anyString(), anyString(), anyString());
@@ -134,19 +136,22 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		List<Map<String, Object>> ddotRtn = DdotServiceTest.singleAdd();
 		Map<String, Object> ml = ddotRtn.get(0);
-		Map<String, Object> mlValid = ml;
+		Map<String, Object> mlValid = new HashMap<>(ml);
 		mlValid.put("validation",legacyValidation);
 
-		given(transformService.transform(anyMap())).willReturn(ml);		
+		
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
+		given(transformService.transformStationIx(anyMap())).willReturn(ml);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
-
+		given(transformService.transformGeo(anyMap())).willReturn(mlValid);
+		
 		service.completeWorkflow(file);
 
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService).transform(anyMap());
+		verify(transformService).transformStationIx(anyMap());
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean());
+		verify(transformService).transformGeo(anyMap());
 		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString());
 		verify(fileExportService).exportAdd(anyString(), anyString(), anyString());
 	}
@@ -160,25 +165,28 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		List<Map<String, Object>> ddotRtn = DdotServiceTest.singleUpdate();
 		Map<String, Object> ml = ddotRtn.get(0);
-		Map<String, Object> mlValid = ml;
+		Map<String, Object> mlValid = new HashMap<>(ml);
 		mlValid.put("validation",legacyValidation);
 
-		given(transformService.transform(anyMap())).willReturn(ml);
+		
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
+		given(transformService.transformStationIx(anyMap())).willReturn(ml);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
+		given(transformService.transformGeo(anyMap())).willReturn(mlValid);
 
 		service.completeWorkflow(file);
 
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService).transform(anyMap());
+		verify(transformService).transformStationIx(anyMap());
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean());
+		verify(transformService).transformGeo(anyMap());
 		verify(legacyCruService).updateTransaction(anyString(), anyString(), anyString());
 		verify(fileExportService).exportUpdate(anyString(), anyString(), anyString());
 	}
 
 	@Test
-	public void ddotValidation_callsBackingServices() throws Exception {
+	public void ddotAddValidation_callsCorrectBackingServices() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP + " (1/1)\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS)
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
@@ -187,17 +195,44 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		Map<String, Object> mlValid = getAddValid();
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
-		given(transformService.transform(anyMap())).willReturn(mlValid);
-		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(DdotServiceTest.singleAdd());
-
+		given(transformService.transformStationIx(anyMap())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
+		
 		service.ddotValidation(file);
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		String actual = mapper.writeValueAsString(WorkflowController.getReport());
+		JSONAssert.assertEquals(msg, actual, JSONCompareMode.STRICT);
 
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean());
+		verify(transformService).transformStationIx(anyMap());
+		verify(legacyValidatorService).doValidation(anyMap(), eq(true));
+		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(false));
 	}
 
+	@Test
+	public void ddotUpdateValidation_callsCorrectBackingServices() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+				+ "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP + " (1/1)\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS)
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		Map<String, Object> ml = getUpdate();
+		Map<String, Object> mlValid = getUpdateValid();
+		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
+
+		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(DdotServiceTest.singleUpdate());
+		given(transformService.transformStationIx(anyMap())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
+		
+		service.ddotValidation(file);
+		String actual = mapper.writeValueAsString(WorkflowController.getReport());
+		JSONAssert.assertEquals(msg, actual, JSONCompareMode.STRICT);
+
+		verify(ddotService).parseDdot(any(MultipartFile.class));
+		verify(transformService).transformStationIx(anyMap());
+		verify(legacyValidatorService).doValidation(anyMap(), eq(false));
+		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(true));
+	}
+	
 	@Test
 	public void ddotValidation_throwsException() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
@@ -208,12 +243,14 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		Map<String, Object> mlValid = getAddValid();
 
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(DdotServiceTest.singleAdd());
+		given(transformService.transformStationIx(getAdd())).willReturn(getAdd());
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willThrow(new RuntimeException());
 
 		service.ddotValidation(file);
 
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		String actual = mapper.writeValueAsString(WorkflowController.getReport());
+		JSONAssert.assertEquals(msg, actual, JSONCompareMode.STRICT);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean());
 	}

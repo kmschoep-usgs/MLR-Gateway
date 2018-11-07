@@ -62,22 +62,23 @@ public class LegacyWorkflowService {
 		
 		//1. Parse Ddot File
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
-		
 		//2. Process Individual Transactions
 		for (int i = 0; i < ddots.size(); i++) {
 			Map<String, Object> ml = ddots.get(i);
 			try {
 				if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {					
 					if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
+						ml = transformService.transformStationIx(ml);
 						ml = legacyValidatorService.doValidation(ml, true);
-						ml = transformService.transform(ml);
+						ml = transformService.transformGeo(ml);
 						json = mlToJson(ml);
 						json = legacyCruService.addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 						fileExportService.exportAdd(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 						WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_CREATED,COMPLETE_TRANSACTION_STEP_SUCCESS,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 					} else {
+						ml = transformService.transformStationIx(ml);
 						ml = legacyValidatorService.doValidation(ml, false);
-						ml = transformService.transform(ml);
+						ml = transformService.transformGeo(ml);
 						json = mlToJson(ml);
 						json = legacyCruService.updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
 						fileExportService.exportUpdate(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
@@ -106,6 +107,7 @@ public class LegacyWorkflowService {
 			Map<String, Object> ml = ddots.get(i);
 			try {
 				if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
+					ml = transformService.transformStationIx(ml);
 					if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
 						ml = legacyValidatorService.doValidation(ml, true);
 					} else {
