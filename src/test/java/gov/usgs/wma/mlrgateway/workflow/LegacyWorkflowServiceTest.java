@@ -152,7 +152,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
 		verify(transformService).transform(anyMap());
-		//verify(legacyCruService).getMonitoringLocation(anyMap(), anyString());
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean());
 		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString());
 		verify(fileExportService).exportAdd(anyString(), anyString(), anyString());
