@@ -59,7 +59,7 @@ public class LegacyCruService {
 		}
 	}
 	
-	public Map<String, Object> getMonitoringLocation(Object agencyCode, Object siteNumber) {
+	public Map<String, Object> getMonitoringLocation(Object agencyCode, Object siteNumber, boolean isAddTransaction) {
 		Map<String, Object> site = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
 		
@@ -67,7 +67,9 @@ public class LegacyCruService {
 		int cruStatus = cruResp.getStatusCodeValue();
 		
 		if (cruStatus == 404) {
-			BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus,  SITE_GET_DOES_NOT_EXIST , agencyCode, siteNumber));
+			if (!isAddTransaction) {
+				BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus,  SITE_GET_DOES_NOT_EXIST , agencyCode, siteNumber));
+			}
   		} else {
 
 			try {

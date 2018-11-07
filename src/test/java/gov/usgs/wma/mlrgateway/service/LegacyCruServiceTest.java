@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.junit.Assert.fail;
@@ -118,7 +119,7 @@ public class LegacyCruServiceTest {
 		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
 		given(legacyCruClient.getMonitoringLocation(anyString(), anyString())).willReturn(addRtn);
 
-		service.getMonitoringLocation("USGS ", "12345678       ");
+		service.getMonitoringLocation("USGS ", "12345678       ", false);
 		
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(legacyCruClient).getMonitoringLocation(anyString(), anyString());
@@ -134,7 +135,7 @@ public class LegacyCruServiceTest {
 		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.NOT_FOUND);
 		given(legacyCruClient.getMonitoringLocation(anyString(), anyString())).willReturn(addRtn);
 
-		service.getMonitoringLocation("USGS ", "12345678       ");
+		service.getMonitoringLocation("USGS ", "12345678       ", false);
 		
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(legacyCruClient).getMonitoringLocation(anyString(), anyString());

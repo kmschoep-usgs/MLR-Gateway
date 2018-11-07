@@ -3,6 +3,7 @@ package gov.usgs.wma.mlrgateway.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +53,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -74,7 +75,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, false);
@@ -96,7 +97,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -118,7 +119,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -141,7 +142,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}", HttpStatus.OK);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -164,7 +165,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings\"}", HttpStatus.OK);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, false);
@@ -187,7 +188,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"fatal_error_message\": \"Fatal Error.\"}", HttpStatus.OK);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -211,7 +212,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{}", HttpStatus.OK);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -235,7 +236,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"invalid_key\":\"some data\"}", HttpStatus.OK);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -259,7 +260,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("Bad Request", HttpStatus.BAD_REQUEST);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -283,7 +284,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("I'm Not JSON", HttpStatus.OK);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{

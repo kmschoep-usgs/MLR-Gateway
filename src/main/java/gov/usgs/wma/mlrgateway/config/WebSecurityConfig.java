@@ -39,7 +39,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.cors().and()
 			.authorizeRequests()
 				.antMatchers("/swagger-resources/**", "/webjars/**", "/v2/**").permitAll()
-				.antMatchers("/info**", "/health/**", "/hystrix/**", "/hystrix.stream**", "/proxy.stream**", "/favicon.ico").permitAll()
+				.antMatchers("/info**", "/health/**", "/hystrix/**", "/hystrix.stream**", "/proxy.stream**", "/favicon.ico", "/swagger-ui.html").permitAll()
 				.anyRequest().fullyAuthenticated()
 			.and()
 				.logout().permitAll()

@@ -9,6 +9,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -135,17 +136,23 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		List<Map<String, Object>> ddotRtn = DdotServiceTest.singleAdd();
 		Map<String, Object> ml = ddotRtn.get(0);
 		Map<String, Object> mlValid = ml;
+		String emptyRecord = new String();
+		Map<String, Object> emptySite = new HashMap<>();
 		mlValid.put("validation",legacyValidation);
 
 		given(transformService.transform(anyMap())).willReturn(ml);		
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
+		given(legacyCruService.getMonitoringLocation(anyMap(), anyString(), anyBoolean())).willReturn(emptySite);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
-
+		
 		service.completeWorkflow(file);
+		
+		String mapperRet = mapper.writeValueAsString(WorkflowController.getReport());
 
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
 		verify(transformService).transform(anyMap());
+		//verify(legacyCruService).getMonitoringLocation(anyMap(), anyString());
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean());
 		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString());
 		verify(fileExportService).exportAdd(anyString(), anyString(), anyString());

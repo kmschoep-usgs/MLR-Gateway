@@ -29,7 +29,7 @@ public class ExportWorkflowService {
 	public void exportWorkflow(String agencyCode, String siteNumber) throws HystrixBadRequestException {
 		String json = "{}";
 		ObjectMapper mapper = new ObjectMapper();
-		Map<String, Object> site = legacyCruService.getMonitoringLocation(agencyCode, siteNumber);
+		Map<String, Object> site = legacyCruService.getMonitoringLocation(agencyCode, siteNumber, false);
 		
 		if (!site.isEmpty()) {
 			try {
