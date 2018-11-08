@@ -146,7 +146,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
 		given(transformService.transformStationIx(anyMap())).willReturn(ml);
-		given(legacyCruService.getMonitoringLocation(anyMap(), anyString(), anyBoolean())).willReturn(emptySite);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean())).willReturn(mlValid);
 		given(transformService.transformGeo(anyMap())).willReturn(mlValid);
 		
