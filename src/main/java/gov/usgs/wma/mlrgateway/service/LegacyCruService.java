@@ -65,11 +65,14 @@ public class LegacyCruService {
 		
 		ResponseEntity<String> cruResp = legacyCruClient.getMonitoringLocation((String)agencyCode, (String)siteNumber);
 		int cruStatus = cruResp.getStatusCodeValue();
+		String preValMsg = "";
 		
 		if (cruStatus == 404) {
-			if (!isAddTransaction) {
-				BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus,  SITE_GET_DOES_NOT_EXIST , agencyCode, siteNumber));
+			if (isAddTransaction) {
+				cruStatus = 200;
+				preValMsg = "Duplicate agency code/site number check: ";
 			}
+			BaseController.addStepReport(new StepReport(preValMsg + SITE_GET_STEP, cruStatus,  SITE_GET_DOES_NOT_EXIST , agencyCode, siteNumber));
   		} else {
 
 			try {

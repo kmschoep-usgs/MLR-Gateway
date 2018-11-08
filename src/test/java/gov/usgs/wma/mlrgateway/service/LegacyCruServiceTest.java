@@ -164,6 +164,8 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 	@Test
 	public void getLocationAdd_nullSite () throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+				+ "{\"name\":\"Duplicate agency code/site number check: " + LegacyCruService.SITE_GET_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyCruService.SITE_GET_DOES_NOT_EXIST)
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
 	
 		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.NOT_FOUND);
