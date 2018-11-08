@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.workflow;
 
+import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
@@ -8,6 +9,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -137,6 +139,8 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		List<Map<String, Object>> ddotRtn = DdotServiceTest.singleAdd();
 		Map<String, Object> ml = ddotRtn.get(0);
 		Map<String, Object> mlValid = new HashMap<>(ml);
+		String emptyRecord = new String();
+		Map<String, Object> emptySite = new HashMap<>();
 		mlValid.put("validation",legacyValidation);
 
 		
@@ -146,6 +150,8 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		given(transformService.transformGeo(anyMap())).willReturn(mlValid);
 		
 		service.completeWorkflow(file);
+		
+		String mapperRet = mapper.writeValueAsString(WorkflowController.getReport());
 
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
@@ -232,7 +238,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyValidatorService).doValidation(anyMap(), eq(false));
 		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(true));
 	}
-	
+
 	@Test
 	public void ddotValidation_throwsException() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["

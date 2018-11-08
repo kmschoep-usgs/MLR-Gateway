@@ -59,15 +59,20 @@ public class LegacyCruService {
 		}
 	}
 	
-	public Map<String, Object> getMonitoringLocation(Object agencyCode, Object siteNumber) {
+	public Map<String, Object> getMonitoringLocation(Object agencyCode, Object siteNumber, boolean isAddTransaction) {
 		Map<String, Object> site = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ResponseEntity<String> cruResp = legacyCruClient.getMonitoringLocation((String)agencyCode, (String)siteNumber);
 		int cruStatus = cruResp.getStatusCodeValue();
+		String preValMsg = "";
 		
 		if (cruStatus == 404) {
-			BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus,  SITE_GET_DOES_NOT_EXIST , agencyCode, siteNumber));
+			if (isAddTransaction) {
+				cruStatus = 200;
+				preValMsg = "Duplicate agency code/site number check: ";
+			}
+			BaseController.addStepReport(new StepReport(preValMsg + SITE_GET_STEP, cruStatus,  SITE_GET_DOES_NOT_EXIST , agencyCode, siteNumber));
   		} else {
 
 			try {

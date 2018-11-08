@@ -37,7 +37,7 @@ public class LegacyValidatorService {
 	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction) throws FeignBadResponseWrapper {
 		try {
 			ResponseEntity<String> validationResponse;
-			String validationPayload = preValidation(ml);
+			String validationPayload = preValidation(ml, isAddTransaction);
 			if(isAddTransaction) {
 				validationResponse = legacyValidatorClient.validateAdd(validationPayload);
 			} else {
@@ -91,7 +91,7 @@ public class LegacyValidatorService {
 		return ml;
 	}
 
-	private String preValidation(Map<String, Object> ml) {
+	private String preValidation(Map<String, Object> ml, boolean isAddTransaction) {
 		Map<String, Object> existingRecord = new HashMap<>();
 		Map<String, Object> validationPayload = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
@@ -100,7 +100,7 @@ public class LegacyValidatorService {
 		String siteNumber = ml.get(LegacyWorkflowService.SITE_NUMBER) != null ? ml.get(LegacyWorkflowService.SITE_NUMBER).toString() : null;
 		String agencyCode = ml.get(LegacyWorkflowService.AGENCY_CODE) != null ? ml.get(LegacyWorkflowService.AGENCY_CODE).toString() : null;
 
-		existingRecord = legacyCruService.getMonitoringLocation(agencyCode, siteNumber);
+		existingRecord = legacyCruService.getMonitoringLocation(agencyCode, siteNumber, isAddTransaction);
 
 		validationPayload.put(LegacyValidatorClient.NEW_RECORD_PAYLOAD,ml);
 		validationPayload.put(LegacyValidatorClient.EXISTING_RECORD_PAYLOAD,existingRecord);

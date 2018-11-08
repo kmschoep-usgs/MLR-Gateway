@@ -2,6 +2,7 @@ package gov.usgs.wma.mlrgateway.workflow;
 
 import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 
@@ -48,21 +49,21 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 		Map<String,Object> site;
 		site = getAdd();
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(site);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(site);
 
 		service.exportWorkflow("USGS", "12345678");
 		
-		verify(legacyCruService).getMonitoringLocation(anyString(), anyString());
+		verify(legacyCruService).getMonitoringLocation(anyString(), anyString(), anyBoolean());
 		verify(fileExportService).exportAdd(anyString(), anyString(), anyString());
 	}
 	
 	@Test
 	public void completeWorkflow_siteDoesNotExist() throws Exception {
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString())).willReturn(new HashMap<>());
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(new HashMap<>());
 		
 		service.exportWorkflow("USGS", "1234");
 		
-		verify(legacyCruService).getMonitoringLocation(anyString(), anyString());
+		verify(legacyCruService).getMonitoringLocation(anyString(), anyString(), anyBoolean());
 		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString());
 	}
 

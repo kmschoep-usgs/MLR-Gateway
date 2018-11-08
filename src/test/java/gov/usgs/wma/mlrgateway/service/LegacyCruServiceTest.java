@@ -1,6 +1,8 @@
 package gov.usgs.wma.mlrgateway.service;
 
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
+import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
+import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 
@@ -19,10 +21,11 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
 import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
-public class LegacyCruServiceTest {
+public class LegacyCruServiceTest extends BaseSpringTest {
 	private String reportName = "TEST LEGACYCRU";
 	private LegacyCruService service;
 	private ObjectMapper mapper;
@@ -30,6 +33,8 @@ public class LegacyCruServiceTest {
 	
 	@MockBean
 	LegacyCruClient legacyCruClient;
+	@MockBean
+	LegacyValidatorClient legacyValidatorClient;
 
 	@Before
 	public void init() {
@@ -109,7 +114,7 @@ public class LegacyCruServiceTest {
 	}
 	
 	@Test
-	public void getLocation_callsBackingServices() throws Exception {
+	public void getLocationUpdate_callsBackingServices() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
 				+ "{\"name\":\"" + LegacyCruService.SITE_GET_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyCruService.SITE_GET_SUCCESSFULL)
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
@@ -118,23 +123,55 @@ public class LegacyCruServiceTest {
 		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
 		given(legacyCruClient.getMonitoringLocation(anyString(), anyString())).willReturn(addRtn);
 
-		service.getMonitoringLocation("USGS ", "12345678       ");
+		service.getMonitoringLocation("USGS ", "12345678       ", false);
 		
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(legacyCruClient).getMonitoringLocation(anyString(), anyString());
 	}
 	
 	@Test
-	public void getLocation_nullSite () throws Exception {
+	public void getLocationAdd_callsBackingServices() throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+				+ "{\"name\":\"" + LegacyCruService.SITE_GET_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyCruService.SITE_GET_SUCCESSFULL)
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+		
+		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
+		given(legacyCruClient.getMonitoringLocation(anyString(), anyString())).willReturn(addRtn);
+
+		service.getMonitoringLocation("USGS ", "12345678       ", true);
+
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(legacyCruClient).getMonitoringLocation(anyString(), anyString());
+	}
+	
+	@Test
+	public void getLocationUpdate_nullSite () throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":404,\"steps\":["
 				+ "{\"name\":\"" + LegacyCruService.SITE_GET_STEP + "\",\"status\":404,\"details\":\"" + JSONObject.escape(LegacyCruService.SITE_GET_DOES_NOT_EXIST)
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
-		
+	
 		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.NOT_FOUND);
 		given(legacyCruClient.getMonitoringLocation(anyString(), anyString())).willReturn(addRtn);
 
-		service.getMonitoringLocation("USGS ", "12345678       ");
+		service.getMonitoringLocation("USGS ", "12345678       ", false);
+		
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		verify(legacyCruClient).getMonitoringLocation(anyString(), anyString());
+	}
+	
+	@Test
+	public void getLocationAdd_nullSite () throws Exception {
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+				+ "{\"name\":\"Duplicate agency code/site number check: " + LegacyCruService.SITE_GET_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyCruService.SITE_GET_DOES_NOT_EXIST)
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
+				+ "]}";
+	
+		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.NOT_FOUND);
+		given(legacyCruClient.getMonitoringLocation(anyString(), anyString())).willReturn(addRtn);
+
+		service.getMonitoringLocation("USGS ", "12345678       ", true);
 		
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(legacyCruClient).getMonitoringLocation(anyString(), anyString());
