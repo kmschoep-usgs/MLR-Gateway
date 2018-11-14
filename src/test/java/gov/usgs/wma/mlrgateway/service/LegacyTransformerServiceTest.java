@@ -46,7 +46,7 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 	private String jsonIX = ", \"" + LegacyTransformerService.STATION_NAME + "\": \"Station#_Name1$\", \"stationIx\" : \"STATIONNAME1\"";
 	private String legacyJsonGeo = legacyJson + jsonGeo + "}";
 	private String legacyJsonIX = legacyJson + jsonIX + "}";
-	private String legacyJsonBoth = legacyJson + jsonGeo + jsonIX + "}";
+	
 
 	@Before
 	public void init() {
@@ -136,7 +136,6 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":200,\"details\":\""
 				+ JSONObject.escape(LegacyTransformerService.STATION_IX_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJsonIX, HttpStatus.OK);
-		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
 		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
 
 		Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()));
