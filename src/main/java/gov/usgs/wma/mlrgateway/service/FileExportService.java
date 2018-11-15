@@ -40,7 +40,7 @@ public class FileExportService {
 		}
 	}
 
-	public void exportUpdate(Object agencyCode, Object siteNumber, String json) {
+	public void exportUpdate(String agencyCode, String siteNumber, String json) {
 		try {
 			ResponseEntity<String> exportResp = fileExportClient.exportUpdate(json);
 			int exportStatus = exportResp.getStatusCodeValue();
