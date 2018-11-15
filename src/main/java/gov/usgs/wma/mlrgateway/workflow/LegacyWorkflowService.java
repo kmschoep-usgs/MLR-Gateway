@@ -81,7 +81,7 @@ public class LegacyWorkflowService {
 						ml = transformService.transformGeo(ml);
 						json = mlToJson(ml);
 						json = legacyCruService.updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
-						fileExportService.exportUpdate(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json);
+						fileExportService.exportUpdate(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString(), json);
 						WorkflowController.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP  + " (" + (i+1) + "/" + ddots.size() + ")", HttpStatus.SC_OK,COMPLETE_TRANSACTION_STEP_SUCCESS,  ml.get(AGENCY_CODE), ml.get(SITE_NUMBER)));
 					}
 				} else {
