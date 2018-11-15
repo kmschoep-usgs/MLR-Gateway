@@ -28,7 +28,7 @@ public class FileExportService {
 		this.fileExportClient = fileExportClient;
 	}
 	
-	public void exportAdd(Object agencyCode, Object siteNumber, String json) {
+	public void exportAdd(String agencyCode, String siteNumber, String json) {
 		try {
 			ResponseEntity<String> exportResp = fileExportClient.exportAdd(json);
 			int exportStatus = exportResp.getStatusCodeValue();
