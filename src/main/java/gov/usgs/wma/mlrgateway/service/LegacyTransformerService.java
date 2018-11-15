@@ -52,7 +52,7 @@ public class LegacyTransformerService {
 
 			try {
 				ResponseEntity<String> response = legacyTransformerClient.decimalLocation(json);
-				transforms = mapper.readValue(response.getBody(), mapType);
+				transforms.putAll(mapper.readValue(response.getBody(), mapType));
 				WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, GEO_SUCCESS, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			} catch (Exception e) {
 				WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, GEO_FAILURE, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
@@ -64,9 +64,8 @@ public class LegacyTransformerService {
 	}
 
 	public Map<String, Object> transformStationIx(Map<String, Object> ml) {
-		Map<String, Object> transforms = new HashMap<>(ml);
+		Map<String, Object> transformed = new HashMap<>(ml);
 		if (ml.containsKey(STATION_NAME)) {
-
 			String json = "{\"" + STATION_NAME + "\": \"" + ml.get(STATION_NAME) + "\"}";
 			ObjectMapper mapper = new ObjectMapper();
 			TypeReference<Map<String, Object>> mapType = new TypeReference<Map<String, Object>>() {};
@@ -74,7 +73,7 @@ public class LegacyTransformerService {
 			ResponseEntity<String> response = legacyTransformerClient.stationIx(json);
 
 			try {
-				transforms = mapper.readValue(response.getBody(), mapType);
+				transformed.putAll(mapper.readValue(response.getBody(), mapType));
 				WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, STATION_IX_SUCCESS, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			} catch (Exception e) {
 				WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, STATION_IX_FAILURE, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
@@ -82,7 +81,7 @@ public class LegacyTransformerService {
 				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + STATION_IX_FAILURE + "\"}");	
 			}
 		}
-		return transforms;
+		return transformed;
 	}
 
 }

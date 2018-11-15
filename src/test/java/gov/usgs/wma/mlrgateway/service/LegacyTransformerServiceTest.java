@@ -46,7 +46,9 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 	private String jsonIX = ", \"" + LegacyTransformerService.STATION_NAME + "\": \"Station#_Name1$\", \"stationIx\" : \"STATIONNAME1\"";
 	private String legacyJsonGeo = legacyJson + jsonGeo + "}";
 	private String legacyJsonIX = legacyJson + jsonIX + "}";
-	private String legacyJsonBoth = legacyJson + jsonGeo + jsonIX + "}";
+	private final String transformerJsonIx = "{\"stationIx\" : \"STATIONNAME1\"}";
+	private final String transformerJsonGeo = "{\"decimalLatitude\" : 40, \"decimalLongitude\": -100}";
+	
 
 	@Before
 	public void init() {
@@ -59,13 +61,15 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 	public void happyPath_transformGeo_thenReturnTransformedGeo() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":200,\"details\":\""
 				+ JSONObject.escape(LegacyTransformerService.GEO_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJsonGeo, HttpStatus.OK);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(transformerJsonGeo, HttpStatus.OK);
 		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
 
 		Map<String, Object> rtn = service.transformGeo(addGeo(getAdd()));
 
-		JSONAssert.assertEquals(legacyJsonGeo, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		String actualTransformed = mapper.writeValueAsString(rtn);
+		String actualMsg = mapper.writeValueAsString(WorkflowController.getReport());
+		JSONAssert.assertEquals(legacyJsonGeo, actualTransformed, JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(msg, actualMsg, JSONCompareMode.STRICT);
 		verify(legacyTransformerClient).decimalLocation(anyString());
 	}
 
@@ -89,7 +93,7 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 	public void happyPath_transformIX_thenReturnTransformedGeo() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":200,\"details\":\""
 				+ JSONObject.escape(LegacyTransformerService.STATION_IX_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJsonIX, HttpStatus.OK);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(transformerJsonIx, HttpStatus.OK);
 		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
 
 		Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()));
@@ -116,33 +120,18 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 	}
 
 	@Test
-	public void happyPathGeo_transform_thenReturnTransformed() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":200,\"details\":\""
-				+ JSONObject.escape(LegacyTransformerService.GEO_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJsonGeo, HttpStatus.OK);
-		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
-		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
-
-		Map<String, Object> rtn = service.transformGeo(addGeo(getAdd()));
-
-		JSONAssert.assertEquals(legacyJsonGeo, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
-		verify(legacyTransformerClient).decimalLocation(anyString());
-		verify(legacyTransformerClient, never()).stationIx(anyString());
-	}
-
-	@Test
 	public void happyPathIx_transform_thenReturnTransformed() throws Exception {
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":200,\"details\":\""
 				+ JSONObject.escape(LegacyTransformerService.STATION_IX_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
-		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(legacyJsonIX, HttpStatus.OK);
-		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
+		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(transformerJsonIx, HttpStatus.OK);
 		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
 
 		Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()));
 
-		JSONAssert.assertEquals(legacyJsonIX, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		String actualTransformed = mapper.writeValueAsString(rtn);
+		JSONAssert.assertEquals(legacyJsonIX, actualTransformed, JSONCompareMode.STRICT);
+		String actualMsg = mapper.writeValueAsString(WorkflowController.getReport());
+		JSONAssert.assertEquals(msg, actualMsg, JSONCompareMode.STRICT);
 		verify(legacyTransformerClient, never()).decimalLocation(anyString());
 		verify(legacyTransformerClient).stationIx(anyString());
 	}
