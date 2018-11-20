@@ -38,21 +38,18 @@ public class LegacyValidatorService {
 	}
 
 	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction) throws FeignBadResponseWrapper {
-		boolean proceed = true;
+		int duplicateValidationStatus = 200;
+		int otherValidationStatus = 200;
 		try {
 			doDuplicateValidation(ml);
-			//if it completes without throwing an exception, consider it successful -> 200
-			BaseController.addStepReport(new StepReport(VALIDATION_STEP, 200,  VALIDATION_SUCCESSFUL, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 		} catch (Exception e) {
-			int status;
 			if(e instanceof FeignBadResponseWrapper) {
-				status = ((FeignBadResponseWrapper)e).getStatus();
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  ((FeignBadResponseWrapper)e).getBody(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				duplicateValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
+				BaseController.addStepReport(new StepReport(VALIDATION_STEP, duplicateValidationStatus,  ((FeignBadResponseWrapper)e).getBody(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			} else {
-				status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				duplicateValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				BaseController.addStepReport(new StepReport(VALIDATION_STEP, duplicateValidationStatus,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			}
-			proceed = false;
 		}
 		try {
 			ResponseEntity<String> validationResponse;
@@ -63,26 +60,26 @@ public class LegacyValidatorService {
 				 validationResponse = legacyValidatorClient.validateUpdate(validationPayload);
 			}
 			ml = verifyValidationStatus(ml, validationResponse);
-			BaseController.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(),  VALIDATION_SUCCESSFUL, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
-			return ml;
 		} catch (Exception e) {
-			int status;
 			if(e instanceof FeignBadResponseWrapper) {
-				status = ((FeignBadResponseWrapper)e).getStatus();
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  ((FeignBadResponseWrapper)e).getBody(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				otherValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
+				BaseController.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus,  ((FeignBadResponseWrapper)e).getBody(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			} else {
-				status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				otherValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				BaseController.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			}
 
-			proceed = false;
 		}
-		
-		//Throw error to stop additional transaction processing
-		if(!proceed) {
-			throw new FeignBadResponseWrapper(400, null, "{\"error_message\": \"" + VALIDATION_FAILED + "\"}");	
-		} else {
+		//We have to choose between two status codes.
+		//Favor advertizing a server-side error over a client-side error
+		int finalStatus = Math.max(duplicateValidationStatus, otherValidationStatus);
+
+		if(200 == finalStatus) {
+			BaseController.addStepReport(new StepReport(VALIDATION_STEP, finalStatus,  VALIDATION_SUCCESSFUL, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			return ml;
+		} else {
+			//Throw error to stop additional transaction processing
+			throw new FeignBadResponseWrapper(finalStatus, null, "{\"error_message\": \"" + VALIDATION_FAILED + "\"}");	
 		}
 	}
 
