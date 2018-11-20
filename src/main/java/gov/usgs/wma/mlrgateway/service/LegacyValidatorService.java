@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.service;
 
+import com.fasterxml.jackson.core.JsonEncoding;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,7 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
+import org.codehaus.jackson.io.JsonStringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +25,8 @@ import org.slf4j.LoggerFactory;
 public class LegacyValidatorService {
 	private Logger log = LoggerFactory.getLogger(LegacyTransformerService.class);
 
-	private LegacyCruService legacyCruService;
-	private LegacyValidatorClient legacyValidatorClient;
+	private final LegacyCruService legacyCruService;
+	private final LegacyValidatorClient legacyValidatorClient;
 	public static final String VALIDATION_STEP = "Validate";
 	public static final String VALIDATION_SUCCESSFUL = "Transaction validated successfully.";
 	public static final String VALIDATION_FAILED = "Transaction validation failed.";
@@ -36,6 +38,22 @@ public class LegacyValidatorService {
 	}
 
 	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction) throws FeignBadResponseWrapper {
+		boolean proceed = true;
+		try {
+			doDuplicateValidation(ml);
+			//if it completes without throwing an exception, consider it successful -> 200
+			BaseController.addStepReport(new StepReport(VALIDATION_STEP, 200,  VALIDATION_SUCCESSFUL, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+		} catch (Exception e) {
+			int status;
+			if(e instanceof FeignBadResponseWrapper) {
+				status = ((FeignBadResponseWrapper)e).getStatus();
+				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  ((FeignBadResponseWrapper)e).getBody(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+			} else {
+				status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+			}
+			proceed = false;
+		}
 		try {
 			ResponseEntity<String> validationResponse;
 			String validationPayload = attachExistingMonitoringLocation(ml, isAddTransaction);
@@ -57,8 +75,14 @@ public class LegacyValidatorService {
 				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			}
 
-			//Throw error to stop additional transaction processing
-			throw new FeignBadResponseWrapper(status, null, "{\"error_message\": \"" + VALIDATION_FAILED + "\"}");	
+			proceed = false;
+		}
+		
+		//Throw error to stop additional transaction processing
+		if(!proceed) {
+			throw new FeignBadResponseWrapper(400, null, "{\"error_message\": \"" + VALIDATION_FAILED + "\"}");	
+		} else {
+			return ml;
 		}
 	}
 
@@ -119,11 +143,13 @@ public class LegacyValidatorService {
 	/**
 	 * 
 	 * @param ml
-	 * @return
 	 * @throws FeignBadResponseWrapper 
 	 */
-	protected List<String> doDuplicateValidation(Map<String, Object> ml) throws FeignBadResponseWrapper {
+	protected void doDuplicateValidation(Map<String, Object> ml) throws FeignBadResponseWrapper {
 		List<String> msgs = legacyCruService.validateMonitoringLocation(ml);
-		return msgs;
+		if(!msgs.isEmpty()) {
+			String msgsString = new String(JsonStringEncoder.getInstance().quoteAsString(String.join(",", msgs)));
+			throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": " + msgsString + "}");
+		}
 	}
 }
