@@ -72,6 +72,8 @@ public class LegacyValidatorService {
 		}
 		//We have to choose between two status codes.
 		//Favor advertizing a server-side error over a client-side error
+		//Favor advertizing a client-side error over a server-side success
+		//5xx > 4xx > 2xx
 		int finalStatus = Math.max(duplicateValidationStatus, otherValidationStatus);
 
 		if(200 == finalStatus) {
@@ -145,8 +147,8 @@ public class LegacyValidatorService {
 	protected void doDuplicateValidation(Map<String, Object> ml) throws FeignBadResponseWrapper {
 		List<String> msgs = legacyCruService.validateMonitoringLocation(ml);
 		if(!msgs.isEmpty()) {
-			String msgsString = new String(JsonStringEncoder.getInstance().quoteAsString(String.join(",", msgs)));
-			throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": " + msgsString + "}");
+			String msgsString = new String(JsonStringEncoder.getInstance().quoteAsString(String.join(", ", msgs)));
+			throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"" + msgsString + "\"}");
 		}
 	}
 }
