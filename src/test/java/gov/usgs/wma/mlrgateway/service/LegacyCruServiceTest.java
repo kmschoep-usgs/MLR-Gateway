@@ -10,8 +10,10 @@ import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
+import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.minidev.json.JSONObject;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
@@ -206,22 +208,9 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 		JSONAssert.assertEquals(msg, actualStepReport, JSONCompareMode.STRICT);
 	}
 	
-	@Ignore
 	@Test
 	public void validateMonitoringLocation_CruValidationMessageDeserializationError () throws Exception {
-		
-		/*
-		We prepare a special spy for this test because we want the 
-		same mapper instance to succeed at serializing the parameterized 
-		map, but we want the mapper to throw an exception when
-		deserializing the web service response
-		*/
-		ObjectMapper mockMapper = spy(mapper);
-		when(mockMapper.readValue(anyString(), any(TypeReference.class))).thenThrow(JsonProcessingException.class);
-		service.setMapper(mockMapper);
-		
-		given(legacyCruClient.validateMonitoringLocation(anyString())).willReturn(new ResponseEntity<>("", HttpStatus.OK));
-		
+		given(legacyCruClient.validateMonitoringLocation(anyString())).willReturn(new ResponseEntity<>("NOT VALID JSON", HttpStatus.INTERNAL_SERVER_ERROR));
 		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
 				+ "{\"name\":\"" + LegacyCruService.SITE_VALIDATE_STEP +"\",\"status\":500,\"details\":\"" + JSONObject.escape(LegacyCruService.SITE_VALIDATE_FAILED) 
 				+ "\"}"
@@ -232,6 +221,39 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 		} catch (FeignBadResponseWrapper e) {
 			assertNotNull(e);
 		}
+		String actualStepReport = mapper.writeValueAsString(WorkflowController.getReport());
+		JSONAssert.assertEquals(msg, actualStepReport, JSONCompareMode.STRICT);
+	}
+	
+	@Test
+	public void validateMonitoringLocation_ValidationSuccessful () throws Exception {
+		given(legacyCruClient.validateMonitoringLocation(anyString())).willReturn(new ResponseEntity<>("[]", HttpStatus.OK));
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
+				+ "{\"name\":\"" + LegacyCruService.SITE_VALIDATE_STEP +"\",\"status\":200,\"details\":\"" + JSONObject.escape(LegacyCruService.SITE_VALIDATE_SUCCESSFUL) 
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"0123456789       \"}"
+				+ "]}";
+		Map<String, Object> input = new HashMap<>();
+		input.put(LegacyWorkflowService.AGENCY_CODE, "USGS ");
+		input.put(LegacyWorkflowService.SITE_NUMBER, "0123456789       ");
+		
+		service.validateMonitoringLocation(input);
+		String actualStepReport = mapper.writeValueAsString(WorkflowController.getReport());
+		JSONAssert.assertEquals(msg, actualStepReport, JSONCompareMode.STRICT);
+	}
+	
+	@Test
+	public void validateMonitoringLocation_ValidationFailed () throws Exception {
+		String validationErrorMessages = "[\"it was bad\",\"it was not good\"]";
+		given(legacyCruClient.validateMonitoringLocation(anyString())).willReturn(new ResponseEntity<>(validationErrorMessages, HttpStatus.NOT_ACCEPTABLE));
+		String msg = "{\"name\":\"" + reportName + "\",\"status\":406,\"steps\":["
+				+ "{\"name\":\"" + LegacyCruService.SITE_VALIDATE_STEP +"\",\"status\":406,\"details\":\"" + JSONObject.escape(validationErrorMessages) 
+				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"0123456789       \"}"
+				+ "]}";
+		Map<String, Object> input = new HashMap<>();
+		input.put(LegacyWorkflowService.AGENCY_CODE, "USGS ");
+		input.put(LegacyWorkflowService.SITE_NUMBER, "0123456789       ");
+		
+		service.validateMonitoringLocation(input);
 		String actualStepReport = mapper.writeValueAsString(WorkflowController.getReport());
 		JSONAssert.assertEquals(msg, actualStepReport, JSONCompareMode.STRICT);
 	}

@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 @Service
 public class LegacyCruService {
 
-	private LegacyCruClient legacyCruClient;
+	private final LegacyCruClient legacyCruClient;
 	private Logger log = LoggerFactory.getLogger(LegacyCruService.class);
 	private ObjectMapper objectMapper;
 	
@@ -125,36 +125,28 @@ public class LegacyCruService {
 
 		ResponseEntity<String> response = legacyCruClient.validateMonitoringLocation(mlJson);
 		int cruStatus = response.getStatusCodeValue();
-
+		
 		if (200 == cruStatus) {
-			validationMessages = new ArrayList<>();
 			stepReportMessage = SITE_VALIDATE_SUCCESSFUL;
 		} else {
-			try {
-				stepReportMessage = response.getBody();
-				TypeReference typeReference = new TypeReference<List<String>>(){};
-				validationMessages = objectMapper.readValue(response.getBody(), typeReference);
-			} catch (Exception ex) {
-				BaseController.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_VALIDATE_FAILED, agencyCode, siteNumber));
-				log.error(SITE_VALIDATE_STEP + ": " + SITE_VALIDATE_FAILED, ex);
-				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_VALIDATE_FAILED);
-			}
+			stepReportMessage = response.getBody();
+		}
+		try {
+			validationMessages = objectMapper.readValue(response.getBody(), List.class);
+		} catch (Exception ex) {
+			BaseController.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_VALIDATE_FAILED, agencyCode, siteNumber));
+			log.error(SITE_VALIDATE_STEP + ": " + SITE_VALIDATE_FAILED, ex);
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_VALIDATE_FAILED);
 		}
 		BaseController.addStepReport(new StepReport(SITE_VALIDATE_STEP, cruStatus, stepReportMessage, agencyCode, siteNumber));
 
 		return validationMessages;
 	}
 
-	/**
-	 * @return the reader
-	 */
 	public ObjectMapper getMapper() {
 		return objectMapper;
 	}
 
-	/**
-	 * @param mapper the reader to set
-	 */
 	public void setMapper(ObjectMapper mapper) {
 		this.objectMapper = mapper;
 	}
