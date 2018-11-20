@@ -18,9 +18,12 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
+import java.util.Arrays;
 import java.util.Map;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.http.HttpStatus;
@@ -53,6 +56,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -75,6 +79,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, false);
@@ -97,6 +102,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -119,6 +125,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -142,6 +149,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -165,6 +173,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, false);
@@ -188,6 +197,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"fatal_error_message\": \"Fatal Error.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -212,6 +222,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -236,6 +247,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"invalid_key\":\"some data\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -260,6 +272,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("Bad Request", HttpStatus.BAD_REQUEST);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -284,6 +297,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("I'm Not JSON", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -300,5 +314,63 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
 				+ "]}";
 		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+	}
+	
+	@Test
+	public void validatorService_doValidation_DuplicateValidationFailure() throws Exception {
+		Map<String, Object> ml = getAdd();
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}", HttpStatus.OK);
+
+		
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
+		given(legacyCruService.validateMonitoringLocation(ml)).willReturn(Arrays.asList("Error", "Bad"));
+
+		try{
+			service.doValidation(ml, true);
+			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
+		} catch (FeignBadResponseWrapper e) {
+			int status = e.getStatus();
+			assertEquals(400, status);
+			String body = e.getBody();
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, body);
+		}
+		
+		//Verify Report Contents
+		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":["
+				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"{\\\"error_message\\\": \\\"Error, Bad\\\"}"
+				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
+				+ "]}";
+		String actualReport = mapper.writeValueAsString(BaseController.getReport());
+		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
+	}
+	
+	@Test
+	public void validatorService_doValidation_DuplicateValidationError() throws Exception {
+		Map<String, Object> ml = getAdd();
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}", HttpStatus.OK);
+
+		
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
+		given(legacyCruService.validateMonitoringLocation(ml)).willThrow(new RuntimeException("error"));
+
+		try{
+			service.doValidation(ml, true);
+			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
+		} catch (FeignBadResponseWrapper e) {
+			int status = e.getStatus();
+			assertEquals(500, status);
+			String body = e.getBody();
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, body);
+		}
+		
+		//Verify Report Contents
+		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
+				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":500,\"details\":\"error"
+				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
+				+ "]}";
+		String actualReport = mapper.writeValueAsString(BaseController.getReport());
+		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
 	}
 }
