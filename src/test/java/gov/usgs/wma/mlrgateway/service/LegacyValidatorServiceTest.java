@@ -18,9 +18,12 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
+import java.util.Arrays;
 import java.util.Map;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.http.HttpStatus;
@@ -53,20 +56,27 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
 		
 		assertTrue(mlValid.containsKey("validation"));
-		assertTrue(((Map)mlValid.get("validation")).size() == 1);
-		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
+		Map<String, Object> validationResults = (Map<String, Object>) mlValid.get("validation");
+		assertEquals(1, validationResults.size());
+		assertTrue(validationResults.containsKey("validation_passed_message"));
 		
 		//Verify Report Contents
+		String step = "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
+				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}";
+		
 		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
+				+ step
+				+ ","
+				+ step
 				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		String actualReport = mapper.writeValueAsString(BaseController.getReport());
+		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
 	}
 	
 	@Test
@@ -75,6 +85,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, false);
@@ -84,11 +95,16 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
 		
 		//Verify Report Contents
+		String step = "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
+				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}";
+		
 		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
+				+ step
+				+ ","
+				+ step
 				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		String actualReport = mapper.writeValueAsString(BaseController.getReport());
+		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
 	}
 	
 	@Test
@@ -97,6 +113,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -106,11 +123,16 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
 		
 		//Verify Report Contents
+		String step = "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
+				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}";
+		
 		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
+				+ step
+				+ ","
+				+ step
 				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		String actualReport = mapper.writeValueAsString(BaseController.getReport());
+		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
 	}
 	
 	@Test
@@ -119,6 +141,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -128,11 +151,16 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
 		
 		//Verify Report Contents
+		String step = "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
+				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}";
+		
 		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
+				+ step
+				+ ","
+				+ step
 				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		String actualReport = mapper.writeValueAsString(BaseController.getReport());
+		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
 	}
 	
 	
@@ -142,6 +170,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true);
@@ -152,11 +181,16 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertTrue(((Map)mlValid.get("validation")).containsKey("warning_message"));
 		
 		//Verify Report Contents
+		String step = "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
+				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}";
+		
 		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
+				+ step
+				+ ","
+				+ step
 				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		String actualReport = mapper.writeValueAsString(BaseController.getReport());
+		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
 	}
 	
 	@Test
@@ -165,6 +199,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, false);
@@ -175,11 +210,16 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertTrue(((Map)mlValid.get("validation")).containsKey("warning_message"));
 		
 		//Verify Report Contents
+		String step = "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
+				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}";
+		
 		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
+				+ step
+				+ ","
+				+ step
 				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		String actualReport = mapper.writeValueAsString(BaseController.getReport());
+		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
 	}
 	
 	@Test
@@ -188,6 +228,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"fatal_error_message\": \"Fatal Error.\"}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -200,10 +241,14 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		
 		//Verify Report Contents
 		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":["
+				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
+				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
+				+ ","
 				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"{\\\"error_message\\\": {\\\"fatal_error_message\\\": \\\"Fatal Error.\\\"}}"
 				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
 				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		String actualReport = mapper.writeValueAsString(BaseController.getReport());
+		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
 	}
 	
 	@Test
@@ -212,9 +257,10 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{}", HttpStatus.OK);
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
-		try{
+		try{ 
 			service.doValidation(ml, true);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
