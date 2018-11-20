@@ -3,6 +3,7 @@ package gov.usgs.wma.mlrgateway.service;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import org.apache.http.HttpStatus;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,7 +38,7 @@ public class LegacyValidatorService {
 	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction) throws FeignBadResponseWrapper {
 		try {
 			ResponseEntity<String> validationResponse;
-			String validationPayload = preValidation(ml, isAddTransaction);
+			String validationPayload = attachExistingMonitoringLocation(ml, isAddTransaction);
 			if(isAddTransaction) {
 				validationResponse = legacyValidatorClient.validateAdd(validationPayload);
 			} else {
@@ -91,7 +92,7 @@ public class LegacyValidatorService {
 		return ml;
 	}
 
-	private String preValidation(Map<String, Object> ml, boolean isAddTransaction) {
+	private String attachExistingMonitoringLocation(Map<String, Object> ml, boolean isAddTransaction) {
 		Map<String, Object> existingRecord = new HashMap<>();
 		Map<String, Object> validationPayload = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
@@ -113,5 +114,16 @@ public class LegacyValidatorService {
 			log.error(VALIDATION_STEP + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize input as validator payload.\"}");
 		}
+	}
+	
+	/**
+	 * 
+	 * @param ml
+	 * @return
+	 * @throws FeignBadResponseWrapper 
+	 */
+	protected List<String> doDuplicateValidation(Map<String, Object> ml) throws FeignBadResponseWrapper {
+		List<String> msgs = legacyCruService.validateMonitoringLocation(ml);
+		return msgs;
 	}
 }

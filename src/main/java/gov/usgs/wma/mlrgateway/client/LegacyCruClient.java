@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.client;
 
+import java.util.List;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,4 +24,6 @@ public interface LegacyCruClient {
 	@RequestMapping(method=RequestMethod.GET, value="monitoringLocations", consumes="application/json")
 	ResponseEntity<String> getMonitoringLocation(@RequestParam("agencyCode") String agencyCode, @RequestParam("siteNumber") String siteNumber);
 
+	@RequestMapping(method=RequestMethod.POST, value="monitoringLocations/validate", consumes="application/json")
+	ResponseEntity<String> validateMonitoringLocation(@RequestBody String ml);
 }

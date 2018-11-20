@@ -1,12 +1,21 @@
 package gov.usgs.wma.mlrgateway.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
+import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.apache.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,9 +24,11 @@ import org.slf4j.LoggerFactory;
 
 @Service
 public class LegacyCruService {
+
 	private LegacyCruClient legacyCruClient;
 	private Logger log = LoggerFactory.getLogger(LegacyCruService.class);
-		
+	private ObjectMapper objectMapper;
+	
 	public static final String SITE_ADD_STEP = "Site Add";
 	public static final String SITE_ADD_SUCCESSFULL = "Site Added Successfully";
 	public static final String SITE_ADD_FAILED = "Site add failed";
@@ -28,11 +39,15 @@ public class LegacyCruService {
 	public static final String SITE_GET_SUCCESSFULL = "Location Get Successful";
 	public static final String SITE_GET_DOES_NOT_EXIST = "Requested Location Not Found";
 	public static final String SITE_GET_STEP_FAILED = "{\"error\":{\"message\": \"Unable to read Legacy CRU output.\"}}";
-	
-	public LegacyCruService(LegacyCruClient legacyCruClient){
+	public static final String SITE_VALIDATE_STEP = "Validate Duplicate Monitoring Location";
+	public static final String SITE_VALIDATE_SUCCESSFUL = "Monitoring Location Duplicate Validation Succeeded";
+	public static final String SITE_VALIDATE_FAILED = "Monitoring Location Duplicate Validation Failed";
+
+	public LegacyCruService(LegacyCruClient legacyCruClient) {
 		this.legacyCruClient = legacyCruClient;
+		this.objectMapper = new ObjectMapper();
 	}
-	
+
 	public String addTransaction(Object agencyCode, Object siteNumber, String json) {
 		try {
 			ResponseEntity<String> cruResp = legacyCruClient.createMonitoringLocation(json);
@@ -40,51 +55,107 @@ public class LegacyCruService {
 			BaseController.addStepReport(new StepReport(SITE_ADD_STEP, cruStatus, 201 == cruStatus ? SITE_ADD_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
 			return cruResp.getBody();
 		} catch (Exception e) {
-			BaseController.addStepReport(new StepReport(SITE_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_ADD_FAILED,  agencyCode, siteNumber));
-			log.error(SITE_ADD_STEP + ": " + SITE_ADD_FAILED + ":" +  e.getMessage());			
-			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + SITE_ADD_FAILED + "\"}");	
+			BaseController.addStepReport(new StepReport(SITE_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_ADD_FAILED, agencyCode, siteNumber));
+			log.error(SITE_ADD_STEP + ": " + SITE_ADD_FAILED + ":" + e.getMessage());
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + SITE_ADD_FAILED + "\"}");
 		}
 	}
-	
+
 	public String updateTransaction(Object agencyCode, Object siteNumber, String json) {
 		try {
 			ResponseEntity<String> cruResp = legacyCruClient.patchMonitoringLocation(json);
 			int cruStatus = cruResp.getStatusCodeValue();
 			BaseController.addStepReport(new StepReport(SITE_UPDATE_STEP, cruStatus, 200 == cruStatus ? SITE_UPDATE_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
 			return cruResp.getBody();
-		} catch (Exception e){
-			BaseController.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_UPDATE_FAILED,  agencyCode, siteNumber));
-			log.error(SITE_UPDATE_STEP + ": " + SITE_UPDATE_FAILED + ":" +  e.getMessage());			
+		} catch (Exception e) {
+			BaseController.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_UPDATE_FAILED, agencyCode, siteNumber));
+			log.error(SITE_UPDATE_STEP + ": " + SITE_UPDATE_FAILED + ":" + e.getMessage());
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + SITE_UPDATE_FAILED + "\"}");
 		}
 	}
-	
+
 	public Map<String, Object> getMonitoringLocation(Object agencyCode, Object siteNumber, boolean isAddTransaction) {
 		Map<String, Object> site = new HashMap<>();
-		ObjectMapper mapper = new ObjectMapper();
-		
-		ResponseEntity<String> cruResp = legacyCruClient.getMonitoringLocation((String)agencyCode, (String)siteNumber);
+
+		ResponseEntity<String> cruResp = legacyCruClient.getMonitoringLocation((String) agencyCode, (String) siteNumber);
 		int cruStatus = cruResp.getStatusCodeValue();
 		String preValMsg = "";
-		
+
 		if (cruStatus == 404) {
 			if (isAddTransaction) {
 				cruStatus = 200;
 				preValMsg = "Duplicate agency code/site number check: ";
 			}
-			BaseController.addStepReport(new StepReport(preValMsg + SITE_GET_STEP, cruStatus,  SITE_GET_DOES_NOT_EXIST , agencyCode, siteNumber));
-  		} else {
+			BaseController.addStepReport(new StepReport(preValMsg + SITE_GET_STEP, cruStatus, SITE_GET_DOES_NOT_EXIST, agencyCode, siteNumber));
+		} else {
 
 			try {
-				site = mapper.readValue(cruResp.getBody(), Map.class);
+				site = objectMapper.readValue(cruResp.getBody(), Map.class);
 			} catch (Exception e) {
 				BaseController.addStepReport(new StepReport(SITE_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_GET_STEP_FAILED, null, null));
-				log.error(SITE_GET_STEP + ": " + SITE_GET_STEP_FAILED + ":" +  e.getMessage());			
+				log.error(SITE_GET_STEP + ": " + SITE_GET_STEP_FAILED + ":" + e.getMessage());
 				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_GET_STEP_FAILED);
 			}
 
 			BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus, 200 == cruStatus ? SITE_GET_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
 		}
 		return site;
+	}
+
+	/**
+	 *
+	 * @param ml
+	 * @return a List of String error messages. Empty if there were no
+	 * validation errors.
+	 */
+	public List<String> validateMonitoringLocation(Map<String, Object> ml) {
+		List<String> validationMessages;
+		String stepReportMessage = "";
+		String mlJson = "";
+		String agencyCode = (String) ml.get(LegacyWorkflowService.AGENCY_CODE);
+		String siteNumber = (String) ml.get(LegacyWorkflowService.SITE_NUMBER);
+
+		try {
+			mlJson = objectMapper.writeValueAsString(ml);
+		} catch (JsonProcessingException ex) {
+			BaseController.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_VALIDATE_FAILED, agencyCode, siteNumber));
+			log.error(SITE_VALIDATE_STEP + ": " + SITE_VALIDATE_FAILED, ex);
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_VALIDATE_FAILED);
+		}
+
+		ResponseEntity<String> response = legacyCruClient.validateMonitoringLocation(mlJson);
+		int cruStatus = response.getStatusCodeValue();
+
+		if (200 == cruStatus) {
+			validationMessages = new ArrayList<>();
+			stepReportMessage = SITE_VALIDATE_SUCCESSFUL;
+		} else {
+			try {
+				stepReportMessage = response.getBody();
+				TypeReference typeReference = new TypeReference<List<String>>(){};
+				validationMessages = objectMapper.readValue(response.getBody(), typeReference);
+			} catch (Exception ex) {
+				BaseController.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_VALIDATE_FAILED, agencyCode, siteNumber));
+				log.error(SITE_VALIDATE_STEP + ": " + SITE_VALIDATE_FAILED, ex);
+				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_VALIDATE_FAILED);
+			}
+		}
+		BaseController.addStepReport(new StepReport(SITE_VALIDATE_STEP, cruStatus, stepReportMessage, agencyCode, siteNumber));
+
+		return validationMessages;
+	}
+
+	/**
+	 * @return the reader
+	 */
+	public ObjectMapper getMapper() {
+		return objectMapper;
+	}
+
+	/**
+	 * @param mapper the reader to set
+	 */
+	public void setMapper(ObjectMapper mapper) {
+		this.objectMapper = mapper;
 	}
 }
