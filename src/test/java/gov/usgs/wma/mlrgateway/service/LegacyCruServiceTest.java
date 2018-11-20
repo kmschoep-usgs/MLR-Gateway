@@ -1,9 +1,7 @@
 package gov.usgs.wma.mlrgateway.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
-import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
@@ -12,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import net.minidev.json.JSONObject;
 import static org.junit.Assert.assertNotNull;
@@ -31,11 +28,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import static org.junit.Assert.fail;
-import org.junit.Ignore;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 public class LegacyCruServiceTest extends BaseSpringTest {

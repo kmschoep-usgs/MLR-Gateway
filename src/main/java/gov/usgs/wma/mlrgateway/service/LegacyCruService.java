@@ -1,21 +1,15 @@
 package gov.usgs.wma.mlrgateway.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import org.apache.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

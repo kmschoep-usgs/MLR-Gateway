@@ -1,6 +1,5 @@
 package gov.usgs.wma.mlrgateway.service;
 
-import com.fasterxml.jackson.core.JsonEncoding;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import java.util.HashMap;
 import java.util.Map;
