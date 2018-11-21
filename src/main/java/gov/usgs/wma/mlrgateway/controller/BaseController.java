@@ -2,6 +2,7 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
+import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.config.WaterAuthJwtConverter;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
@@ -44,9 +45,27 @@ public abstract class BaseController {
 		gatewayReport.set(report);
 	}
 
-	public static void addStepReport(StepReport stepReport) {
+	public static void addDdotIngesterStepReport(StepReport stepReport) {
 		GatewayReport report = gatewayReport.get();
-		report.addStepReport(stepReport);
+		report.setDdotIngesterStep(stepReport);
+		gatewayReport.set(report);
+	}
+	
+	public static void addNotificationStepReport(StepReport stepReport) {
+		GatewayReport report = gatewayReport.get();
+		report.setNotificationStep(stepReport);
+		gatewayReport.set(report);
+	}
+	
+	public static void addSiteReport(SiteReport siteReport) {
+		GatewayReport report = gatewayReport.get();
+		report.addSiteReport(siteReport);
+		gatewayReport.set(report);
+	}
+	
+	public static void addWorkflowStepReport(StepReport stepReport) {
+		GatewayReport report = gatewayReport.get();
+		report.setWorkflowStep(stepReport);
 		gatewayReport.set(report);
 	}
 
@@ -85,10 +104,10 @@ public abstract class BaseController {
 		} catch(Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				WorkflowController.addStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
+				WorkflowController.addNotificationStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.addStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, e.getLocalizedMessage(), null, null));
+				WorkflowController.addNotificationStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, e.getLocalizedMessage()));
 			}
 		}
 	}

@@ -51,7 +51,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	public void validatorService_doValidation_addValidData() throws Exception {
 		Map<String, Object> ml = getAdd();
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
-		
+		siteReport
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		

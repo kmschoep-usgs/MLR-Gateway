@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
+import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
@@ -34,26 +35,26 @@ public class LegacyValidatorService {
 		this.legacyValidatorClient = legacyValidatorClient;
 	}
 
-	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction) throws FeignBadResponseWrapper {
+	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction, SiteReport siteReport) throws FeignBadResponseWrapper {
 		try {
 			ResponseEntity<String> validationResponse;
-			String validationPayload = preValidation(ml, isAddTransaction);
+			String validationPayload = preValidation(ml, isAddTransaction, siteReport);
 			if(isAddTransaction) {
 				validationResponse = legacyValidatorClient.validateAdd(validationPayload);
 			} else {
 				 validationResponse = legacyValidatorClient.validateUpdate(validationPayload);
 			}
 			ml = verifyValidationStatus(ml, validationResponse);
-			BaseController.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(),  VALIDATION_SUCCESSFUL, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+			siteReport.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(), true, VALIDATION_SUCCESSFUL ));
 			return ml;
 		} catch (Exception e) {
 			int status;
 			if(e instanceof FeignBadResponseWrapper) {
 				status = ((FeignBadResponseWrapper)e).getStatus();
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  ((FeignBadResponseWrapper)e).getBody(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				siteReport.addStepReport(new StepReport(VALIDATION_STEP, status, false, ((FeignBadResponseWrapper)e).getBody()));
 			} else {
 				status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, status,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				siteReport.addStepReport(new StepReport(VALIDATION_STEP, status, false, e.getMessage()));
 			}
 
 			//Throw error to stop additional transaction processing
@@ -91,7 +92,7 @@ public class LegacyValidatorService {
 		return ml;
 	}
 
-	private String preValidation(Map<String, Object> ml, boolean isAddTransaction) {
+	private String preValidation(Map<String, Object> ml, boolean isAddTransaction, SiteReport siteReport) {
 		Map<String, Object> existingRecord = new HashMap<>();
 		Map<String, Object> validationPayload = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
@@ -100,7 +101,7 @@ public class LegacyValidatorService {
 		String siteNumber = ml.get(LegacyWorkflowService.SITE_NUMBER) != null ? ml.get(LegacyWorkflowService.SITE_NUMBER).toString() : null;
 		String agencyCode = ml.get(LegacyWorkflowService.AGENCY_CODE) != null ? ml.get(LegacyWorkflowService.AGENCY_CODE).toString() : null;
 
-		existingRecord = legacyCruService.getMonitoringLocation(agencyCode, siteNumber, isAddTransaction);
+		existingRecord = legacyCruService.getMonitoringLocation(agencyCode, siteNumber, isAddTransaction, siteReport);
 
 		validationPayload.put(LegacyValidatorClient.NEW_RECORD_PAYLOAD,ml);
 		validationPayload.put(LegacyValidatorClient.EXISTING_RECORD_PAYLOAD,existingRecord);

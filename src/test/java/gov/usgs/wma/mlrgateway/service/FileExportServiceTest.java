@@ -2,6 +2,7 @@ package gov.usgs.wma.mlrgateway.service;
 
 import gov.usgs.wma.mlrgateway.client.FileExportClient;
 import gov.usgs.wma.mlrgateway.GatewayReport;
+import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +28,9 @@ public class FileExportServiceTest {
 	private FileExportService service;
 	private ObjectMapper mapper;
 	private String exportJson = "{}";
+	private String user = "testUser";
+	private String reportDateTime = "11/14/2018 08:45:32 CDT";
+	private String fileName = "test.d";
 	
 	@MockBean
 	FileExportClient fileExportClient;
@@ -34,7 +38,7 @@ public class FileExportServiceTest {
 	@Before
 	public void init() {
 		service = new FileExportService(fileExportClient);
-		WorkflowController.setReport(new GatewayReport(reportName));
+		WorkflowController.setReport(new GatewayReport(reportName, user, reportDateTime, fileName));
 		mapper = new ObjectMapper();
 	}
 
@@ -45,9 +49,11 @@ public class FileExportServiceTest {
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
 		ResponseEntity<String> exportRtn = new ResponseEntity<>(exportJson, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport("USGS ", "12345678       ");
 		given(fileExportClient.exportAdd(anyString())).willReturn(exportRtn);
 
-		service.exportAdd("USGS ", "12345678       ", "{}");
+		service.exportAdd("USGS ", "12345678       ", "{}", siteReport);
+		GatewayReport rtn = WorkflowController.getReport();
 		
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(fileExportClient).exportAdd(anyString());
@@ -60,10 +66,11 @@ public class FileExportServiceTest {
 				+ "{\"name\":\"" + FileExportService.EXPORT_ADD_STEP + "\",\"status\":500,\"details\":\"" + "Export add failed"
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
+		SiteReport siteReport = new SiteReport();
 		given(fileExportClient.exportAdd(anyString())).willThrow(new RuntimeException());
 
 		try {
-			service.exportAdd("USGS ", "12345678       ", "{}");
+			service.exportAdd("USGS ", "12345678       ", "{}", siteReport);
 			fail("updateExport did not throw exception to caller");
 		} catch (Exception e) {}
 		
@@ -79,9 +86,10 @@ public class FileExportServiceTest {
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
 		ResponseEntity<String> exportRtn = new ResponseEntity<>(exportJson, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport();
 		given(fileExportClient.exportUpdate(anyString())).willReturn(exportRtn);
 
-		service.exportUpdate("USGS ", "12345678       ", "{}");
+		service.exportUpdate("USGS ", "12345678       ", "{}", siteReport);
 		
 		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
 		verify(fileExportClient, never()).exportAdd(anyString());
@@ -94,10 +102,11 @@ public class FileExportServiceTest {
 				+ "{\"name\":\"" + FileExportService.EXPORT_UPDATE_STEP + "\",\"status\":500,\"details\":\"" + "Export update failed"
 				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
 				+ "]}";
+		SiteReport siteReport = new SiteReport();
 		given(fileExportClient.exportUpdate(anyString())).willThrow(new RuntimeException());
 		
 		try {
-			service.exportUpdate("USGS ", "12345678       ", "{}");
+			service.exportUpdate("USGS ", "12345678       ", "{}", siteReport);
 			fail("updateExport did not throw exception to caller");
 		} catch (Exception e) {}
 		

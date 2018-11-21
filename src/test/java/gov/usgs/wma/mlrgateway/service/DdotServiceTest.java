@@ -8,6 +8,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,6 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.client.DdotClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
-import net.minidev.json.JSONObject;
 
 @RunWith(SpringRunner.class)
 public class DdotServiceTest extends BaseSpringTest {
@@ -40,19 +40,19 @@ public class DdotServiceTest extends BaseSpringTest {
 
 	private DdotService service;
 	private String reportName = "TEST DDOT";
-	private ObjectMapper mapper;
+	private String user = "testUser";
+	public static final LocalDate REPORT_DATE = LocalDate.of(2018, 03, 16);
+	private String fileName = "test.d";
 
 	@Before
 	public void init() {
 		service = new DdotService(ddotClient);
-		WorkflowController.setReport(new GatewayReport(reportName));
-		mapper = new ObjectMapper();
+		WorkflowController.setReport(new GatewayReport(reportName, user, REPORT_DATE, fileName));
 	}
 
 	@Test
 	public void garbageFromDdot_thenReturnInternalServerError() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":[{\"name\":\"" + DdotService.STEP_NAME + "\",\"status\":500,\"details\":\""
-				+ JSONObject.escape(DdotService.INTERNAL_ERROR_MESSAGE) + "\"}]}";
+
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn("not json");
 		try {
@@ -64,23 +64,31 @@ public class DdotServiceTest extends BaseSpringTest {
 				JSONAssert.assertEquals(DdotService.INTERNAL_ERROR_MESSAGE , ((FeignBadResponseWrapper) e).getBody(), JSONCompareMode.STRICT);
 			}
 		}
+		GatewayReport rtn = WorkflowController.getReport();
 		verify(ddotClient).ingestDdot(any(MultipartFile.class));
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		assertEquals(rtn.getSteps().get(0).getDetails(), DdotService.INTERNAL_ERROR_MESSAGE);
+		assertEquals(rtn.getSteps().get(0).getName(), DdotService.STEP_NAME);
+		assertEquals(rtn.getName(), reportName);
+		assertEquals(rtn.getStatus().toString(), "500");
+		assertEquals(rtn.getSteps().get(0).getStatus().toString(), "500");
 	}
 
 	@Test
 	public void happyPath() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + DdotService.STEP_NAME + "\",\"status\":200,\"details\":\""
-				+ DdotService.SUCCESS_MESSAGE + "\"}]}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		ObjectMapper mapper = new ObjectMapper();
 		String ddotResponse = mapper.writeValueAsString(singleAdd());
 		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotResponse);
 		List<Map<String, Object>> rtn = service.parseDdot(file);
+		GatewayReport gatewayReport = WorkflowController.getReport();
 		assertEquals(1, rtn.size());
 		assertThat(rtn.get(0), is(getAdd()));
 		verify(ddotClient).ingestDdot(any(MultipartFile.class));
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		assertEquals(gatewayReport.getStatus().toString(), "200");
+		assertEquals(gatewayReport.getInputFileName(), fileName);
+		assertEquals(gatewayReport.getSteps().get(0).getDetails(), DdotService.SUCCESS_MESSAGE);
+		assertEquals(gatewayReport.getSteps().get(0).getName(), DdotService.STEP_NAME);
+		assertEquals(gatewayReport.getSteps().get(0).getStatus().toString(),"200");
 	}
 
 	public static List<Map<String, Object>> singleUnknown() {

@@ -13,6 +13,7 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
+import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +26,7 @@ public class ExportWorkflowController extends BaseController {
 	private ExportWorkflowService export;
 	public static final String COMPLETE_WORKFLOW = "Complete Export Workflow";
 	public static final String EXPORT_WORKFLOW_SUBJECT = "Transaction File Generation for Requested Location";
-
+	
 	@Autowired
 	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService) {
 		super(notificationService);
@@ -40,16 +41,17 @@ public class ExportWorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/legacy/location/{agencyCode}/{siteNumber}")
 	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response) {
-		setReport(new GatewayReport(COMPLETE_WORKFLOW));
+		setReport(new GatewayReport(COMPLETE_WORKFLOW, null));
 		try {
 			export.exportWorkflow(agencyCode, siteNumber);
+			ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, HttpStatus.SC_OK, true, FileExportService.EXPORT_SUCCESSFULL));
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				ExportWorkflowController.addStepReport(new StepReport(COMPLETE_WORKFLOW, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
+				ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				ExportWorkflowController.addStepReport(new StepReport(COMPLETE_WORKFLOW, status, e.getLocalizedMessage(), null, null));
+				ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false,  e.getLocalizedMessage()));
 			}
 		}
 		
@@ -58,7 +60,7 @@ public class ExportWorkflowController extends BaseController {
 		
 		//Return Report
 		GatewayReport rtn = getReport();
-		response.setStatus(rtn.getStatus());
+		response.setStatus(rtn.getWorkflowStep().getHttpStatus());
 		remove();
 		return rtn;
 	}	

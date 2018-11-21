@@ -43,24 +43,26 @@ public class WorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/ddots")
 	public GatewayReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
-		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW));
+		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW, file.getName()));
 		try {
 			legacy.completeWorkflow(file);
+			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW_SUCCESS, HttpStatus.SC_OK, true, LegacyWorkflowService.COMPLETE_WORKFLOW_SUCCESS));
+
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				WorkflowController.addStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.addStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW, status, e.getLocalizedMessage(), null, null));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
 			}
 		}
 
 		//Send Notification
-		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
+		notificationStep(COMPLETE_WORKFLOW_SUBJECT);
 		//Return report
 		GatewayReport rtn = getReport();
-		response.setStatus(rtn.getStatus());
+		response.setStatus(rtn.getWorkflowStep().getHttpStatus());
 		remove();
 		return rtn;
 	}
@@ -71,16 +73,18 @@ public class WorkflowController extends BaseController {
 			@ApiResponse(code=401, message="Unauthorized")})
 	@PostMapping("/ddots/validate")
 	public GatewayReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
-		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW));
+		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, file.getName()));
 		try {
 			legacy.ddotValidation(file);
+			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_SUCCESS, HttpStatus.SC_OK, true, LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_SUCCESS));
+
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				WorkflowController.addStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.addStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, status, e.getLocalizedMessage(), null, null));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
 			}
 		}
 
@@ -88,7 +92,7 @@ public class WorkflowController extends BaseController {
 		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
 		//Return report
 		GatewayReport rtn = getReport();
-		response.setStatus(rtn.getStatus());
+		response.setStatus(rtn.getWorkflowStep().getHttpStatus());
 		remove();
 		return rtn;
 	}

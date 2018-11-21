@@ -4,22 +4,21 @@ import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.controller.ExportWorkflowController;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
+
 import java.util.HashMap;
 import java.util.Map;
 import static org.mockito.Mockito.never;
@@ -32,16 +31,13 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 	private FileExportService fileExportService;
 	
 	private ExportWorkflowService service;
-	private MockHttpServletResponse response;
-	private ObjectMapper mapper;
+	private String fileName = "test.d";
 	private String reportName = "TEST Legacy Workflow";
 
 	@Before
 	public void init() {
 		service = new ExportWorkflowService(legacyCruService, fileExportService);
-		response = new MockHttpServletResponse();
-		ExportWorkflowController.setReport(new GatewayReport(reportName));
-		mapper = new ObjectMapper();
+		ExportWorkflowController.setReport(new GatewayReport(reportName, fileName));
 	}
 
 	@Test
@@ -49,22 +45,22 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 		Map<String,Object> site;
 		site = getAdd();
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(site);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(site);
 
 		service.exportWorkflow("USGS", "12345678");
 		
-		verify(legacyCruService).getMonitoringLocation(anyString(), anyString(), anyBoolean());
-		verify(fileExportService).exportAdd(anyString(), anyString(), anyString());
+		verify(legacyCruService).getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject());
+		verify(fileExportService).exportAdd(anyString(), anyString(), anyString(), anyObject());
 	}
 	
 	@Test
 	public void completeWorkflow_siteDoesNotExist() throws Exception {
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(new HashMap<>());
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(new HashMap<>());
 		
 		service.exportWorkflow("USGS", "1234");
 		
-		verify(legacyCruService).getMonitoringLocation(anyString(), anyString(), anyBoolean());
-		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString());
+		verify(legacyCruService).getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject());
+		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), anyObject());
 	}
 
 }

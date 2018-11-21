@@ -2,6 +2,7 @@ package gov.usgs.wma.mlrgateway.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
+import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
@@ -33,57 +34,60 @@ public class LegacyCruService {
 		this.legacyCruClient = legacyCruClient;
 	}
 	
-	public String addTransaction(Object agencyCode, Object siteNumber, String json) {
+	public String addTransaction(Object agencyCode, Object siteNumber, String json, SiteReport siteReport) {
 		try {
 			ResponseEntity<String> cruResp = legacyCruClient.createMonitoringLocation(json);
 			int cruStatus = cruResp.getStatusCodeValue();
-			BaseController.addStepReport(new StepReport(SITE_ADD_STEP, cruStatus, 201 == cruStatus ? SITE_ADD_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+			siteReport.addStepReport(new StepReport(SITE_ADD_STEP, cruStatus, 201 == cruStatus ? true : false, 201 == cruStatus ? SITE_ADD_SUCCESSFULL : cruResp.getBody()));
 			return cruResp.getBody();
 		} catch (Exception e) {
-			BaseController.addStepReport(new StepReport(SITE_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_ADD_FAILED,  agencyCode, siteNumber));
+			siteReport.addStepReport(new StepReport(SITE_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_ADD_FAILED));
 			log.error(SITE_ADD_STEP + ": " + SITE_ADD_FAILED + ":" +  e.getMessage());			
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + SITE_ADD_FAILED + "\"}");	
 		}
 	}
 	
-	public String updateTransaction(Object agencyCode, Object siteNumber, String json) {
+	public String updateTransaction(Object agencyCode, Object siteNumber, String json, SiteReport siteReport) {
 		try {
 			ResponseEntity<String> cruResp = legacyCruClient.patchMonitoringLocation(json);
 			int cruStatus = cruResp.getStatusCodeValue();
-			BaseController.addStepReport(new StepReport(SITE_UPDATE_STEP, cruStatus, 200 == cruStatus ? SITE_UPDATE_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+			siteReport.addStepReport(new StepReport(SITE_UPDATE_STEP, cruStatus, 200 == cruStatus ? true : false, 200 == cruStatus ? SITE_UPDATE_SUCCESSFULL : cruResp.getBody()));
 			return cruResp.getBody();
 		} catch (Exception e){
-			BaseController.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_UPDATE_FAILED,  agencyCode, siteNumber));
+			siteReport.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_UPDATE_FAILED));
 			log.error(SITE_UPDATE_STEP + ": " + SITE_UPDATE_FAILED + ":" +  e.getMessage());			
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + SITE_UPDATE_FAILED + "\"}");
 		}
 	}
 	
-	public Map<String, Object> getMonitoringLocation(Object agencyCode, Object siteNumber, boolean isAddTransaction) {
+	public Map<String, Object> getMonitoringLocation(Object agencyCode, Object siteNumber, boolean isAddTransaction, SiteReport siteReport) {
 		Map<String, Object> site = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ResponseEntity<String> cruResp = legacyCruClient.getMonitoringLocation((String)agencyCode, (String)siteNumber);
 		int cruStatus = cruResp.getStatusCodeValue();
+		boolean isSuccess = true;
 		String preValMsg = "";
 		
 		if (cruStatus == 404) {
 			if (isAddTransaction) {
-				cruStatus = 200;
+				isSuccess = true;
 				preValMsg = "Duplicate agency code/site number check: ";
+			} else {
+				isSuccess = false;
 			}
-			BaseController.addStepReport(new StepReport(preValMsg + SITE_GET_STEP, cruStatus,  SITE_GET_DOES_NOT_EXIST , agencyCode, siteNumber));
+			siteReport.addStepReport(new StepReport(preValMsg + SITE_GET_STEP, cruStatus, isSuccess, SITE_GET_DOES_NOT_EXIST));
   		} else {
 
 			try {
 				site = mapper.readValue(cruResp.getBody(), Map.class);
 			} catch (Exception e) {
-				BaseController.addStepReport(new StepReport(SITE_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_GET_STEP_FAILED, null, null));
+				siteReport.addStepReport(new StepReport(SITE_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_GET_STEP_FAILED));
 				log.error(SITE_GET_STEP + ": " + SITE_GET_STEP_FAILED + ":" +  e.getMessage());			
 				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_GET_STEP_FAILED);
 			}
 
-			BaseController.addStepReport(new StepReport(SITE_GET_STEP, cruStatus, 200 == cruStatus ? SITE_GET_SUCCESSFULL : cruResp.getBody(), agencyCode, siteNumber));
+			siteReport.addStepReport(new StepReport(SITE_GET_STEP, cruStatus, 200 == cruStatus ? true : false, 200 == cruStatus ? SITE_GET_SUCCESSFULL : cruResp.getBody()));
 		}
 		return site;
 	}
