@@ -42,13 +42,14 @@
 						</form>
 					</div>
 					<div class="mlr-action" id="mlr-export">
-						<h3 id="export-header" class="mlr-action-header">Export a Location to a New Host</h3>
+						<h3 id="export-header" class="mlr-action-header">Copy a Location to a New Host</h3>
 						<form name="exportForm" id="exportForm">
 							<label for="exportAgency">Agency Code:</label>
 							<input id="exportAgency" type="text" name="exportAgency" class="mlr-text-input"><br>
 							<label for="exportSite">Site Number:</label>
 							<input id="exportSite" type="text" name="exportSite" class="mlr-text-input"><br>
-							<input type="button" id="export-button" value="Export" class="btn btn-xs btn-primary mlr-button-input" onclick="exportLocation()">
+							<button type="submit" id="export-button" class="btn btn-xs btn-primary mlr-button-input export-buttons" onclick="exportLocation()">Copy</button>
+							<span id="export-help" class="btn btn-xs btn-info export-buttons" data-toggle="tooltip" data-placement="right" title="Look up a Monitoring Location in the Registry, copy it to a legacy host."><span class="glyphicon glyphicon-question-sign"></span></span>
 						</form>
 					</div>
 				</div>

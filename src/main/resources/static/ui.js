@@ -146,3 +146,19 @@ function exportLocation() {
 function formatJsonResponse(response) {
 	return JSON.stringify(response, null, 4).split("\n").join("<br/>").split(" ").join("&nbsp;");
 }
+
+$(function () {
+	//initialize bootstrap tooltips
+	$('[data-toggle="tooltip"]').tooltip();
+	
+	$('#exportForm').submit(function(e){
+		/**
+		 * When a user hits the export button or presses 'Enter' while
+		 * focused on an export field, we want our custom form action
+		 * to be taken. We prevent the browser from taking its default
+		 * action.
+		 */
+		e.preventDefault();
+		exportLocation();
+	});
+});
