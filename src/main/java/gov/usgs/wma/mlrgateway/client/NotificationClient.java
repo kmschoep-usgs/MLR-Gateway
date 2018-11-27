@@ -18,6 +18,9 @@ public interface NotificationClient {
 	public static final String MESSAGE_CC_KEY = "cc";
 	public static final String MESSAGE_BCC_KEY = "bcc";
 	public static final String MESSAGE_REPLY_TO_KEY = "replyTo";
+	public static final String MESSAGE_ATTACHMENT_KEY = "attachment";
+	public static final String MESSAGE_ATTACHMENT_FILE_NAME_KEY = "attachmentFileName";
+
 
 	@RequestMapping(method=RequestMethod.POST, value="notification/email", consumes="application/json")
 	ResponseEntity<String> sendEmail(@RequestBody String messageJson);
