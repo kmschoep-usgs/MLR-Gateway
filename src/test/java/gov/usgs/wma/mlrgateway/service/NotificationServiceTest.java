@@ -1,6 +1,7 @@
 package gov.usgs.wma.mlrgateway.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -32,6 +33,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 
 	private NotificationService service;
 	private String reportName = "TEST NOTIFICATION";
+	private String fileName = "test.d";
 	private ObjectMapper mapper;
 	private MockHttpServletResponse response;
 	
@@ -40,7 +42,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 	public void init() {
 		service = new NotificationService(notificationClient);
 		response = new MockHttpServletResponse();
-		BaseController.setReport(new GatewayReport(reportName));
+		BaseController.setReport(new GatewayReport(reportName, fileName));
 		mapper = new ObjectMapper();
 	}
 
@@ -50,8 +52,11 @@ public class NotificationServiceTest extends BaseSpringTest {
 		List<String> recipientList = new ArrayList<>();
 		recipientList.add("test");
 		given(notificationClient.sendEmail(anyString())).willReturn(emailResp);
-		service.sendNotification(recipientList, "test", "test", BaseController.getReport());
+		GatewayReport report = BaseController.getReport();
+		service.sendNotification(recipientList, "test", "test", report);
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		assertEquals(report.getUserName(), "test");
+		assertNotNull(report.getReportDateTime());
 		verify(notificationClient).sendEmail(anyString());
 		
 		ResponseEntity<String> rtn = notificationClient.sendEmail("test");

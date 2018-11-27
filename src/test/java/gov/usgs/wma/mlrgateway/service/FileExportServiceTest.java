@@ -5,13 +5,9 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import net.minidev.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,17 +16,19 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
 public class FileExportServiceTest {
 	private String reportName = "TEST EXPORT";
 	private FileExportService service;
-	private ObjectMapper mapper;
 	private String exportJson = "{}";
-	private String user = "testUser";
-	private String reportDateTime = "11/14/2018 08:45:32 CDT";
 	private String fileName = "test.d";
+	private final String agencyCode = "USGS ";
+	private final String siteNumber = "12345678       ";
 	
 	@MockBean
 	FileExportClient fileExportClient;
@@ -38,80 +36,104 @@ public class FileExportServiceTest {
 	@Before
 	public void init() {
 		service = new FileExportService(fileExportClient);
-		WorkflowController.setReport(new GatewayReport(reportName, user, reportDateTime, fileName));
-		mapper = new ObjectMapper();
+		WorkflowController.setReport(new GatewayReport(reportName, fileName));
 	}
 
 	@Test
 	public void addExport_callsBackingServices() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + FileExportService.EXPORT_ADD_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(FileExportService.EXPORT_SUCCESSFULL)
-				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
-				+ "]}";
 		ResponseEntity<String> exportRtn = new ResponseEntity<>(exportJson, HttpStatus.OK);
-		SiteReport siteReport = new SiteReport("USGS ", "12345678       ");
+
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(fileExportClient.exportAdd(anyString())).willReturn(exportRtn);
 
-		service.exportAdd("USGS ", "12345678       ", "{}", siteReport);
+		service.exportAdd(agencyCode, siteNumber, "{}", siteReport);
 		GatewayReport rtn = WorkflowController.getReport();
+		rtn.addSiteReport(siteReport);
 		
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		assertEquals(rtn.getName(), reportName);
+		assertEquals(rtn.getInputFileName(), fileName);
+		assertEquals(rtn.getSites().get(0).getAgencyCode(), agencyCode);
+		assertEquals(rtn.getSites().get(0).getSiteNumber(), siteNumber);
+		assertTrue(rtn.getSites().get(0).getIsSuccess());
+		assertEquals(rtn.getSites().get(0).getSteps().size(), 1);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), FileExportService.EXPORT_ADD_STEP);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), FileExportService.EXPORT_SUCCESSFULL);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "200");
+		assertTrue(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
 		verify(fileExportClient).exportAdd(anyString());
 		verify(fileExportClient, never()).exportUpdate(anyString());
 	}
 
 	@Test
 	public void addExport_throwsException() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
-				+ "{\"name\":\"" + FileExportService.EXPORT_ADD_STEP + "\",\"status\":500,\"details\":\"" + "Export add failed"
-				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
-				+ "]}";
-		SiteReport siteReport = new SiteReport();
+
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(fileExportClient.exportAdd(anyString())).willThrow(new RuntimeException());
 
 		try {
-			service.exportAdd("USGS ", "12345678       ", "{}", siteReport);
+			service.exportAdd(agencyCode, siteNumber, "{}", siteReport);
 			fail("updateExport did not throw exception to caller");
 		} catch (Exception e) {}
 		
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		GatewayReport rtn = WorkflowController.getReport();
+		rtn.addSiteReport(siteReport);
+		
+		assertEquals(rtn.getSites().get(0).getAgencyCode(), agencyCode);
+		assertEquals(rtn.getSites().get(0).getSiteNumber(), siteNumber);
+		assertFalse(rtn.getSites().get(0).getIsSuccess());
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), FileExportService.EXPORT_ADD_FAILED);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), FileExportService.EXPORT_ADD_STEP);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "500");
+		assertFalse(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
 		verify(fileExportClient).exportAdd(anyString());
 		verify(fileExportClient, never()).exportUpdate(anyString());
 	}
 	
 	@Test
 	public void updateExport_callsBackingServices() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + FileExportService.EXPORT_UPDATE_STEP + "\",\"status\":200,\"details\":\"" + JSONObject.escape(FileExportService.EXPORT_SUCCESSFULL)
-				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
-				+ "]}";
+
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		ResponseEntity<String> exportRtn = new ResponseEntity<>(exportJson, HttpStatus.OK);
-		SiteReport siteReport = new SiteReport();
 		given(fileExportClient.exportUpdate(anyString())).willReturn(exportRtn);
 
-		service.exportUpdate("USGS ", "12345678       ", "{}", siteReport);
+		service.exportUpdate(agencyCode, siteNumber, "{}", siteReport);
+		GatewayReport rtn = WorkflowController.getReport();
+		rtn.addSiteReport(siteReport);
 		
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		assertEquals(rtn.getName(), reportName);
+		assertEquals(rtn.getInputFileName(), fileName);
+		assertEquals(rtn.getSites().get(0).getAgencyCode(), agencyCode);
+		assertEquals(rtn.getSites().get(0).getSiteNumber(), siteNumber);
+		assertTrue(rtn.getSites().get(0).getIsSuccess());
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), FileExportService.EXPORT_SUCCESSFULL);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), FileExportService.EXPORT_UPDATE_STEP);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "200");
+		assertTrue(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
 		verify(fileExportClient, never()).exportAdd(anyString());
 		verify(fileExportClient).exportUpdate(anyString());
 	}
 
 	@Test
 	public void updateExport_throwsException() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
-				+ "{\"name\":\"" + FileExportService.EXPORT_UPDATE_STEP + "\",\"status\":500,\"details\":\"" + "Export update failed"
-				+ "\",\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \"}"
-				+ "]}";
-		SiteReport siteReport = new SiteReport();
+
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(fileExportClient.exportUpdate(anyString())).willThrow(new RuntimeException());
 		
 		try {
-			service.exportUpdate("USGS ", "12345678       ", "{}", siteReport);
+			service.exportUpdate(agencyCode, siteNumber, "{}", siteReport);
 			fail("updateExport did not throw exception to caller");
 		} catch (Exception e) {}
 		
+		GatewayReport rtn = WorkflowController.getReport();
+		rtn.addSiteReport(siteReport);
 		
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		assertEquals(rtn.getSites().get(0).getAgencyCode(), agencyCode);
+		assertEquals(rtn.getSites().get(0).getSiteNumber(), siteNumber);
+		assertFalse(rtn.getSites().get(0).getIsSuccess());
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), FileExportService.EXPORT_UPDATE_FAILED);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), FileExportService.EXPORT_UPDATE_STEP);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "500");
+		assertFalse(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
 		verify(fileExportClient, never()).exportAdd(anyString());
 		verify(fileExportClient).exportUpdate(anyString());
 	}

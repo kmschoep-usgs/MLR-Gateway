@@ -10,6 +10,8 @@ public class GatewayReport {
 
 	private String name;
 	private String inputFileName;
+	private String reportDateTime;
+	private String userName;
 	private StepReport workflowStep;
 	private StepReport ddotIngesterStep;
 	private StepReport notificationStep;
@@ -37,6 +39,22 @@ public class GatewayReport {
 
 	public void setInputFileName(String inputFileName) {
 		this.inputFileName = inputFileName;
+	}
+
+	public String getReportDateTime() {
+		return reportDateTime;
+	}
+
+	public void setReportDateTime(String reportDateTime) {
+		this.reportDateTime = reportDateTime;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 
 	public StepReport getWorkflowStep() {

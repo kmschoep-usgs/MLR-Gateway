@@ -10,8 +10,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
 import java.util.List;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.HashMap;
 import org.apache.http.HttpStatus;
@@ -31,7 +30,7 @@ public class NotificationService {
 	public static final String NOTIFICATION_STEP = "Notification";
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 	public static final String NOTIFICATION_FAILURE = "Notification failed to send.";
-	public static final Temporal REPORT_DATE_TIME = LocalDateTime.now();
+	public static final Temporal REPORT_DATE_TIME = Instant.now();
 	
 	@Autowired
 	public NotificationService(NotificationClient notificationClient){
@@ -58,13 +57,13 @@ public class NotificationService {
 	}
 	
 	private String buildMessageBody(GatewayReport report, String user) {
+		report.setReportDateTime(REPORT_DATE_TIME.toString());
+		report.setUserName(user);
 		String reportBody = "An MLR Workflow has completed on the " + 
 				environmentTier + " environment. The workflow output report is below.\n\n\n";
 		reportBody += "User:     " + user + "\n\n";
 		reportBody += "Workflow: " + report.getName() + "\n\n";
-		reportBody += "Report Date: " + DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(REPORT_DATE_TIME); 
-		//reportBody += "Status:   " + ((200 == report.getWorkflowStep().getHttpStatus() || report.getStatus() == 201) ? "Success" : "Failure") + "(" + report.getStatus() + ")\n\n";		
-		
+		reportBody += "Report Date: " + report.getReportDateTime(); 		
 		reportBody += "The full, raw report output is included below.\n\n\n";
 		reportBody += report.toPrettyPrintString();
 		

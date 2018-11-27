@@ -13,7 +13,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
@@ -34,14 +33,11 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	private WorkflowController controller;
 	private MockHttpServletResponse response;
-	private ObjectMapper mapper;
-	//public static final LocalDate REPORT_DATE = LocalDate.of(2018, 03, 16);
 
 	@Before
 	public void init() {
 		controller = new WorkflowController(legacy, notify);
 		response = new MockHttpServletResponse();
-		mapper = new ObjectMapper();
 	}
 
 	@Test

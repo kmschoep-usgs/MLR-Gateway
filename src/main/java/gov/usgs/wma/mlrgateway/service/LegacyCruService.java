@@ -6,8 +6,6 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
-import gov.usgs.wma.mlrgateway.controller.BaseController;
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +32,9 @@ public class LegacyCruService {
 	public static final String SITE_GET_SUCCESSFULL = "Location Get Successful";
 	public static final String SITE_GET_DOES_NOT_EXIST = "Requested Location Not Found";
 	public static final String SITE_GET_STEP_FAILED = "{\"error\":{\"message\": \"Unable to read Legacy CRU output.\"}}";
-	public static final String SITE_VALIDATE_STEP = "Validate Duplicate Monitoring Location";
-	public static final String SITE_VALIDATE_SUCCESSFUL = "Monitoring Location Duplicate Validation Succeeded";
-	public static final String SITE_VALIDATE_FAILED = "Monitoring Location Duplicate Validation Failed";
+	public static final String SITE_VALIDATE_STEP = "Validate Duplicate Monitoring Location Name";
+	public static final String SITE_VALIDATE_SUCCESSFUL = "Monitoring Location Duplicate Name Validation Succeeded";
+	public static final String SITE_VALIDATE_FAILED = "Monitoring Location Duplicate Name Validation Failed";
 
 	public LegacyCruService(LegacyCruClient legacyCruClient) {
 		this.legacyCruClient = legacyCruClient;
@@ -106,17 +104,15 @@ public class LegacyCruService {
 	 * @return a List of String error messages. Empty if there were no
 	 * validation errors.
 	 */
-	public List<String> validateMonitoringLocation(Map<String, Object> ml) {
+	public List<String> validateMonitoringLocation(Map<String, Object> ml, SiteReport siteReport) {
 		List<String> validationMessages;
 		String stepReportMessage = "";
 		String mlJson = "";
-		String agencyCode = (String) ml.get(LegacyWorkflowService.AGENCY_CODE);
-		String siteNumber = (String) ml.get(LegacyWorkflowService.SITE_NUMBER);
 
 		try {
 			mlJson = objectMapper.writeValueAsString(ml);
 		} catch (JsonProcessingException ex) {
-			BaseController.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_VALIDATE_FAILED, agencyCode, siteNumber));
+			siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_VALIDATE_FAILED));
 			log.error(SITE_VALIDATE_STEP + ": " + SITE_VALIDATE_FAILED, ex);
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_VALIDATE_FAILED);
 		}
@@ -132,11 +128,11 @@ public class LegacyCruService {
 		try {
 			validationMessages = objectMapper.readValue(response.getBody(), List.class);
 		} catch (Exception ex) {
-			BaseController.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, SITE_VALIDATE_FAILED, agencyCode, siteNumber));
+			siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_VALIDATE_FAILED));
 			log.error(SITE_VALIDATE_STEP + ": " + SITE_VALIDATE_FAILED, ex);
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_VALIDATE_FAILED);
 		}
-		BaseController.addStepReport(new StepReport(SITE_VALIDATE_STEP, cruStatus, stepReportMessage, agencyCode, siteNumber));
+		siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, cruStatus, 200 == cruStatus ? true : false, stepReportMessage));
 
 		return validationMessages;
 	}

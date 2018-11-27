@@ -3,12 +3,13 @@ package gov.usgs.wma.mlrgateway.service;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,14 +41,12 @@ public class DdotServiceTest extends BaseSpringTest {
 
 	private DdotService service;
 	private String reportName = "TEST DDOT";
-	private String user = "testUser";
-	public static final LocalDate REPORT_DATE = LocalDate.of(2018, 03, 16);
 	private String fileName = "test.d";
 
 	@Before
 	public void init() {
 		service = new DdotService(ddotClient);
-		WorkflowController.setReport(new GatewayReport(reportName, user, REPORT_DATE, fileName));
+		WorkflowController.setReport(new GatewayReport(reportName, fileName));
 	}
 
 	@Test
@@ -66,11 +65,11 @@ public class DdotServiceTest extends BaseSpringTest {
 		}
 		GatewayReport rtn = WorkflowController.getReport();
 		verify(ddotClient).ingestDdot(any(MultipartFile.class));
-		assertEquals(rtn.getSteps().get(0).getDetails(), DdotService.INTERNAL_ERROR_MESSAGE);
-		assertEquals(rtn.getSteps().get(0).getName(), DdotService.STEP_NAME);
+		assertEquals(rtn.getDdotIngesterStep().getDetails(), DdotService.INTERNAL_ERROR_MESSAGE);
+		assertEquals(rtn.getDdotIngesterStep().getName(), DdotService.STEP_NAME);
 		assertEquals(rtn.getName(), reportName);
-		assertEquals(rtn.getStatus().toString(), "500");
-		assertEquals(rtn.getSteps().get(0).getStatus().toString(), "500");
+		assertEquals(rtn.getDdotIngesterStep().getHttpStatus().toString(), "500");
+		assertFalse(rtn.getDdotIngesterStep().getIsSuccess());
 	}
 
 	@Test
@@ -81,14 +80,16 @@ public class DdotServiceTest extends BaseSpringTest {
 		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotResponse);
 		List<Map<String, Object>> rtn = service.parseDdot(file);
 		GatewayReport gatewayReport = WorkflowController.getReport();
+		
 		assertEquals(1, rtn.size());
 		assertThat(rtn.get(0), is(getAdd()));
 		verify(ddotClient).ingestDdot(any(MultipartFile.class));
-		assertEquals(gatewayReport.getStatus().toString(), "200");
+		assertEquals(gatewayReport.getDdotIngesterStep().getHttpStatus().toString(), "200");
+		assertTrue(gatewayReport.getDdotIngesterStep().getIsSuccess());
 		assertEquals(gatewayReport.getInputFileName(), fileName);
-		assertEquals(gatewayReport.getSteps().get(0).getDetails(), DdotService.SUCCESS_MESSAGE);
-		assertEquals(gatewayReport.getSteps().get(0).getName(), DdotService.STEP_NAME);
-		assertEquals(gatewayReport.getSteps().get(0).getStatus().toString(),"200");
+		assertEquals(gatewayReport.getDdotIngesterStep().getDetails(), DdotService.SUCCESS_MESSAGE);
+		assertEquals(gatewayReport.getDdotIngesterStep().getName(), DdotService.STEP_NAME);
+		
 	}
 
 	public static List<Map<String, Object>> singleUnknown() {

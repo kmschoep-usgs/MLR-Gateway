@@ -14,7 +14,6 @@ import gov.usgs.wma.mlrgateway.controller.ExportWorkflowController;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
-import gov.usgs.wma.mlrgateway.service.LegacyValidatorService;
 
 @Service
 public class ExportWorkflowService {

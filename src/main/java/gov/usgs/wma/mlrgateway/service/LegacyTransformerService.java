@@ -1,6 +1,5 @@
 package gov.usgs.wma.mlrgateway.service;
 
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,8 +14,6 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyTransformerClient;
-import gov.usgs.wma.mlrgateway.controller.WorkflowController;
-import static gov.usgs.wma.mlrgateway.service.LegacyTransformerService.LATITUDE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

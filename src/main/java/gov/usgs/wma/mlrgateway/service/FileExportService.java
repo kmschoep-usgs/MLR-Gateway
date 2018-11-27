@@ -4,7 +4,6 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.FileExportClient;
-import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,6 @@ public class FileExportService {
 			ResponseEntity<String> exportResp = fileExportClient.exportUpdate(json);
 			int exportStatus = exportResp.getStatusCodeValue();
 			siteReport.addStepReport(new StepReport(EXPORT_UPDATE_STEP, exportStatus, 200 == exportStatus ? true : false, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody()));
-			WorkflowController.addSiteReport(siteReport);
 		} catch (Exception e) {
 			siteReport.addStepReport(new StepReport(EXPORT_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, EXPORT_UPDATE_FAILED));
 			log.error(EXPORT_UPDATE_STEP + ": " + e.getMessage());

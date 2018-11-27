@@ -95,7 +95,6 @@ public class LegacyWorkflowService {
 						WorkflowController.addSiteReport(siteReport);
 					}
 				} else {
-					//siteReport.addStepReport(new StepReport(LegacyValidatorService.VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, false, BAD_TRANSACTION_TYPE));
 					throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"Validation failed due to a missing transaction type.\"}");
 				}
 			} catch (Exception e) {
