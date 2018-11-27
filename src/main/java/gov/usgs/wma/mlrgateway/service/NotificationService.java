@@ -28,6 +28,7 @@ public class NotificationService {
 	public static final String NOTIFICATION_STEP = "Notification";
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 	public static final String NOTIFICATION_FAILURE = "Notification failed to send.";
+	public static final String ATTACHMENT_FILE_NAME = "mlr.json";
 	
 	@Autowired
 	public NotificationService(NotificationClient notificationClient){
@@ -42,7 +43,8 @@ public class NotificationService {
 		messageMap.put(NotificationClient.MESSAGE_TO_KEY, recipientList);
 		messageMap.put(NotificationClient.MESSAGE_SUBJECT_KEY, subject);
 		messageMap.put(NotificationClient.MESSAGE_TEXT_BODY_KEY, buildMessageBody(report, user));
-		
+		messageMap.put(NotificationClient.MESSAGE_ATTACHMENT_KEY, report.toPrettyPrintString());
+		messageMap.put(NotificationClient.MESSAGE_ATTACHMENT_FILE_NAME_KEY, ATTACHMENT_FILE_NAME);
 		try {
 			messageJson = mapper.writeValueAsString(messageMap);
 			ResponseEntity<String> notifResp = notificationClient.sendEmail(messageJson);
@@ -59,9 +61,7 @@ public class NotificationService {
 		reportBody += "User:     " + user + "\n\n";
 		reportBody += "Workflow: " + report.getName() + "\n\n";
 		reportBody += "Status:   " + ((200 == report.getStatus() || report.getStatus() == 201) ? "Success" : "Failure") + "(" + report.getStatus() + ")\n\n";		
-		
-		reportBody += "The full, raw report output is included below.\n\n\n";
-		reportBody += report.toPrettyPrintString();
+		reportBody += "The full, raw report output is attached.\n";
 		
 		return reportBody;
 	}
