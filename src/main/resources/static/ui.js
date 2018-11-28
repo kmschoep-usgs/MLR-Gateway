@@ -98,7 +98,7 @@ function postExport(responseHeader, success, error) {
 			error: error
 		});
 	} else {
-		handleResponseTest("Site export parameters incomplete.");
+		handleResponseText("Site copy parameters incomplete.");
 		stopLoading(responseHeader + " - Error");
 	}
 }
@@ -127,7 +127,8 @@ function postDdot(url, responseHeader, success, error) {
 			error: error
 		});
 	} else {
-		stopLoading(responseHeader + " - Error", "No file selected.");
+		handleResponseText("No file selected.");
+		stopLoading(responseHeader + " - Error");
 	}
 }
 
@@ -146,3 +147,19 @@ function exportLocation() {
 function formatJsonResponse(response) {
 	return JSON.stringify(response, null, 4).split("\n").join("<br/>").split(" ").join("&nbsp;");
 }
+
+$(function () {
+	//initialize bootstrap tooltips
+	$('[data-toggle="tooltip"]').tooltip();
+	
+	$('#exportForm').submit(function(e){
+		/**
+		 * When a user hits the export button or presses 'Enter' while
+		 * focused on an export field, we want our custom form action
+		 * to be taken. We prevent the browser from taking its default
+		 * action.
+		 */
+		e.preventDefault();
+		exportLocation();
+	});
+});
