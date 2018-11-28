@@ -58,7 +58,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 				+ "\"workflowStep\":null,\"ddotIngesterStep\":null,\"notificationStep\":null,"
 				+ "\"sites\":[{\"isSuccess\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
 				+ LegacyCruService.SITE_ADD_STEP + "\",\"httpStatus\":201,\"isSuccess\":true,\"details\":\"" 
-				+ LegacyCruService.SITE_ADD_SUCCESSFULL + "\"}]}]}";
+				+ LegacyCruService.SITE_ADD_SUCCESSFUL + "\"}]}]}";
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.CREATED);
 		given(legacyCruClient.createMonitoringLocation(anyString())).willReturn(addRtn);
@@ -97,7 +97,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,\"ddotIngesterStep\":null,"
 				+ "\"notificationStep\":null,\"sites\":[{\"isSuccess\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
 				+ "\"steps\":[{\"name\":\"" + LegacyCruService.SITE_UPDATE_STEP + "\",\"httpStatus\":200,\"isSuccess\":true,\"details\":\"" 
-				+ LegacyCruService.SITE_UPDATE_SUCCESSFULL + "\"}]}]}";
+				+ LegacyCruService.SITE_UPDATE_SUCCESSFUL + "\"}]}]}";
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		ResponseEntity<String> legacyRtn = new ResponseEntity<>(legacyJson, HttpStatus.OK);
 		given(legacyCruClient.patchMonitoringLocation(anyString())).willReturn(legacyRtn);

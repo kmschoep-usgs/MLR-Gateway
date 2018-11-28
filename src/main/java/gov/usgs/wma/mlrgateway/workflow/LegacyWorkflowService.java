@@ -43,7 +43,7 @@ public class LegacyWorkflowService {
 	public static final String COMPLETE_WORKFLOW_FAILED = "Complete workflow failed";
 	public static final String VALIDATE_DDOT_WORKFLOW = "Validate D dot File";
 	public static final String VALIDATE_DDOT_WORKFLOW_FAILED = "Validate D dot File workflow failed";
-	public static final String VALIDATE_DDOT_WORKFLOW_SUCCESS = "Validate D dot File workflow suceeded";
+	public static final String VALIDATE_DDOT_WORKFLOW_SUCCESS = "Validate D dot File workflow succeeded";
 	
 	public static final String VALIDATE_DDOT_TRANSACTION_STEP = "Validate Single D dot Transaction";
 	public static final String VALIDATE_DDOT_TRANSACTION_STEP_FAILURE = "Single transaction validation failed.";

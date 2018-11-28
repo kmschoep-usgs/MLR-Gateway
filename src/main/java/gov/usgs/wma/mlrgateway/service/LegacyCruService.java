@@ -23,10 +23,10 @@ public class LegacyCruService {
 	private ObjectMapper objectMapper;
 	
 	public static final String SITE_ADD_STEP = "Site Add";
-	public static final String SITE_ADD_SUCCESSFULL = "Site Added Successfully";
+	public static final String SITE_ADD_SUCCESSFUL = "Site Added Successfully";
 	public static final String SITE_ADD_FAILED = "Site add failed";
 	public static final String SITE_UPDATE_STEP = "Site Update";
-	public static final String SITE_UPDATE_SUCCESSFULL = "Site Updated Successfully.";
+	public static final String SITE_UPDATE_SUCCESSFUL = "Site Updated Successfully.";
 	public static final String SITE_UPDATE_FAILED = "Site update failed";
 	public static final String SITE_GET_STEP = "Location Get by AgencyCode and SiteNumber";
 	public static final String SITE_GET_SUCCESSFULL = "Location Get Successful";
@@ -47,7 +47,7 @@ public class LegacyCruService {
 		try {
 			ResponseEntity<String> cruResp = legacyCruClient.createMonitoringLocation(json);
 			int cruStatus = cruResp.getStatusCodeValue();
-			siteReport.addStepReport(new StepReport(SITE_ADD_STEP, cruStatus, 201 == cruStatus ? true : false, 201 == cruStatus ? SITE_ADD_SUCCESSFULL : cruResp.getBody()));
+			siteReport.addStepReport(new StepReport(SITE_ADD_STEP, cruStatus, 201 == cruStatus ? true : false, 201 == cruStatus ? SITE_ADD_SUCCESSFUL : cruResp.getBody()));
 			return cruResp.getBody();
 		} catch (Exception e) {
 			siteReport.addStepReport(new StepReport(SITE_ADD_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_ADD_FAILED));
@@ -60,7 +60,7 @@ public class LegacyCruService {
 		try {
 			ResponseEntity<String> cruResp = legacyCruClient.patchMonitoringLocation(json);
 			int cruStatus = cruResp.getStatusCodeValue();
-			siteReport.addStepReport(new StepReport(SITE_UPDATE_STEP, cruStatus, 200 == cruStatus ? true : false, 200 == cruStatus ? SITE_UPDATE_SUCCESSFULL : cruResp.getBody()));
+			siteReport.addStepReport(new StepReport(SITE_UPDATE_STEP, cruStatus, 200 == cruStatus ? true : false, 200 == cruStatus ? SITE_UPDATE_SUCCESSFUL : cruResp.getBody()));
 			return cruResp.getBody();
 		} catch (Exception e){
 			siteReport.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_UPDATE_FAILED));
