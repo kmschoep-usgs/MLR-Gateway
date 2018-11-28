@@ -8,10 +8,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SiteReport {
 
-	private boolean isSuccess;
 	private String agencyCode;
 	private String siteNumber;
 	private String transactionType;
+	private boolean isSuccess;
 	private List<StepReport> steps;
 
 	

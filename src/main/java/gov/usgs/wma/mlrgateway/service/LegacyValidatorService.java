@@ -29,6 +29,9 @@ public class LegacyValidatorService {
 	public static final String VALIDATION_STEP = "Validate";
 	public static final String VALIDATION_SUCCESSFUL = "Transaction validated successfully.";
 	public static final String VALIDATION_FAILED = "Transaction validation failed.";
+	public static final String SITE_VALIDATE_STEP = "Validate Duplicate Monitoring Location Name";
+	public static final String SITE_VALIDATE_SUCCESSFUL = "Monitoring Location Duplicate Name Validation Succeeded";
+	public static final String SITE_VALIDATE_FAILED = "Monitoring Location Duplicate Name Validation Failed";
 
 	@Autowired
 	public LegacyValidatorService(LegacyCruService legacyCruService, LegacyValidatorClient legacyValidatorClient){
@@ -41,14 +44,14 @@ public class LegacyValidatorService {
 		int otherValidationStatus = 200;
 		try {
 			doDuplicateValidation(ml, siteReport);
-			siteReport.addStepReport(new StepReport(LegacyCruService.SITE_VALIDATE_STEP, HttpStatus.SC_OK, true, LegacyCruService.SITE_VALIDATE_SUCCESSFUL ));
+			//siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_OK, true, SITE_VALIDATE_SUCCESSFUL ));
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
 				duplicateValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
-				siteReport.addStepReport(new StepReport(LegacyCruService.SITE_VALIDATE_STEP, duplicateValidationStatus, false, ((FeignBadResponseWrapper)e).getBody()));
+				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, ((FeignBadResponseWrapper)e).getBody()));
 			} else {
 				duplicateValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				siteReport.addStepReport(new StepReport(LegacyCruService.SITE_VALIDATE_STEP, duplicateValidationStatus, false, e.getMessage()));
+				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, e.getMessage()));
 			}
 		}
 		try {
@@ -152,6 +155,8 @@ public class LegacyValidatorService {
 		if(!msgs.isEmpty()) {
 			String msgsString = new String(JsonStringEncoder.getInstance().quoteAsString(String.join(", ", msgs)));
 			throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"" + msgsString + "\"}");
+		} else {
+			siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_OK, true, SITE_VALIDATE_SUCCESSFUL ));
 		}
 	}
 }

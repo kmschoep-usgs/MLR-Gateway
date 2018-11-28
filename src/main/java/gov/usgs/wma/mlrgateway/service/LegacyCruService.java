@@ -32,9 +32,11 @@ public class LegacyCruService {
 	public static final String SITE_GET_SUCCESSFULL = "Location Get Successful";
 	public static final String SITE_GET_DOES_NOT_EXIST = "Requested Location Not Found";
 	public static final String SITE_GET_STEP_FAILED = "{\"error\":{\"message\": \"Unable to read Legacy CRU output.\"}}";
-	public static final String SITE_VALIDATE_STEP = "Validate Duplicate Monitoring Location Name";
-	public static final String SITE_VALIDATE_SUCCESSFUL = "Monitoring Location Duplicate Name Validation Succeeded";
-	public static final String SITE_VALIDATE_FAILED = "Monitoring Location Duplicate Name Validation Failed";
+	public static final String SITE_NAME_GET_STEP = "Location Get by Name";
+	public static final String SITE_NAME_GET_SUCCESSFUL = "Location Get by Name Succeeded";
+	public static final String SITE_NAME_GET_FAILED = "Location Get by Name Failed";
+	public static final String SITE_GET_NAME_DOES_NOT_EXIST = "Requested Location Name Not Found";
+	public static final String SITE_GET_NAME_DOES_EXIST = "Duplicate Location Names Found";
 
 	public LegacyCruService(LegacyCruClient legacyCruClient) {
 		this.legacyCruClient = legacyCruClient;
@@ -112,27 +114,27 @@ public class LegacyCruService {
 		try {
 			mlJson = objectMapper.writeValueAsString(ml);
 		} catch (JsonProcessingException ex) {
-			siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_VALIDATE_FAILED));
-			log.error(SITE_VALIDATE_STEP + ": " + SITE_VALIDATE_FAILED, ex);
-			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_VALIDATE_FAILED);
+			siteReport.addStepReport(new StepReport(SITE_NAME_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_NAME_GET_FAILED));
+			log.error(SITE_NAME_GET_STEP + ": " + SITE_NAME_GET_FAILED, ex);
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_NAME_GET_FAILED);
 		}
 
 		ResponseEntity<String> response = legacyCruClient.validateMonitoringLocation(mlJson);
 		int cruStatus = response.getStatusCodeValue();
 		
 		if (200 == cruStatus) {
-			stepReportMessage = SITE_VALIDATE_SUCCESSFUL;
+			stepReportMessage = SITE_GET_NAME_DOES_NOT_EXIST;
 		} else {
 			stepReportMessage = response.getBody();
 		}
+		siteReport.addStepReport(new StepReport(SITE_NAME_GET_STEP, cruStatus, 200 == cruStatus ? true : false, stepReportMessage));
 		try {
 			validationMessages = objectMapper.readValue(response.getBody(), List.class);
 		} catch (Exception ex) {
-			siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_VALIDATE_FAILED));
-			log.error(SITE_VALIDATE_STEP + ": " + SITE_VALIDATE_FAILED, ex);
-			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_VALIDATE_FAILED);
+			//siteReport.addStepReport(new StepReport(SITE_NAME_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_NAME_GET_FAILED));
+			log.error(SITE_NAME_GET_STEP + ": " + SITE_NAME_GET_FAILED, ex);
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_NAME_GET_FAILED);
 		}
-		siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, cruStatus, 200 == cruStatus ? true : false, stepReportMessage));
 
 		return validationMessages;
 	}

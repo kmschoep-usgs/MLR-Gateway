@@ -67,8 +67,8 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
 		
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyCruService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
 		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
@@ -91,8 +91,8 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> mlValid = service.doValidation(ml, false, siteReport);
 		
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyCruService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
 		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
@@ -115,8 +115,8 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
 		
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyCruService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
 		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
@@ -140,8 +140,8 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
 		
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyCruService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
 		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
@@ -165,8 +165,8 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		Map<String, Object> mlValid = service.doValidation(ml, false, siteReport);
 		
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyCruService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
 		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
@@ -200,8 +200,8 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		gatewayReport.addSiteReport(siteReport);
 		
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyCruService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
 		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
@@ -228,8 +228,8 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		}
 		
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyCruService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
 		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
@@ -257,8 +257,8 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		}
 		
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyCruService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
 		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
@@ -286,8 +286,8 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		}
 		
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyCruService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
 		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": \"An internal error occurred during validation: " + responseMsg + "\"}");
@@ -315,8 +315,8 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		}
 
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyCruService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
 		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": \"Unable to deserialize validator response as JSON: " + responseMsg + "\"}");
@@ -347,7 +347,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		}
 
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
 		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error, Bad\"}");
 		assertFalse(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
@@ -378,7 +378,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		}
 		
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
 		assertEquals(siteReport.getSteps().get(0).getDetails(), "error");
 		assertFalse(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
@@ -409,7 +409,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		}
 
 		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyCruService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
 		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error, Bad\"}");
 		assertFalse(siteReport.getSteps().get(0).getIsSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
