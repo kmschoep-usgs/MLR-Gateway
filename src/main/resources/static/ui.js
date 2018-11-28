@@ -127,7 +127,8 @@ function postDdot(url, responseHeader, success, error) {
 			error: error
 		});
 	} else {
-		stopLoading(responseHeader + " - Error", "No file selected.");
+		handleResponseText("No file selected.");
+		stopLoading(responseHeader + " - Error");
 	}
 }
 
