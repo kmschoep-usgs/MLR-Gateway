@@ -112,7 +112,7 @@ public class WorkflowControllerMVCTest {
 
 	@Test
 	public void happyPathLegacyValidationWorkflow() throws Exception {
-		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"file\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_SUCCESS + "\",\"httpStatus\":200,\"isSuccess\":true,\"details\":\"" 
+		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_SUCCESS + "\",\"httpStatus\":200,\"isSuccess\":true,\"details\":\"" 
 				+ LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_SUCCESS + "\"},\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[]}";
 
 		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots/validate")
@@ -126,7 +126,7 @@ public class WorkflowControllerMVCTest {
 
 	@Test
 	public void badDdot_LegacyValidationWorkflow() throws Exception {
-		String badJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"file\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":{\"name\":\"" 
+		String badJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":{\"name\":\"" 
 				+ LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED + "\",\"httpStatus\":400,\"isSuccess\":false,\"details\":\"{\\\"error\\\": 123}\"},\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[]}";
 		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).ddotValidation(any(MultipartFile.class));
 
@@ -141,7 +141,7 @@ public class WorkflowControllerMVCTest {
 
 	@Test
 	public void serverError_LegacyValidationWorkflow() throws Exception {
-		String badJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"file\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":{\"name\":\"" 
+		String badJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":{\"name\":\"" 
 				+ LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED + "\",\"httpStatus\":500,\"isSuccess\":false,\"details\":\"wow 456\"},\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[]}";
 		willThrow(new RuntimeException("wow 456")).given(legacy).ddotValidation(any(MultipartFile.class));
 

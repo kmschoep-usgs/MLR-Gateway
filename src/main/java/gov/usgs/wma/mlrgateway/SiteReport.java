@@ -3,8 +3,6 @@ package gov.usgs.wma.mlrgateway;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpStatus;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -13,6 +11,7 @@ public class SiteReport {
 	private boolean isSuccess;
 	private String agencyCode;
 	private String siteNumber;
+	private String transactionType;
 	private List<StepReport> steps;
 
 	
@@ -47,6 +46,14 @@ public class SiteReport {
 		this.siteNumber = siteNumber;
 	}
 	
+	public String getTransactionType() {
+		return transactionType;
+	}
+
+	public void setTransactionType(String transactionType) {
+		this.transactionType = transactionType;
+	}
+
 	public List<StepReport> getSteps(){
 		return steps;
 	}

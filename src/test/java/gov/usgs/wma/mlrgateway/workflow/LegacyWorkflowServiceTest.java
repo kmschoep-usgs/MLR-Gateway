@@ -3,6 +3,7 @@ package gov.usgs.wma.mlrgateway.workflow;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
@@ -12,7 +13,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,6 @@ import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import gov.usgs.wma.mlrgateway.service.LegacyValidatorService;
 import gov.usgs.wma.mlrgateway.service.LegacyTransformerService;
-import net.minidev.json.JSONObject;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 
@@ -87,6 +86,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), anyString(), anyObject());
 		assertEquals(rtn.getSites().get(0).getIsSuccess(), false);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getIsSuccess(), false);
+		assertNull(rtn.getSites().get(0).getTransactionType());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), LegacyWorkflowService.COMPLETE_TRANSACTION_STEP);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\": \"Validation failed due to a missing transaction type.\"}");
 	}
@@ -118,8 +118,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		assertFalse(rtn.getSites().get(0).getIsSuccess());
 		assertFalse(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "400");
-		assertTrue(rtn.getSites().get(1).getIsSuccess());
-		assertEquals(rtn.getSites().get(1).getSteps().get(0).getHttpStatus().toString(), "201");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -148,10 +146,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString(), anyObject());
 		verify(fileExportService).exportAdd(anyString(), anyString(), anyString(), anyObject());
 		assertTrue(rtn.getSites().get(0).getIsSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "201");
-		assertTrue(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), LegacyWorkflowService.COMPLETE_TRANSACTION_STEP_SUCCESS);
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), LegacyWorkflowService.COMPLETE_TRANSACTION_STEP);
+		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_ADD);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -179,10 +174,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyCruService).updateTransaction(anyString(), anyString(), anyString(), anyObject());
 		verify(fileExportService).exportUpdate(anyString(), anyString(), anyString(), anyObject());
 		assertTrue(rtn.getSites().get(0).getIsSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "200");
-		assertTrue(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), LegacyWorkflowService.COMPLETE_TRANSACTION_STEP_SUCCESS);
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), LegacyWorkflowService.COMPLETE_TRANSACTION_STEP);
+		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -206,10 +198,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyValidatorService).doValidation(anyMap(), eq(true), anyObject());
 		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(false), anyObject());
 		assertTrue(rtn.getSites().get(0).getIsSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "200");
-		assertTrue(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), JSONObject.escape(LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS));
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -231,10 +219,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyValidatorService).doValidation(anyMap(), eq(false), anyObject());
 		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(true), anyObject());
 		assertTrue(rtn.getSites().get(0).getIsSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "200");
-		assertTrue(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), JSONObject.escape(LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS));
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP);
 	}
 
 	@SuppressWarnings("unchecked")

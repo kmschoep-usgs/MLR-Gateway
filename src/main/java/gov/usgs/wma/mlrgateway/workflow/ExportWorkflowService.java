@@ -20,8 +20,6 @@ public class ExportWorkflowService {
 
 	private LegacyCruService legacyCruService;
 	private FileExportService fileExportService;
-	
-	private SiteReport siteReport;
 
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";
@@ -35,7 +33,7 @@ public class ExportWorkflowService {
 	public void exportWorkflow(String agencyCode, String siteNumber) throws HystrixBadRequestException {
 		String json = "{}";
 		ObjectMapper mapper = new ObjectMapper();
-		siteReport = new SiteReport(agencyCode, siteNumber);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		Map<String, Object> site = legacyCruService.getMonitoringLocation(agencyCode, siteNumber, false, siteReport);
 		
 		if (!site.isEmpty()) {

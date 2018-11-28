@@ -20,6 +20,8 @@ import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
+import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
+
 import java.util.Arrays;
 import java.util.Map;
 import static org.junit.Assert.assertEquals;

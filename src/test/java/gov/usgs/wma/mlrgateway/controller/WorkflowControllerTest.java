@@ -89,7 +89,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		GatewayReport rtn = controller.legacyValidationWorkflow(file, response);
 		assertEquals(rtn.getName(), LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW);
 		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "200");
-		assertEquals(rtn.getInputFileName(), "file");
+		assertEquals(rtn.getInputFileName(), "d.");
 		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
 

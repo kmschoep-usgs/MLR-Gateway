@@ -45,13 +45,13 @@ public abstract class BaseController {
 		gatewayReport.set(report);
 	}
 
-	public static void addDdotIngesterStepReport(StepReport stepReport) {
+	public static void setDdotIngesterStepReport(StepReport stepReport) {
 		GatewayReport report = gatewayReport.get();
 		report.setDdotIngesterStep(stepReport);
 		gatewayReport.set(report);
 	}
 	
-	public static void addNotificationStepReport(StepReport stepReport) {
+	public static void setNotificationStepReport(StepReport stepReport) {
 		GatewayReport report = gatewayReport.get();
 		report.setNotificationStep(stepReport);
 		gatewayReport.set(report);
@@ -63,7 +63,7 @@ public abstract class BaseController {
 		gatewayReport.set(report);
 	}
 	
-	public static void addWorkflowStepReport(StepReport stepReport) {
+	public static void setWorkflowStepReport(StepReport stepReport) {
 		GatewayReport report = gatewayReport.get();
 		report.setWorkflowStep(stepReport);
 		gatewayReport.set(report);
@@ -104,10 +104,10 @@ public abstract class BaseController {
 		} catch(Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				WorkflowController.addNotificationStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, ((FeignBadResponseWrapper) e).getBody()));
+				WorkflowController.setNotificationStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.addNotificationStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, e.getLocalizedMessage()));
+				WorkflowController.setNotificationStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, e.getLocalizedMessage()));
 			}
 		}
 	}

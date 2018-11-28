@@ -44,14 +44,14 @@ public class ExportWorkflowController extends BaseController {
 		setReport(new GatewayReport(COMPLETE_WORKFLOW, null));
 		try {
 			export.exportWorkflow(agencyCode, siteNumber);
-			ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, HttpStatus.SC_OK, true, FileExportService.EXPORT_SUCCESSFULL));
+			ExportWorkflowController.setWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, HttpStatus.SC_OK, true, FileExportService.EXPORT_SUCCESSFULL));
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false, ((FeignBadResponseWrapper) e).getBody()));
+				ExportWorkflowController.setWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false,  e.getLocalizedMessage()));
+				ExportWorkflowController.setWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false,  e.getLocalizedMessage()));
 			}
 		}
 		

@@ -54,7 +54,9 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 	
 	@Test
 	public void addTransaction_callsBackingServices() throws Exception {
-		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[{\"isSuccess\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
+		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,"
+				+ "\"workflowStep\":null,\"ddotIngesterStep\":null,\"notificationStep\":null,"
+				+ "\"sites\":[{\"isSuccess\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
 				+ LegacyCruService.SITE_ADD_STEP + "\",\"httpStatus\":201,\"isSuccess\":true,\"details\":\"" 
 				+ LegacyCruService.SITE_ADD_SUCCESSFULL + "\"}]}]}";
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);

@@ -30,8 +30,6 @@ public class LegacyWorkflowService {
 	private LegacyCruService legacyCruService;
 	private FileExportService fileExportService;
 	
-	private SiteReport siteReport = new SiteReport();
-	
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";
 	public static final String TRANSACTION_TYPE = "transactionType";
@@ -48,10 +46,8 @@ public class LegacyWorkflowService {
 	public static final String VALIDATE_DDOT_WORKFLOW_SUCCESS = "Validate D dot File workflow suceeded";
 	
 	public static final String VALIDATE_DDOT_TRANSACTION_STEP = "Validate Single D dot Transaction";
-	public static final String VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS = "Single transaction validation passed.";
 	public static final String VALIDATE_DDOT_TRANSACTION_STEP_FAILURE = "Single transaction validation failed.";
 	public static final String COMPLETE_TRANSACTION_STEP = "Process Single D dot Transaction";
-	public static final String COMPLETE_TRANSACTION_STEP_SUCCESS = "D dot Transaction Processed";
 
 	@Autowired
 	public LegacyWorkflowService(DdotService ddotService, LegacyCruService legacyCruService, LegacyTransformerService transformService, 
@@ -71,10 +67,10 @@ public class LegacyWorkflowService {
 		//2. Process Individual Transactions
 		for (int i = 0; i < ddots.size(); i++) {
 			Map<String, Object> ml = ddots.get(i);
-			siteReport = new SiteReport(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString());
+			SiteReport siteReport = new SiteReport(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString());
 			try {
 				if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
-					
+					siteReport.setTransactionType(ml.get(TRANSACTION_TYPE).toString());
 					if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
 						ml = transformService.transformStationIx(ml, siteReport);
 						ml = legacyValidatorService.doValidation(ml, true, siteReport);
@@ -82,7 +78,6 @@ public class LegacyWorkflowService {
 						json = mlToJson(ml);
 						json = legacyCruService.addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json, siteReport);
 						fileExportService.exportAdd(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString(), json, siteReport);
-						siteReport.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP, HttpStatus.SC_CREATED, true, COMPLETE_TRANSACTION_STEP_SUCCESS));
 						WorkflowController.addSiteReport(siteReport);
 					} else {
 						ml = transformService.transformStationIx(ml, siteReport);
@@ -91,7 +86,6 @@ public class LegacyWorkflowService {
 						json = mlToJson(ml);
 						json = legacyCruService.updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json, siteReport);
 						fileExportService.exportUpdate(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString(), json, siteReport);
-						siteReport.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP, HttpStatus.SC_OK, true, COMPLETE_TRANSACTION_STEP_SUCCESS));
 						WorkflowController.addSiteReport(siteReport);
 					}
 				} else {
@@ -116,9 +110,10 @@ public class LegacyWorkflowService {
 		//2. Process Individual Transactions
 		for (int i = 0; i < ddots.size(); i++) {
 			Map<String, Object> ml = ddots.get(i);
-			siteReport = new SiteReport(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString());
+			SiteReport siteReport = new SiteReport(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString());
 			try {
 				if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
+					siteReport.setTransactionType(ml.get(TRANSACTION_TYPE).toString());
 					ml = transformService.transformStationIx(ml, siteReport);
 					if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
 						ml = legacyValidatorService.doValidation(ml, true, siteReport);
@@ -130,7 +125,6 @@ public class LegacyWorkflowService {
 					throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"Validation failed due to a missing transaction type.\"}");
 				}		
 				
-				siteReport.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP, HttpStatus.SC_OK, true, VALIDATE_DDOT_TRANSACTION_STEP_SUCCESS));
 			} catch (Exception e) {
 				if(e instanceof FeignBadResponseWrapper){
 					siteReport.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP , ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));

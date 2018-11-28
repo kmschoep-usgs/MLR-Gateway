@@ -46,12 +46,12 @@ public class DdotService {
 			ddots = mapper.readValue(ddotResponse, mapType);
 		} catch (Exception e) {
 			int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-			WorkflowController.addDdotIngesterStepReport(new StepReport(STEP_NAME, status, false, INTERNAL_ERROR_MESSAGE));
+			WorkflowController.setDdotIngesterStepReport(new StepReport(STEP_NAME, status, false, INTERNAL_ERROR_MESSAGE));
 			log.error(STEP_NAME + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(status, null, INTERNAL_ERROR_MESSAGE);
 		}
 
-		WorkflowController.addDdotIngesterStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, true, SUCCESS_MESSAGE));
+		WorkflowController.setDdotIngesterStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, true, SUCCESS_MESSAGE));
 		return ddots;
 	}
 
