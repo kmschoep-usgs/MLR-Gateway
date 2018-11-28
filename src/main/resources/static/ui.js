@@ -98,7 +98,7 @@ function postExport(responseHeader, success, error) {
 			error: error
 		});
 	} else {
-		handleResponseTest("Site export parameters incomplete.");
+		handleResponseText("Site copy parameters incomplete.");
 		stopLoading(responseHeader + " - Error");
 	}
 }
@@ -127,7 +127,8 @@ function postDdot(url, responseHeader, success, error) {
 			error: error
 		});
 	} else {
-		stopLoading(responseHeader + " - Error", "No file selected.");
+		handleResponseText("No file selected.");
+		stopLoading(responseHeader + " - Error");
 	}
 }
 
