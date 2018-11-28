@@ -32,10 +32,10 @@
 }
 
 .mlr-action {
-	display: inline-grid;
+	display: inline-block;
 	margin-left: 15px;
 	padding-right: 18px;
-	height: 135px;
+	vertical-align:top;
 	margin-bottom: 10px;
 }
 
