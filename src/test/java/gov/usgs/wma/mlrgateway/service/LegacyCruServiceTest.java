@@ -55,7 +55,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 	@Test
 	public void addTransaction_callsBackingServices() throws Exception {
 		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,"
-				+ "\"workflowStep\":null,\"ddotIngesterStep\":null,\"notificationStep\":null,"
+				+ "\"workflowSteps\":[],"
 				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
 				+ LegacyCruService.SITE_ADD_STEP + "\",\"httpStatus\":201,\"success\":true,\"details\":\"" 
 				+ LegacyCruService.SITE_ADD_SUCCESSFUL + "\"}]}]}";
@@ -74,8 +74,8 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 
 	@Test
 	public void addTransaction_throwsException() throws Exception {
-		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,\"ddotIngesterStep\":null,"
-				+ "\"notificationStep\":null,\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
 				+ "\"steps\":[{\"name\":\"" + LegacyCruService.SITE_ADD_STEP + "\",\"httpStatus\":500,\"success\":false,\"details\":\"" 
 				+ LegacyCruService.SITE_ADD_FAILED + "\"}]}]}";
 		given(legacyCruClient.createMonitoringLocation(anyString())).willThrow(new RuntimeException());
@@ -94,8 +94,8 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 	
 	@Test
 	public void updateTransaction_callsBackingServices() throws Exception {
-		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,\"ddotIngesterStep\":null,"
-				+ "\"notificationStep\":null,\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
 				+ "\"steps\":[{\"name\":\"" + LegacyCruService.SITE_UPDATE_STEP + "\",\"httpStatus\":200,\"success\":true,\"details\":\"" 
 				+ LegacyCruService.SITE_UPDATE_SUCCESSFUL + "\"}]}]}";
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -114,8 +114,8 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 
 	@Test
 	public void updateTransaction_throwsException() throws Exception {
-		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,\"ddotIngesterStep\":null,"
-				+ "\"notificationStep\":null,\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
 				+ "\"steps\":[{\"name\":\"" + LegacyCruService.SITE_UPDATE_STEP + "\",\"httpStatus\":500,\"success\":false,\"details\":\"" 
 				+ LegacyCruService.SITE_UPDATE_FAILED + "\"}]}]}";
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -136,8 +136,8 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 	
 	@Test
 	public void getLocationUpdate_callsBackingServices() throws Exception {
-		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,"
-				+ "\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \","
+		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \","
 				+ "\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
 				+ LegacyCruService.SITE_GET_STEP + "\",\"httpStatus\":200,\"success\":true,\"details\":\"" 
 				+ LegacyCruService.SITE_GET_SUCCESSFULL + "\"}]}]}";
@@ -156,7 +156,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 	@Test
 	public void getLocationAdd_callsBackingServices() throws Exception {
 		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,"
-				+ "\"userName\":null,\"workflowStep\":null,\"ddotIngesterStep\":null,\"notificationStep\":null,"
+				+ "\"userName\":null,\"workflowSteps\":[],"
 				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
 				+ LegacyCruService.SITE_GET_STEP + "\",\"httpStatus\":200,\"success\":true,\"details\":\"" 
 				+ LegacyCruService.SITE_GET_SUCCESSFULL + "\"}]}]}";
@@ -175,7 +175,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 	@Test
 	public void getLocationUpdate_nullSite () throws Exception {
 		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,"
-				+ "\"workflowStep\":null,\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[{\"success\":false,"
+				+ "\"workflowSteps\":[],\"sites\":[{\"success\":false,"
 				+ "\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
 				+ LegacyCruService.SITE_GET_STEP + "\",\"httpStatus\":404,\"success\":false,\"details\":\"" 
 				+ LegacyCruService.SITE_GET_DOES_NOT_EXIST + "\"}]}]}";
@@ -194,7 +194,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 	@Test
 	public void getLocationAdd_nullSite () throws Exception {
 		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,"
-				+ "\"workflowStep\":null,\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[{\"success\":true,"
+				+ "\"workflowSteps\":[],\"sites\":[{\"success\":true,"
 				+ "\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"Duplicate agency code/site number check: " 
 				+ LegacyCruService.SITE_GET_STEP + "\",\"httpStatus\":404,\"success\":true,\"details\":\"" 
 				+ LegacyCruService.SITE_GET_DOES_NOT_EXIST + "\"}]}]}";
@@ -218,7 +218,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 		service.setMapper(mockMapper);
 		
 		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,"
-				+ "\"workflowStep\":null,\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[{\"success\":false,"
+				+ "\"workflowSteps\":[],\"sites\":[{\"success\":false,"
 				+ "\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
 				+ LegacyCruService.SITE_NAME_GET_STEP + "\",\"httpStatus\":500,\"success\":false,\"details\":\"" 
 				+ LegacyCruService.SITE_NAME_GET_FAILED + "\"}]}]}";
@@ -242,7 +242,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 		given(legacyCruClient.validateMonitoringLocation(anyString())).willReturn(new ResponseEntity<>(validationErrorMessages, HttpStatus.INTERNAL_SERVER_ERROR));
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,"
-				+ "\"workflowStep\":null,\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[{\"success\":false,"
+				+ "\"workflowSteps\":[],\"sites\":[{\"success\":false,"
 				+ "\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
 				+ LegacyCruService.SITE_NAME_GET_STEP + "\",\"httpStatus\":500,\"success\":false,\"details\":\"" 
 				+ validationErrorMessages + "\"}]}]}";
@@ -262,8 +262,8 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 	@Test
 	public void validateMonitoringLocation_ValidationSuccessful () throws Exception {
 		given(legacyCruClient.validateMonitoringLocation(anyString())).willReturn(new ResponseEntity<>("[]", HttpStatus.OK));
-		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,"
-				+ "\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \","
+		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \","
 				+ "\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
 				+ LegacyCruService.SITE_NAME_GET_STEP  + "\",\"httpStatus\":200,\"success\":true,\"details\":\"" 
 				+ LegacyCruService.SITE_GET_NAME_DOES_NOT_EXIST + "\"}]}]}";
@@ -285,8 +285,8 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 		String validationErrorMessages = "[\"it was bad\",\"it was not good\"]";
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruClient.validateMonitoringLocation(anyString())).willReturn(new ResponseEntity<>(validationErrorMessages, HttpStatus.NOT_ACCEPTABLE));
-		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,"
-				+ "\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \","
+		String msg = "{\"name\":\"TEST LEGACYCRU\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \","
 				+ "\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" 
 				+ LegacyCruService.SITE_NAME_GET_STEP + "\",\"httpStatus\":406,\"success\":false,\"details\":\"" 
 				+ JSONObject.escape(validationErrorMessages) + "\"}]}]}";

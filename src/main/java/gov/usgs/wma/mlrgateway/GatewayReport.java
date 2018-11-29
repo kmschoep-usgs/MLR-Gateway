@@ -12,9 +12,7 @@ public class GatewayReport {
 	private String inputFileName;
 	private String reportDateTime;
 	private String userName;
-	private StepReport workflowStep;
-	private StepReport ddotIngesterStep;
-	private StepReport notificationStep;
+	private List<StepReport> workflowSteps;
 	private List<SiteReport> sites;
 	
 	public GatewayReport() {};
@@ -23,6 +21,7 @@ public class GatewayReport {
 		this.name = name;
 		this.inputFileName = inputFileName;
 		sites = new ArrayList<>();
+		workflowSteps = new ArrayList<>();
 	}
 	
 	public String getName() {
@@ -57,30 +56,6 @@ public class GatewayReport {
 		this.userName = userName;
 	}
 
-	public StepReport getWorkflowStep() {
-		return workflowStep;
-	}
-
-	public void setWorkflowStep(StepReport workflowStep) {
-		this.workflowStep = workflowStep;
-	}
-
-	public StepReport getDdotIngesterStep() {
-		return ddotIngesterStep;
-	}
-
-	public void setDdotIngesterStep(StepReport ddotIngesterStep) {
-		this.ddotIngesterStep = ddotIngesterStep;
-	}
-
-	public StepReport getNotificationStep() {
-		return notificationStep;
-	}
-
-	public void setNotificationStep(StepReport notificationStep) {
-		this.notificationStep = notificationStep;
-	}
-
 	public List<SiteReport> getSites() {
 		return sites;
 	}
@@ -91,6 +66,18 @@ public class GatewayReport {
 	
 	public void addSiteReport(SiteReport siteReport) {
 		sites.add(siteReport);
+	}
+	
+	public List<StepReport> getWorkflowSteps() {
+		return workflowSteps;
+	}
+
+	public void setWorkflowSteps(List<StepReport> workflowSteps) {
+		this.workflowSteps = workflowSteps;
+	}
+	
+	public void addWorkflowStepReport(StepReport stepReport) {
+		workflowSteps.add(stepReport);
 	}
 
 	@Override

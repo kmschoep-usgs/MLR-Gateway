@@ -18,6 +18,7 @@ import com.netflix.hystrix.exception.HystrixBadRequestException;
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
+import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import static org.mockito.Mockito.verify;
@@ -45,8 +46,11 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
 		GatewayReport rtn = controller.legacyWorkflow(file, response);
+		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
+				.filter(s -> LegacyWorkflowService.COMPLETE_WORKFLOW.equals(s.getName()))
+				.findAny().orElse(null);
 		assertEquals(rtn.getName(), LegacyWorkflowService.COMPLETE_WORKFLOW );
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "200");
+		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "200");
 		assertEquals(rtn.getInputFileName(), "file");
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
@@ -58,11 +62,13 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).completeWorkflow(any(MultipartFile.class));
 
 		GatewayReport rtn = controller.legacyWorkflow(file, response);
+		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
+				.filter(s -> LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED.equals(s.getName()))
+				.findAny().orElse(null);
 		assertEquals(rtn.getName(), LegacyWorkflowService.COMPLETE_WORKFLOW);
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "400");
-		assertEquals(rtn.getWorkflowStep().getName(), LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED);
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "400");
-		assertEquals(rtn.getWorkflowStep().getDetails(), badText);
+		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "400");
+		assertEquals(completeWorkflowStep.getName(), LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED);
+		assertEquals(completeWorkflowStep.getDetails(), badText);
 		assertEquals(rtn.getInputFileName(), "file");
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
@@ -73,10 +79,13 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new HystrixBadRequestException(badText)).given(legacy).completeWorkflow(any(MultipartFile.class));
 		GatewayReport rtn = controller.legacyWorkflow(file, response);
+		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
+				.filter(s -> LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED.equals(s.getName()))
+				.findAny().orElse(null);
 		assertEquals(rtn.getName(), LegacyWorkflowService.COMPLETE_WORKFLOW);
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "500");
-		assertEquals(rtn.getWorkflowStep().getName(), LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED);
-		assertEquals(rtn.getWorkflowStep().getDetails(), badText);
+		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "500");
+		assertEquals(completeWorkflowStep.getName(), LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED);
+		assertEquals(completeWorkflowStep.getDetails(), badText);
 		assertEquals(rtn.getInputFileName(), "file");
 		
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
@@ -87,8 +96,11 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
 		GatewayReport rtn = controller.legacyValidationWorkflow(file, response);
+		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
+				.filter(s -> LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW.equals(s.getName()))
+				.findAny().orElse(null);
 		assertEquals(rtn.getName(), LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW);
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "200");
+		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "200");
 		assertEquals(rtn.getInputFileName(), "d.");
 		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
@@ -100,10 +112,13 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).ddotValidation(any(MultipartFile.class));
 
 		GatewayReport rtn = controller.legacyValidationWorkflow(file, response);
+		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
+				.filter(s -> LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED.equals(s.getName()))
+				.findAny().orElse(null);
 		assertEquals(rtn.getName(), LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW);
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "400");
-		assertEquals(rtn.getWorkflowStep().getDetails(), badText);
-		assertEquals(rtn.getWorkflowStep().getName(),LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED);
+		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "400");
+		assertEquals(completeWorkflowStep.getDetails(), badText);
+		assertEquals(completeWorkflowStep.getName(),LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED);
 
 		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
@@ -116,10 +131,13 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		willThrow(new HystrixBadRequestException(badText)).given(legacy).ddotValidation(any(MultipartFile.class));
 
 		GatewayReport rtn = controller.legacyValidationWorkflow(file, response);
+		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
+				.filter(s -> LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED.equals(s.getName()))
+				.findAny().orElse(null);
 		assertEquals(rtn.getName(), LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW);
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "500");
-		assertEquals(rtn.getWorkflowStep().getDetails(), badText);
-		assertEquals(rtn.getWorkflowStep().getName(),LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED);
+		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "500");
+		assertEquals(completeWorkflowStep.getDetails(), badText);
+		assertEquals(completeWorkflowStep.getName(),LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED);
 
 		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}

@@ -1,5 +1,8 @@
 package gov.usgs.wma.mlrgateway.controller;
 
+import java.util.Collections;
+import java.util.Comparator;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
@@ -46,14 +49,14 @@ public class WorkflowController extends BaseController {
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW, file.getName()));
 		try {
 			legacy.completeWorkflow(file);
-			WorkflowController.setWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW_SUCCESS, HttpStatus.SC_OK, true, LegacyWorkflowService.COMPLETE_WORKFLOW_SUCCESS));
+			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.COMPLETE_WORKFLOW_SUCCESS));
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				WorkflowController.setWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.setWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
 			}
 		}
 
@@ -61,7 +64,8 @@ public class WorkflowController extends BaseController {
 		notificationStep(COMPLETE_WORKFLOW_SUBJECT);
 		//Return report
 		GatewayReport rtn = getReport();
-		response.setStatus(rtn.getWorkflowStep().getHttpStatus());
+		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
+		response.setStatus(maxStatusStep.getHttpStatus());
 		remove();
 		return rtn;
 	}
@@ -75,15 +79,15 @@ public class WorkflowController extends BaseController {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, file.getOriginalFilename()));
 		try {
 			legacy.ddotValidation(file);
-			WorkflowController.setWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_SUCCESS, HttpStatus.SC_OK, true, LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_SUCCESS));
+			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_SUCCESS));
 
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				WorkflowController.setWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.setWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
 			}
 		}
 
@@ -91,7 +95,8 @@ public class WorkflowController extends BaseController {
 		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
 		//Return report
 		GatewayReport rtn = getReport();
-		response.setStatus(rtn.getWorkflowStep().getHttpStatus());
+		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
+		response.setStatus(maxStatusStep.getHttpStatus());
 		remove();
 		return rtn;
 	}

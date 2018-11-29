@@ -51,9 +51,9 @@ public class NotificationService {
 		try {
 			messageJson = mapper.writeValueAsString(messageMap);
 			ResponseEntity<String> notifResp = notificationClient.sendEmail(messageJson);
-			BaseController.setNotificationStepReport(new StepReport(NOTIFICATION_STEP, notifResp.getStatusCodeValue(), true, NOTIFICATION_SUCCESSFULL));
+			BaseController.addWorkflowStepReport(new StepReport(NOTIFICATION_STEP, notifResp.getStatusCodeValue(), true, NOTIFICATION_SUCCESSFULL));
 		} catch(Exception e) {
-			BaseController.setNotificationStepReport(new StepReport(NOTIFICATION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, NOTIFICATION_FAILURE));
+			BaseController.addWorkflowStepReport(new StepReport(NOTIFICATION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, NOTIFICATION_FAILURE));
 			log.error(NOTIFICATION_STEP + ": " + e.getMessage());
 		}
 	}

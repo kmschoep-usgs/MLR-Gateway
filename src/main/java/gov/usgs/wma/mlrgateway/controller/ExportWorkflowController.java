@@ -1,5 +1,8 @@
 package gov.usgs.wma.mlrgateway.controller;
 
+import java.util.Collections;
+import java.util.Comparator;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
@@ -44,14 +47,14 @@ public class ExportWorkflowController extends BaseController {
 		setReport(new GatewayReport(COMPLETE_WORKFLOW, null));
 		try {
 			export.exportWorkflow(agencyCode, siteNumber);
-			ExportWorkflowController.setWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, HttpStatus.SC_OK, true, FileExportService.EXPORT_SUCCESSFULL));
+			ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, HttpStatus.SC_OK, true, FileExportService.EXPORT_SUCCESSFULL));
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				ExportWorkflowController.setWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false, ((FeignBadResponseWrapper) e).getBody()));
+				ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				ExportWorkflowController.setWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false,  e.getLocalizedMessage()));
+				ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false,  e.getLocalizedMessage()));
 			}
 		}
 		
@@ -60,7 +63,8 @@ public class ExportWorkflowController extends BaseController {
 		
 		//Return Report
 		GatewayReport rtn = getReport();
-		response.setStatus(rtn.getWorkflowStep().getHttpStatus());
+		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
+		response.setStatus(maxStatusStep.getHttpStatus());
 		remove();
 		return rtn;
 	}	

@@ -41,7 +41,7 @@ public class ExportWorkflowService {
 				json = mapper.writeValueAsString(site);
 			} catch (Exception e) {
 				// Unable to determine when this might actually happen, but the api says it can...
-				siteReport.addStepReport(new StepReport(FileExportService.EXPORT_ADD_FAILED, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "Unable to serialize site as JSON"));
+				siteReport.addStepReport(new StepReport(FileExportService.EXPORT_ADD_FAILED, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, FileExportService.EXPORT_ADD_FAILED + ": " + "Unable to serialize site as JSON"));
 				WorkflowController.addSiteReport(siteReport);
 				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "Unable to serialize site as JSON");
 			}

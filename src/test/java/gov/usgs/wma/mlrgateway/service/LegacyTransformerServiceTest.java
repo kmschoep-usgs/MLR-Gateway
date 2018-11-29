@@ -63,8 +63,8 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 
 	@Test
 	public void happyPath_transformGeo_thenReturnTransformedGeo() throws Exception {
-		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,"
-				+ "\"ddotIngesterStep\":null,\"notificationStep\":null,\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \","
+		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \","
 				+ "\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME 
 				+ "\",\"httpStatus\":200,\"success\":true,\"details\":\"" + LegacyTransformerService.GEO_SUCCESS + "\"}]}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(transformerJsonGeo, HttpStatus.OK);
@@ -84,8 +84,8 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 
 	@Test
 	public void nullReturnTransform_transformGeo_thenReturnError() throws Exception {
-		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,\"ddotIngesterStep\":null,"
-				+ "\"notificationStep\":null,\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
 				+ "\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"httpStatus\":500,\"success\":false,"
 				+ "\"details\":\"" + JSONObject.escape(LegacyTransformerService.GEO_FAILURE) + "\"}]}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>("", HttpStatus.BAD_REQUEST);
@@ -106,8 +106,8 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 
 	@Test
 	public void happyPath_transformIX_thenReturnTransformedGeo() throws Exception {
-		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,\"ddotIngesterStep\":null,"
-				+ "\"notificationStep\":null,\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
 				+ "\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"httpStatus\":200,\"success\":true,\"details\":\"" 
 				+ LegacyTransformerService.STATION_IX_SUCCESS + "\"}]}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(transformerJsonIx, HttpStatus.OK);
@@ -126,8 +126,8 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 
 	@Test
 	public void nullReturnTransform_transformIX_thenReturnError() throws Exception {
-		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,\"ddotIngesterStep\":null,"
-				+ "\"notificationStep\":null,\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
 				+ "\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"httpStatus\":500,\"success\":false,\"details\":\"" 
 				+ JSONObject.escape(LegacyTransformerService.STATION_IX_FAILURE) + "\"}]}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>("", HttpStatus.BAD_REQUEST);
@@ -148,8 +148,8 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 
 	@Test
 	public void happyPathIx_transform_thenReturnTransformed() throws Exception {
-		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowStep\":null,\"ddotIngesterStep\":null,"
-				+ "\"notificationStep\":null,\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
 				+ "\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"httpStatus\":200,\"success\":true,\"details\":\"" 
 				+ LegacyTransformerService.STATION_IX_SUCCESS + "\"}]}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(transformerJsonIx, HttpStatus.OK);

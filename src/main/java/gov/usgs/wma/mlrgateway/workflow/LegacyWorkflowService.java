@@ -38,12 +38,12 @@ public class LegacyWorkflowService {
 
 	public static final String BAD_TRANSACTION_TYPE = "Unable to determine transaction type.";
 	
-	public static final String COMPLETE_WORKFLOW = "Complete Workflow";
-	public static final String COMPLETE_WORKFLOW_SUCCESS = "Complete workflow succeeded";
-	public static final String COMPLETE_WORKFLOW_FAILED = "Complete workflow failed";
+	public static final String COMPLETE_WORKFLOW = "Validate and Process D dot File Workflow";
+	public static final String COMPLETE_WORKFLOW_SUCCESS = "Validate and Process D dot File Workflow completed";
+	public static final String COMPLETE_WORKFLOW_FAILED = "Validate and Process D dot File Workflow failed";
 	public static final String VALIDATE_DDOT_WORKFLOW = "Validate D dot File";
 	public static final String VALIDATE_DDOT_WORKFLOW_FAILED = "Validate D dot File workflow failed";
-	public static final String VALIDATE_DDOT_WORKFLOW_SUCCESS = "Validate D dot File workflow succeeded";
+	public static final String VALIDATE_DDOT_WORKFLOW_SUCCESS = "Validate D dot File workflow completed";
 	
 	public static final String VALIDATE_DDOT_TRANSACTION_STEP = "Validate Single D dot Transaction";
 	public static final String VALIDATE_DDOT_TRANSACTION_STEP_FAILURE = "Single transaction validation failed.";

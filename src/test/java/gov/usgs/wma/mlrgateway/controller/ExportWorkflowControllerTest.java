@@ -21,6 +21,7 @@ import com.netflix.hystrix.exception.HystrixBadRequestException;
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
+import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import static org.mockito.Matchers.anyList;
@@ -49,8 +50,11 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	@Test
 	public void happyPath_ExportWorkflow() throws Exception {
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "200");
-		assertTrue(rtn.getWorkflowStep().isSuccess());
+		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
+				.filter(s -> ExportWorkflowController.COMPLETE_WORKFLOW.equals(s.getName()))
+				.findAny().orElse(null);
+		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "200");
+		assertTrue(completeWorkflowStep.isSuccess());
 		assertEquals(rtn.getName(), ExportWorkflowController.COMPLETE_WORKFLOW);
 		
 		verify(export).exportWorkflow(anyString(), anyString());
@@ -63,9 +67,12 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(export).exportWorkflow(anyString(), anyString());
 
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
+		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
+				.filter(s -> ExportWorkflowController.COMPLETE_WORKFLOW.equals(s.getName()))
+				.findAny().orElse(null);
 		assertEquals(rtn.getName(), ExportWorkflowController.COMPLETE_WORKFLOW);
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "400");
-		assertEquals(rtn.getWorkflowStep().getDetails(), badText);
+		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "400");
+		assertEquals(completeWorkflowStep.getDetails(), badText);
 
 		verify(export).exportWorkflow(anyString(), anyString());
 	}
@@ -77,10 +84,12 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		willThrow(new HystrixBadRequestException(badText)).given(export).exportWorkflow(anyString(), anyString());
 
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "500");
+		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
+				.filter(s -> ExportWorkflowController.COMPLETE_WORKFLOW.equals(s.getName()))
+				.findAny().orElse(null);
+		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "500");
 		assertEquals(rtn.getName(), ExportWorkflowController.COMPLETE_WORKFLOW);
-		assertEquals(rtn.getWorkflowStep().getDetails(), badText);
-		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "500");
+		assertEquals(completeWorkflowStep.getDetails(), badText);
 
 		verify(export).exportWorkflow(anyString(), anyString());
 	}
