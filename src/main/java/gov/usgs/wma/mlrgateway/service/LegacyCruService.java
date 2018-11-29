@@ -131,7 +131,6 @@ public class LegacyCruService {
 		try {
 			validationMessages = objectMapper.readValue(response.getBody(), List.class);
 		} catch (Exception ex) {
-			//siteReport.addStepReport(new StepReport(SITE_NAME_GET_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_NAME_GET_FAILED));
 			log.error(SITE_NAME_GET_STEP + ": " + SITE_NAME_GET_FAILED, ex);
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_NAME_GET_FAILED);
 		}

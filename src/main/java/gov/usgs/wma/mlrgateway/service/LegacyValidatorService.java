@@ -44,7 +44,6 @@ public class LegacyValidatorService {
 		int otherValidationStatus = 200;
 		try {
 			doDuplicateValidation(ml, siteReport);
-			//siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_OK, true, SITE_VALIDATE_SUCCESSFUL ));
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
 				duplicateValidationStatus = ((FeignBadResponseWrapper)e).getStatus();

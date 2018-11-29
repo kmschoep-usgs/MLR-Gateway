@@ -40,9 +40,10 @@ public class DdotService {
 		ObjectMapper mapper = new ObjectMapper();
 		TypeReference<List<Map<String, Object>>> mapType = new TypeReference<List<Map<String, Object>>>() {};
 
-		String ddotResponse = ddotClient.ingestDdot(file);
+		String ddotResponse = null;
 
 		try {
+			ddotResponse = ddotClient.ingestDdot(file);
 			ddots = mapper.readValue(ddotResponse, mapType);
 		} catch (Exception e) {
 			int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;

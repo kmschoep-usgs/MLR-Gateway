@@ -21,6 +21,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,6 +55,28 @@ public class DdotServiceTest extends BaseSpringTest {
 
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn("not json");
+		try {
+			service.parseDdot(file);
+			fail("Did not get expected Exception.");
+		} catch (Exception e) {
+			if (e instanceof FeignBadResponseWrapper) {
+				assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), ((FeignBadResponseWrapper) e).getStatus());
+				JSONAssert.assertEquals(DdotService.INTERNAL_ERROR_MESSAGE , ((FeignBadResponseWrapper) e).getBody(), JSONCompareMode.STRICT);
+			}
+		}
+		GatewayReport rtn = WorkflowController.getReport();
+		verify(ddotClient).ingestDdot(any(MultipartFile.class));
+		assertEquals(rtn.getDdotIngesterStep().getDetails(), DdotService.INTERNAL_ERROR_MESSAGE);
+		assertEquals(rtn.getDdotIngesterStep().getName(), DdotService.STEP_NAME);
+		assertEquals(rtn.getName(), reportName);
+		assertEquals(rtn.getDdotIngesterStep().getHttpStatus().toString(), "500");
+		assertFalse(rtn.getDdotIngesterStep().getIsSuccess());
+	}
+	
+	@Test
+	public void nullFromDdot_thenReturnInternalServerError() throws Exception {
+		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
+		given(ddotClient.ingestDdot(any(MultipartFile.class))).willThrow(new RuntimeException());
 		try {
 			service.parseDdot(file);
 			fail("Did not get expected Exception.");
