@@ -70,7 +70,7 @@ public class DdotServiceTest extends BaseSpringTest {
 		assertEquals(rtn.getDdotIngesterStep().getName(), DdotService.STEP_NAME);
 		assertEquals(rtn.getName(), reportName);
 		assertEquals(rtn.getDdotIngesterStep().getHttpStatus().toString(), "500");
-		assertFalse(rtn.getDdotIngesterStep().getIsSuccess());
+		assertFalse(rtn.getDdotIngesterStep().isSuccess());
 	}
 	
 	@Test
@@ -92,7 +92,7 @@ public class DdotServiceTest extends BaseSpringTest {
 		assertEquals(rtn.getDdotIngesterStep().getName(), DdotService.STEP_NAME);
 		assertEquals(rtn.getName(), reportName);
 		assertEquals(rtn.getDdotIngesterStep().getHttpStatus().toString(), "500");
-		assertFalse(rtn.getDdotIngesterStep().getIsSuccess());
+		assertFalse(rtn.getDdotIngesterStep().isSuccess());
 	}
 
 	@Test
@@ -108,7 +108,7 @@ public class DdotServiceTest extends BaseSpringTest {
 		assertThat(rtn.get(0), is(getAdd()));
 		verify(ddotClient).ingestDdot(any(MultipartFile.class));
 		assertEquals(gatewayReport.getDdotIngesterStep().getHttpStatus().toString(), "200");
-		assertTrue(gatewayReport.getDdotIngesterStep().getIsSuccess());
+		assertTrue(gatewayReport.getDdotIngesterStep().isSuccess());
 		assertEquals(gatewayReport.getInputFileName(), fileName);
 		assertEquals(gatewayReport.getDdotIngesterStep().getDetails(), DdotService.SUCCESS_MESSAGE);
 		assertEquals(gatewayReport.getDdotIngesterStep().getName(), DdotService.STEP_NAME);

@@ -54,12 +54,12 @@ public class FileExportServiceTest {
 		assertEquals(rtn.getInputFileName(), fileName);
 		assertEquals(rtn.getSites().get(0).getAgencyCode(), agencyCode);
 		assertEquals(rtn.getSites().get(0).getSiteNumber(), siteNumber);
-		assertTrue(rtn.getSites().get(0).getIsSuccess());
+		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getSteps().size(), 1);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), FileExportService.EXPORT_ADD_STEP);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), FileExportService.EXPORT_SUCCESSFULL);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "200");
-		assertTrue(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
+		assertTrue(rtn.getSites().get(0).getSteps().get(0).isSuccess());
 		verify(fileExportClient).exportAdd(anyString());
 		verify(fileExportClient, never()).exportUpdate(anyString());
 	}
@@ -80,11 +80,11 @@ public class FileExportServiceTest {
 		
 		assertEquals(rtn.getSites().get(0).getAgencyCode(), agencyCode);
 		assertEquals(rtn.getSites().get(0).getSiteNumber(), siteNumber);
-		assertFalse(rtn.getSites().get(0).getIsSuccess());
+		assertFalse(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), FileExportService.EXPORT_ADD_FAILED);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), FileExportService.EXPORT_ADD_STEP);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "500");
-		assertFalse(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
+		assertFalse(rtn.getSites().get(0).getSteps().get(0).isSuccess());
 		verify(fileExportClient).exportAdd(anyString());
 		verify(fileExportClient, never()).exportUpdate(anyString());
 	}
@@ -104,11 +104,11 @@ public class FileExportServiceTest {
 		assertEquals(rtn.getInputFileName(), fileName);
 		assertEquals(rtn.getSites().get(0).getAgencyCode(), agencyCode);
 		assertEquals(rtn.getSites().get(0).getSiteNumber(), siteNumber);
-		assertTrue(rtn.getSites().get(0).getIsSuccess());
+		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), FileExportService.EXPORT_SUCCESSFULL);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), FileExportService.EXPORT_UPDATE_STEP);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "200");
-		assertTrue(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
+		assertTrue(rtn.getSites().get(0).getSteps().get(0).isSuccess());
 		verify(fileExportClient, never()).exportAdd(anyString());
 		verify(fileExportClient).exportUpdate(anyString());
 	}
@@ -129,11 +129,11 @@ public class FileExportServiceTest {
 		
 		assertEquals(rtn.getSites().get(0).getAgencyCode(), agencyCode);
 		assertEquals(rtn.getSites().get(0).getSiteNumber(), siteNumber);
-		assertFalse(rtn.getSites().get(0).getIsSuccess());
+		assertFalse(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), FileExportService.EXPORT_UPDATE_FAILED);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), FileExportService.EXPORT_UPDATE_STEP);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "500");
-		assertFalse(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
+		assertFalse(rtn.getSites().get(0).getSteps().get(0).isSuccess());
 		verify(fileExportClient, never()).exportAdd(anyString());
 		verify(fileExportClient).exportUpdate(anyString());
 	}

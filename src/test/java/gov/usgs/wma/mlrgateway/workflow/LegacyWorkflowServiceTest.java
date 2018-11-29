@@ -84,8 +84,8 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), anyObject());
 		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), anyObject());
 		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), anyString(), anyObject());
-		assertEquals(rtn.getSites().get(0).getIsSuccess(), false);
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getIsSuccess(), false);
+		assertEquals(rtn.getSites().get(0).isSuccess(), false);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).isSuccess(), false);
 		assertNull(rtn.getSites().get(0).getTransactionType());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), LegacyWorkflowService.COMPLETE_TRANSACTION_STEP);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\": \"Validation failed due to a missing transaction type.\"}");
@@ -115,8 +115,8 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), anyObject());
 		verify(fileExportService).exportAdd(anyString(), anyString(), anyString(), anyObject());
 		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), anyString(), anyObject());
-		assertFalse(rtn.getSites().get(0).getIsSuccess());
-		assertFalse(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
+		assertFalse(rtn.getSites().get(0).isSuccess());
+		assertFalse(rtn.getSites().get(0).getSteps().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "400");
 	}
 
@@ -145,7 +145,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(transformService).transformGeo(anyMap(), anyObject());
 		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString(), anyObject());
 		verify(fileExportService).exportAdd(anyString(), anyString(), anyString(), anyObject());
-		assertTrue(rtn.getSites().get(0).getIsSuccess());
+		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_ADD);
 	}
 
@@ -173,7 +173,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(transformService).transformGeo(anyMap(), anyObject());
 		verify(legacyCruService).updateTransaction(anyString(), anyString(), anyString(), anyObject());
 		verify(fileExportService).exportUpdate(anyString(), anyString(), anyString(), anyObject());
-		assertTrue(rtn.getSites().get(0).getIsSuccess());
+		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
 	}
 
@@ -197,7 +197,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(transformService).transformStationIx(anyMap(), anyObject());
 		verify(legacyValidatorService).doValidation(anyMap(), eq(true), anyObject());
 		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(false), anyObject());
-		assertTrue(rtn.getSites().get(0).getIsSuccess());
+		assertTrue(rtn.getSites().get(0).isSuccess());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -218,7 +218,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(transformService).transformStationIx(anyMap(), anyObject());
 		verify(legacyValidatorService).doValidation(anyMap(), eq(false), anyObject());
 		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(true), anyObject());
-		assertTrue(rtn.getSites().get(0).getIsSuccess());
+		assertTrue(rtn.getSites().get(0).isSuccess());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -236,8 +236,8 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "500");
-		assertFalse(rtn.getSites().get(0).getSteps().get(0).getIsSuccess());
-		assertFalse(rtn.getSites().get(0).getIsSuccess());
+		assertFalse(rtn.getSites().get(0).getSteps().get(0).isSuccess());
+		assertFalse(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\": \"null\"}");
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP);
 		verify(ddotService).parseDdot(any(MultipartFile.class));

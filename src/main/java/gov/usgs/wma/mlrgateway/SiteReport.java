@@ -11,7 +11,7 @@ public class SiteReport {
 	private String agencyCode;
 	private String siteNumber;
 	private String transactionType;
-	private boolean isSuccess;
+	private boolean success;
 	private List<StepReport> steps;
 
 	
@@ -19,18 +19,18 @@ public class SiteReport {
 	public SiteReport() {}
 
 	public SiteReport(String agencyCode, String siteNumber) {
-		this.agencyCode = null == agencyCode ? null : agencyCode;
-		this.siteNumber = null == siteNumber ? null : siteNumber;
-		this.isSuccess = true;
+		this.agencyCode = agencyCode;
+		this.siteNumber = siteNumber;
+		this.success = true;
 		steps = new ArrayList<>();
 	}
 
-	public boolean getIsSuccess() {
-		return isSuccess;
+	public boolean isSuccess() {
+		return success;
 	}
 
-	public void setIsSuccess(boolean isSuccess) {
-		this.isSuccess = isSuccess;
+	public void setSuccess(boolean success) {
+		this.success = success;
 	}
 	
 	public String getAgencyCode() {
@@ -59,9 +59,9 @@ public class SiteReport {
 	}
 
 	public void addStepReport(StepReport stepReport) {
-		if (false == stepReport.getIsSuccess()) {
-			//Only HttpStatus code of 400 and higher should override the current status.
-			setIsSuccess(stepReport.getIsSuccess());
+		if (false == stepReport.isSuccess()) {
+			//Steps that fail should fail the site.
+			setSuccess(stepReport.isSuccess());
 		}
 		steps.add(stepReport);
 	}

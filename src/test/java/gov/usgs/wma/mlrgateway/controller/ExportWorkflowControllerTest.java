@@ -50,7 +50,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	public void happyPath_ExportWorkflow() throws Exception {
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
 		assertEquals(rtn.getWorkflowStep().getHttpStatus().toString(), "200");
-		assertTrue(rtn.getWorkflowStep().getIsSuccess());
+		assertTrue(rtn.getWorkflowStep().isSuccess());
 		assertEquals(rtn.getName(), ExportWorkflowController.COMPLETE_WORKFLOW);
 		
 		verify(export).exportWorkflow(anyString(), anyString());

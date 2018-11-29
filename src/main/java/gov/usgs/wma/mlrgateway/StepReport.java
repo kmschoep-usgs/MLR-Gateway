@@ -7,15 +7,15 @@ public class StepReport {
 
 	private String name;
 	private Integer httpStatus;
-	private boolean isSuccess;
+	private boolean success;
 	private String details;
 
 	public StepReport() {}
 
-	public StepReport(String name, Integer httpStatus, boolean isSuccess, String details) {
+	public StepReport(String name, Integer httpStatus, boolean success, String details) {
 		this.name = name;
 		this.httpStatus = httpStatus;
-		this.isSuccess = isSuccess;
+		this.success = success;
 		this.details = details;
 	}
 
@@ -31,12 +31,12 @@ public class StepReport {
 	public void setHttpStatus(Integer httpStatus) {
 		this.httpStatus = httpStatus;
 	}
-	public boolean getIsSuccess() {
-		return isSuccess;
+	public boolean isSuccess() {
+		return success;
 	}
 
-	public void setIsSuccess(boolean isSuccess) {
-		this.isSuccess = isSuccess;
+	public void isSuccess(boolean success) {
+		this.success = success;
 	}
 
 	public String getDetails() {
