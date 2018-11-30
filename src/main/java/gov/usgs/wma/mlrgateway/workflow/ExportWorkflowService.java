@@ -47,7 +47,6 @@ public class ExportWorkflowService {
 			}
 				
 			fileExportService.exportAdd(agencyCode, siteNumber, json, siteReport);
-			WorkflowController.addSiteReport(siteReport);
 			ExportWorkflowController.addSiteReport(siteReport);
 		}
 	}

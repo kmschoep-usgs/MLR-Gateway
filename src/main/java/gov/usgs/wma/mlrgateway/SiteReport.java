@@ -14,8 +14,6 @@ public class SiteReport {
 	private boolean success;
 	private List<StepReport> steps;
 
-	
-
 	public SiteReport() {}
 
 	public SiteReport(String agencyCode, String siteNumber) {
