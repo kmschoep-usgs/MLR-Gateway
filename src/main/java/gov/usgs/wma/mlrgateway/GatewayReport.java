@@ -3,49 +3,81 @@ package gov.usgs.wma.mlrgateway;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpStatus;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class GatewayReport {
 
 	private String name;
-	private Integer status;
-	private List<StepReport> steps;
+	private String inputFileName;
+	private String reportDateTime;
+	private String userName;
+	private List<StepReport> workflowSteps;
+	private List<SiteReport> sites;
+	
+	public GatewayReport() {};
 
-	public GatewayReport(){}
-
-	public GatewayReport(String name) {
+	public GatewayReport(String name, String inputFileName) {
 		this.name = name;
-		status = HttpStatus.SC_OK;
-		steps = new ArrayList<>();
+		this.inputFileName = inputFileName;
+		sites = new ArrayList<>();
+		workflowSteps = new ArrayList<>();
 	}
-
+	
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Integer getStatus() {
-		return status;
+
+	public String getInputFileName() {
+		return inputFileName;
 	}
-	public void setStatus(Integer status) {
-		this.status = status;
+
+	public void setInputFileName(String inputFileName) {
+		this.inputFileName = inputFileName;
 	}
-	public List<StepReport> getSteps() {
-		return steps;
+
+	public String getReportDateTime() {
+		return reportDateTime;
 	}
-	public void setSteps(List<StepReport> steps) {
-		this.steps = steps;
+
+	public void setReportDateTime(String reportDateTime) {
+		this.reportDateTime = reportDateTime;
 	}
-	public void addStepReport(StepReport stepReport) {
-		if (399 < stepReport.getStatus()) {
-			//Only HttpStatus code of 400 and higher should override the current status.
-			status = stepReport.getStatus();
-		}
-		steps.add(stepReport);
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public List<SiteReport> getSites() {
+		return sites;
+	}
+
+	public void setSites(List<SiteReport> sites) {
+		this.sites = sites;
+	}
+	
+	public void addSiteReport(SiteReport siteReport) {
+		sites.add(siteReport);
+	}
+	
+	public List<StepReport> getWorkflowSteps() {
+		return workflowSteps;
+	}
+
+	public void setWorkflowSteps(List<StepReport> workflowSteps) {
+		this.workflowSteps = workflowSteps;
+	}
+	
+	public void addWorkflowStepReport(StepReport stepReport) {
+		workflowSteps.add(stepReport);
 	}
 
 	@Override

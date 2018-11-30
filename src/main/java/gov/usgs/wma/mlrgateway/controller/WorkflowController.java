@@ -1,5 +1,8 @@
 package gov.usgs.wma.mlrgateway.controller;
 
+import java.util.Collections;
+import java.util.Comparator;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
@@ -43,44 +46,48 @@ public class WorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/ddots")
 	public GatewayReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
-		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW));
+		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW, file.getName()));
 		try {
 			legacy.completeWorkflow(file);
+			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.COMPLETE_WORKFLOW_SUCCESS));
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				WorkflowController.addStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.addStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW, status, e.getLocalizedMessage(), null, null));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
 			}
 		}
 
 		//Send Notification
-		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
+		notificationStep(COMPLETE_WORKFLOW_SUBJECT);
 		//Return report
 		GatewayReport rtn = getReport();
-		response.setStatus(rtn.getStatus());
+		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
+		response.setStatus(maxStatusStep.getHttpStatus());
 		remove();
 		return rtn;
 	}
 
 	@ApiOperation(value="Validate a D dot file, DOES NOT update the repository or send transaction file(s) to WSC.")
 	@ApiResponses(value={@ApiResponse(code=200, message="OK"),
-			@ApiResponse(code=400, message="Bad Request"),
-			@ApiResponse(code=401, message="Unauthorized")})
+	@ApiResponse(code=400, message="Bad Request"),
+	@ApiResponse(code=401, message="Unauthorized")})
 	@PostMapping("/ddots/validate")
 	public GatewayReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
-		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW));
+		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, file.getOriginalFilename()));
 		try {
 			legacy.ddotValidation(file);
+			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_SUCCESS));
+
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				WorkflowController.addStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, status, ((FeignBadResponseWrapper) e).getBody(), null, null));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.addStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, status, e.getLocalizedMessage(), null, null));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
 			}
 		}
 
@@ -88,7 +95,8 @@ public class WorkflowController extends BaseController {
 		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
 		//Return report
 		GatewayReport rtn = getReport();
-		response.setStatus(rtn.getStatus());
+		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
+		response.setStatus(maxStatusStep.getHttpStatus());
 		remove();
 		return rtn;
 	}

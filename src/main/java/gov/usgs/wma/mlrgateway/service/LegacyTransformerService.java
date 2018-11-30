@@ -1,6 +1,5 @@
 package gov.usgs.wma.mlrgateway.service;
 
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,11 +11,9 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
-
+import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyTransformerClient;
-import gov.usgs.wma.mlrgateway.controller.WorkflowController;
-import static gov.usgs.wma.mlrgateway.service.LegacyTransformerService.LATITUDE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +38,7 @@ public class LegacyTransformerService {
 		this.legacyTransformerClient = legacyTransformerClient;
 	}
 
-	public Map<String, Object> transformGeo(Map<String, Object> ml) {
+	public Map<String, Object> transformGeo(Map<String, Object> ml, SiteReport siteReport) {
 		Map<String, Object> transforms = new HashMap<>(ml);
 		if (ml.containsKey(LATITUDE) && ml.containsKey(LONGITUDE) && ml.containsKey(COORDINATE_DATUM_CODE)) {
 
@@ -53,9 +50,9 @@ public class LegacyTransformerService {
 			try {
 				ResponseEntity<String> response = legacyTransformerClient.decimalLocation(json);
 				transforms.putAll(mapper.readValue(response.getBody(), mapType));
-				WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, GEO_SUCCESS, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				siteReport.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, true, GEO_SUCCESS));
 			} catch (Exception e) {
-				WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, GEO_FAILURE, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				siteReport.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, GEO_FAILURE));
 				log.error(STEP_NAME + ": " + e.getMessage());
 				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + GEO_FAILURE + "\"}");	
 			}
@@ -63,7 +60,7 @@ public class LegacyTransformerService {
 		return transforms;
 	}
 
-	public Map<String, Object> transformStationIx(Map<String, Object> ml) {
+	public Map<String, Object> transformStationIx(Map<String, Object> ml, SiteReport siteReport) {
 		Map<String, Object> transformed = new HashMap<>(ml);
 		if (ml.containsKey(STATION_NAME)) {
 			String json = "{\"" + STATION_NAME + "\": \"" + ml.get(STATION_NAME) + "\"}";
@@ -74,9 +71,9 @@ public class LegacyTransformerService {
 
 			try {
 				transformed.putAll(mapper.readValue(response.getBody(), mapType));
-				WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, STATION_IX_SUCCESS, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				siteReport.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, true, STATION_IX_SUCCESS));
 			} catch (Exception e) {
-				WorkflowController.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, STATION_IX_FAILURE, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				siteReport.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, false,  STATION_IX_FAILURE));
 				log.error(STEP_NAME + ": " + e.getMessage());
 				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + STATION_IX_FAILURE + "\"}");	
 			}

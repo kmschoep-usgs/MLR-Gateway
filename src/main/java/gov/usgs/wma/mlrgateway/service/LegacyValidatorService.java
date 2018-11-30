@@ -13,9 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
+import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
-import gov.usgs.wma.mlrgateway.controller.BaseController;
 import org.codehaus.jackson.io.JsonStringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +29,9 @@ public class LegacyValidatorService {
 	public static final String VALIDATION_STEP = "Validate";
 	public static final String VALIDATION_SUCCESSFUL = "Transaction validated successfully.";
 	public static final String VALIDATION_FAILED = "Transaction validation failed.";
+	public static final String SITE_VALIDATE_STEP = "Validate Duplicate Monitoring Location Name";
+	public static final String SITE_VALIDATE_SUCCESSFUL = "Monitoring Location Duplicate Name Validation Succeeded";
+	public static final String SITE_VALIDATE_FAILED = "Monitoring Location Duplicate Name Validation Failed";
 
 	@Autowired
 	public LegacyValidatorService(LegacyCruService legacyCruService, LegacyValidatorClient legacyValidatorClient){
@@ -36,52 +39,54 @@ public class LegacyValidatorService {
 		this.legacyValidatorClient = legacyValidatorClient;
 	}
 
-	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction) throws FeignBadResponseWrapper {
+	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction, SiteReport siteReport) throws FeignBadResponseWrapper {
 		int duplicateValidationStatus = 200;
 		int otherValidationStatus = 200;
 		try {
-			doDuplicateValidation(ml);
+			doDuplicateValidation(ml, siteReport);
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
 				duplicateValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, duplicateValidationStatus,  ((FeignBadResponseWrapper)e).getBody(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, ((FeignBadResponseWrapper)e).getBody()));
 			} else {
 				duplicateValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, duplicateValidationStatus,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, e.getMessage()));
 			}
 		}
 		try {
 			ResponseEntity<String> validationResponse;
-			String validationPayload = attachExistingMonitoringLocation(ml, isAddTransaction);
+			String validationPayload = attachExistingMonitoringLocation(ml, isAddTransaction, siteReport);
 			if(isAddTransaction) {
 				validationResponse = legacyValidatorClient.validateAdd(validationPayload);
 			} else {
 				 validationResponse = legacyValidatorClient.validateUpdate(validationPayload);
 			}
 			ml = verifyValidationStatus(ml, validationResponse);
+			siteReport.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(), true, validationResponse.getBody() ));
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
 				otherValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus,  ((FeignBadResponseWrapper)e).getBody(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				siteReport.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus, false, ((FeignBadResponseWrapper)e).getBody()));
+				
 			} else {
 				otherValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				BaseController.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus,  e.getMessage(), ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
+				siteReport.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus, false, e.getMessage()));
 			}
-
 		}
 		//We have to choose between two status codes.
-		//Favor advertizing a server-side error over a client-side error
-		//Favor advertizing a client-side error over a server-side success
+		//Favor advertising a server-side error over a client-side error
+		//Favor advertising a client-side error over a server-side success
 		//5xx > 4xx > 2xx
+		
 		int finalStatus = Math.max(duplicateValidationStatus, otherValidationStatus);
 
 		if(200 == finalStatus) {
-			BaseController.addStepReport(new StepReport(VALIDATION_STEP, finalStatus,  VALIDATION_SUCCESSFUL, ml.get(LegacyWorkflowService.AGENCY_CODE), ml.get(LegacyWorkflowService.SITE_NUMBER)));
 			return ml;
 		} else {
 			//Throw error to stop additional transaction processing
 			throw new FeignBadResponseWrapper(finalStatus, null, "{\"error_message\": \"" + VALIDATION_FAILED + "\"}");	
 		}
+		
 	}
 
 	private Map<String, Object> verifyValidationStatus(Map<String,Object> ml, ResponseEntity<String> validationResponse) {
@@ -114,7 +119,7 @@ public class LegacyValidatorService {
 		return ml;
 	}
 
-	private String attachExistingMonitoringLocation(Map<String, Object> ml, boolean isAddTransaction) {
+	private String attachExistingMonitoringLocation(Map<String, Object> ml, boolean isAddTransaction, SiteReport siteReport) {
 		Map<String, Object> existingRecord = new HashMap<>();
 		Map<String, Object> validationPayload = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
@@ -123,7 +128,7 @@ public class LegacyValidatorService {
 		String siteNumber = ml.get(LegacyWorkflowService.SITE_NUMBER) != null ? ml.get(LegacyWorkflowService.SITE_NUMBER).toString() : null;
 		String agencyCode = ml.get(LegacyWorkflowService.AGENCY_CODE) != null ? ml.get(LegacyWorkflowService.AGENCY_CODE).toString() : null;
 
-		existingRecord = legacyCruService.getMonitoringLocation(agencyCode, siteNumber, isAddTransaction);
+		existingRecord = legacyCruService.getMonitoringLocation(agencyCode, siteNumber, isAddTransaction, siteReport);
 
 		validationPayload.put(LegacyValidatorClient.NEW_RECORD_PAYLOAD,ml);
 		validationPayload.put(LegacyValidatorClient.EXISTING_RECORD_PAYLOAD,existingRecord);
@@ -134,6 +139,7 @@ public class LegacyValidatorService {
 			return json;
 		} catch(Exception e) {
 			log.error(VALIDATION_STEP + ": " + e.getMessage());
+			siteReport.addStepReport(new StepReport(VALIDATION_FAILED, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, e.getMessage()));
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize input as validator payload.\"}");
 		}
 	}
@@ -143,11 +149,13 @@ public class LegacyValidatorService {
 	 * @param ml
 	 * @throws FeignBadResponseWrapper 
 	 */
-	protected void doDuplicateValidation(Map<String, Object> ml) throws FeignBadResponseWrapper {
-		List<String> msgs = legacyCruService.validateMonitoringLocation(ml);
+	protected void doDuplicateValidation(Map<String, Object> ml, SiteReport siteReport) throws FeignBadResponseWrapper {
+		List<String> msgs = legacyCruService.validateMonitoringLocation(ml, siteReport);
 		if(!msgs.isEmpty()) {
 			String msgsString = new String(JsonStringEncoder.getInstance().quoteAsString(String.join(", ", msgs)));
 			throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"" + msgsString + "\"}");
+		} else {
+			siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_OK, true, SITE_VALIDATE_SUCCESSFUL ));
 		}
 	}
 }

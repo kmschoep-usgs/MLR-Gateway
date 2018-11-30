@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
+import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.client.LegacyTransformerClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import net.minidev.json.JSONObject;
@@ -38,6 +39,9 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 
 	private LegacyTransformerService service;
 	private String reportName = "TEST DDOT";
+	private String fileName = "test.d";
+	private final String agencyCode = "USGS ";
+	private final String siteNumber = "12345678       ";
 	private ObjectMapper mapper;
 	private String legacyJson = "{\"" + LegacyWorkflowService.TRANSACTION_TYPE + "\":\"" + LegacyWorkflowService.TRANSACTION_TYPE_ADD
 			+ "\",\"" + LegacyWorkflowService.AGENCY_CODE + "\": \"USGS \",\"" + LegacyWorkflowService.SITE_NUMBER + "\": \"12345678       \"";
@@ -53,21 +57,26 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 	@Before
 	public void init() {
 		service = new LegacyTransformerService(legacyTransformerClient);
-		WorkflowController.setReport(new GatewayReport(reportName));
+		WorkflowController.setReport(new GatewayReport(reportName, fileName));
 		mapper = new ObjectMapper();
 	}
 
 	@Test
 	public void happyPath_transformGeo_thenReturnTransformedGeo() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":200,\"details\":\""
-				+ JSONObject.escape(LegacyTransformerService.GEO_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
+		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \","
+				+ "\"siteNumber\":\"12345678       \",\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME 
+				+ "\",\"httpStatus\":200,\"success\":true,\"details\":\"" + LegacyTransformerService.GEO_SUCCESS + "\"}]}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(transformerJsonGeo, HttpStatus.OK);
 		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		Map<String, Object> rtn = service.transformGeo(addGeo(getAdd()), siteReport);
 
-		Map<String, Object> rtn = service.transformGeo(addGeo(getAdd()));
-
+		GatewayReport gatewayReport = WorkflowController.getReport();
+		gatewayReport.addSiteReport(siteReport);
+		
 		String actualTransformed = mapper.writeValueAsString(rtn);
-		String actualMsg = mapper.writeValueAsString(WorkflowController.getReport());
+		String actualMsg = mapper.writeValueAsString(gatewayReport);
 		JSONAssert.assertEquals(legacyJsonGeo, actualTransformed, JSONCompareMode.STRICT);
 		JSONAssert.assertEquals(msg, actualMsg, JSONCompareMode.STRICT);
 		verify(legacyTransformerClient).decimalLocation(anyString());
@@ -75,62 +84,86 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 
 	@Test
 	public void nullReturnTransform_transformGeo_thenReturnError() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":500,\"details\":\""
-				+ JSONObject.escape(LegacyTransformerService.GEO_FAILURE) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
+		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+				+ "\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"httpStatus\":500,\"success\":false,"
+				+ "\"details\":\"" + JSONObject.escape(LegacyTransformerService.GEO_FAILURE) + "\"}]}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>("", HttpStatus.BAD_REQUEST);
 		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 
 		try {
-			Map<String, Object> rtn = service.transformGeo(addGeo(getAdd()));
+			Map<String, Object> rtn = service.transformGeo(addGeo(getAdd()), siteReport);
 			fail("transformGeo did not throw an error");
 		} catch(FeignBadResponseWrapper e) {}
+		
+		GatewayReport gatewayReport = WorkflowController.getReport();
+		gatewayReport.addSiteReport(siteReport);
 
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(gatewayReport), JSONCompareMode.STRICT);
 		verify(legacyTransformerClient).decimalLocation(anyString());
 	}
 
 	@Test
 	public void happyPath_transformIX_thenReturnTransformedGeo() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":200,\"details\":\""
-				+ JSONObject.escape(LegacyTransformerService.STATION_IX_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
+		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+				+ "\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"httpStatus\":200,\"success\":true,\"details\":\"" 
+				+ LegacyTransformerService.STATION_IX_SUCCESS + "\"}]}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(transformerJsonIx, HttpStatus.OK);
 		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 
-		Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()));
+		Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()), siteReport);
+		
+		GatewayReport gatewayReport = WorkflowController.getReport();
+		gatewayReport.addSiteReport(siteReport);
 
 		JSONAssert.assertEquals(legacyJsonIX, mapper.writeValueAsString(rtn), JSONCompareMode.STRICT);
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(gatewayReport), JSONCompareMode.STRICT);
 		verify(legacyTransformerClient).stationIx(anyString());
 	}
 
 	@Test
 	public void nullReturnTransform_transformIX_thenReturnError() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":500,\"details\":\""
-				+ JSONObject.escape(LegacyTransformerService.STATION_IX_FAILURE) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
+		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":false,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+				+ "\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"httpStatus\":500,\"success\":false,\"details\":\"" 
+				+ JSONObject.escape(LegacyTransformerService.STATION_IX_FAILURE) + "\"}]}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>("", HttpStatus.BAD_REQUEST);
 		given(legacyTransformerClient.decimalLocation(anyString())).willReturn(legacyRtn);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		
 		try {
-			Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()));
+			Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()), siteReport);
 			fail("transformStationIx did not throw an error");
 		} catch(FeignBadResponseWrapper e) {}
+		
+		GatewayReport gatewayReport = WorkflowController.getReport();
+		gatewayReport.addSiteReport(siteReport);
 
-		JSONAssert.assertEquals(msg, mapper.writeValueAsString(WorkflowController.getReport()), JSONCompareMode.STRICT);
+		JSONAssert.assertEquals(msg, mapper.writeValueAsString(gatewayReport), JSONCompareMode.STRICT);
 		verify(legacyTransformerClient).stationIx(anyString());
 	}
 
 	@Test
 	public void happyPathIx_transform_thenReturnTransformed() throws Exception {
-		String msg = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"status\":200,\"details\":\""
-				+ JSONObject.escape(LegacyTransformerService.STATION_IX_SUCCESS) + "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}]}";
+		String msg = "{\"name\":\"TEST DDOT\",\"inputFileName\":\"test.d\",\"reportDateTime\":null,\"userName\":null,\"workflowSteps\":[],"
+				+ "\"sites\":[{\"success\":true,\"agencyCode\":\"USGS \",\"siteNumber\":\"12345678       \","
+				+ "\"steps\":[{\"name\":\"" + LegacyTransformerService.STEP_NAME + "\",\"httpStatus\":200,\"success\":true,\"details\":\"" 
+				+ LegacyTransformerService.STATION_IX_SUCCESS + "\"}]}]}";
 		ResponseEntity<String> legacyRtn = new ResponseEntity<String>(transformerJsonIx, HttpStatus.OK);
 		given(legacyTransformerClient.stationIx(anyString())).willReturn(legacyRtn);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 
-		Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()));
+		Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()), siteReport);
+		
+		GatewayReport gatewayReport = WorkflowController.getReport();
+		gatewayReport.addSiteReport(siteReport);
 
 		String actualTransformed = mapper.writeValueAsString(rtn);
 		JSONAssert.assertEquals(legacyJsonIX, actualTransformed, JSONCompareMode.STRICT);
-		String actualMsg = mapper.writeValueAsString(WorkflowController.getReport());
+		String actualMsg = mapper.writeValueAsString(gatewayReport);
 		JSONAssert.assertEquals(msg, actualMsg, JSONCompareMode.STRICT);
 		verify(legacyTransformerClient, never()).decimalLocation(anyString());
 		verify(legacyTransformerClient).stationIx(anyString());
@@ -138,13 +171,15 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 	
 	@Test
 	public void ifLocationLacksStationName_thenReturnAsIs() {
-		Map<String, Object> transformed = service.transformStationIx(addGeo(getAdd()));
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		Map<String, Object> transformed = service.transformStationIx(addGeo(getAdd()), siteReport);
 		assertEquals(addGeo(getAdd()), transformed);
 	}
 	
 	@Test
 	public void ifLocationLacksGeo_thenReturnAsIs() {
-		Map<String, Object> transformed = service.transformGeo(addIX(getAdd()));
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		Map<String, Object> transformed = service.transformGeo(addIX(getAdd()), siteReport);
 		assertEquals(addIX(getAdd()), transformed);
 	}
 	

@@ -1,9 +1,9 @@
 package gov.usgs.wma.mlrgateway.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyObject;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,17 +15,20 @@ import org.springframework.test.context.junit4.SpringRunner;
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
+import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
+import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
+import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
+
 import java.util.Arrays;
 import java.util.Map;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -39,295 +42,302 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	private LegacyValidatorClient legacyValidatorClient;
 
 	private LegacyValidatorService service;
-	private ObjectMapper mapper;
 	private String reportName = "TEST VALIDATOR";
+	private String fileName = "test.d";
+	private final String agencyCode = "USGS ";
+	private final String siteNumber = "12345678       ";
 	public static String LEGACY_VALIDATION_ERROR_BODY = "{\"error_message\": \""+LegacyValidatorService.VALIDATION_FAILED+"\"}";
 	
 	@Before
 	public void init() {
 		service = new LegacyValidatorService(legacyCruService, legacyValidatorClient);
-		BaseController.setReport(new GatewayReport(reportName));
-		mapper = new ObjectMapper();
+		BaseController.setReport(new GatewayReport(reportName, fileName));
 	}
 
 	@Test
 	public void validatorService_doValidation_addValidData() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
+		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\"}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doValidation(ml, true);
+		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
 		
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertTrue(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
 		assertTrue(((Map)mlValid.get("validation")).size() == 1);
 		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
-		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
 	}
 	
 	@Test
 	public void validatorService_doValidation_updateValidData() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
+		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\"}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doValidation(ml, false);
+		Map<String, Object> mlValid = service.doValidation(ml, false, siteReport);
 		
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertTrue(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
 		assertTrue(((Map)mlValid.get("validation")).size() == 1);
 		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
-		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
 	}
 	
 	@Test
 	public void validatorService_doValidation_nonExisting() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
+		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\"}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doValidation(ml, true);
+		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
 		
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertTrue(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
 		assertTrue(((Map)mlValid.get("validation")).size() == 1);
 		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
-		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+
 	}
-	
-	@Test
-	public void validatorService_doValidation_cruError() throws Exception {
-		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\"}", HttpStatus.OK);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
-		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
-		
-		Map<String, Object> mlValid = service.doValidation(ml, true);
-		
-		assertTrue(mlValid.containsKey("validation"));
-		assertTrue(((Map)mlValid.get("validation")).size() == 1);
-		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
-		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
-	}
-	
 	
 	@Test
 	public void validatorService_doValidation_addWarningData() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}", HttpStatus.OK);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
+		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doValidation(ml, true);
+		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
 		
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertTrue(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
 		assertTrue(((Map)mlValid.get("validation")).size() == 2);
 		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
 		assertTrue(((Map)mlValid.get("validation")).containsKey("warning_message"));
-		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
 	}
 	
 	@Test
 	public void validatorService_doValidation_updateWarningData() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings\"}", HttpStatus.OK);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
+		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doValidation(ml, false);
+		Map<String, Object> mlValid = service.doValidation(ml, false, siteReport);
 		
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertTrue(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
 		assertTrue(((Map)mlValid.get("validation")).size() == 2);
 		assertTrue(((Map)mlValid.get("validation")).containsKey("validation_passed_message"));
 		assertTrue(((Map)mlValid.get("validation")).containsKey("warning_message"));
-		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":200,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":200,\"details\":\"Transaction validated successfully."
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+
 	}
 	
 	@Test
 	public void validatorService_doValidation_InvalidData() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"fatal_error_message\": \"Fatal Error.\"}", HttpStatus.OK);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
+		String responseMsg = "{\"fatal_error_message\": \"Fatal Error.\"}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doValidation(ml, true);
+			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertTrue(e.getStatus() == 400);
 			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
 		}
 		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"{\\\"error_message\\\": {\\\"fatal_error_message\\\": \\\"Fatal Error.\\\"}}"
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		GatewayReport gatewayReport = WorkflowController.getReport();
+		gatewayReport.addSiteReport(siteReport);
+		
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertTrue(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
+		assertFalse(siteReport.getSteps().get(1).isSuccess());
+		assertFalse(siteReport.isSuccess());
 	}
 	
 	@Test
 	public void validatorService_doValidation_EmptyValidatorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{}", HttpStatus.OK);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
+		String responseMsg = "{}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doValidation(ml, true);
+			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertTrue(e.getStatus() == 500);
 			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
 		}
 		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":500,\"details\":\"{\\\"error_message\\\": {}}"
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertTrue(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
+		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
+		assertFalse(siteReport.getSteps().get(1).isSuccess());
+		assertFalse(siteReport.isSuccess());
 	}
 	
 	@Test
 	public void validatorService_doValidation_UnknownValidatorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"invalid_key\":\"some data\"}", HttpStatus.OK);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
+		String responseMsg = "{\"invalid_key\":\"some data\"}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doValidation(ml, true);
+			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertTrue(e.getStatus() == 500);
 			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
 		}
 		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":500,\"details\":\"{\\\"error_message\\\": {\\\"invalid_key\\\":\\\"some data\\\"}}"
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertTrue(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
+		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
+		assertFalse(siteReport.getSteps().get(1).isSuccess());
+		assertFalse(siteReport.isSuccess());
 	}
 	
 	@Test
 	public void validatorService_doValidation_ValidatorErrorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("Bad Request", HttpStatus.BAD_REQUEST);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
+		String responseMsg = "Bad Request";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.BAD_REQUEST);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doValidation(ml, true);
+			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertTrue(e.getStatus() == 400);
 			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
 		}
 		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"{\\\"error_message\\\": \\\"An internal error occurred during validation: Bad Request\\\"}"
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertTrue(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": \"An internal error occurred during validation: " + responseMsg + "\"}");
+		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "400");
+		assertFalse(siteReport.getSteps().get(1).isSuccess());
+		assertFalse(siteReport.isSuccess());
 	}
 	
 	@Test
 	public void validatorService_doValidation_InvalidValidatorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("I'm Not JSON", HttpStatus.OK);
-		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any())).willReturn(Arrays.asList());
+		String responseMsg = "I'm Not JSON";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doValidation(ml, true);
+			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertTrue(e.getStatus() == 500);
 			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
 		}
-		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":500,\"details\":\"{\\\"error_message\\\": \\\"Unable to deserialize validator response as JSON: I'm Not JSON\\\"}"
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		JSONAssert.assertEquals(expectedReport, mapper.writeValueAsString(BaseController.getReport()), JSONCompareMode.STRICT);
+
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertTrue(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": \"Unable to deserialize validator response as JSON: " + responseMsg + "\"}");
+		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
+		assertFalse(siteReport.getSteps().get(1).isSuccess());
+		assertFalse(siteReport.isSuccess());
 	}
 	
 	@Test
 	public void validatorService_doValidation_DuplicateValidationFailure() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}", HttpStatus.OK);
-
+		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
-		given(legacyCruService.validateMonitoringLocation(ml)).willReturn(Arrays.asList("Error", "Bad"));
+		given(legacyCruService.validateMonitoringLocation(anyObject(), anyObject())).willReturn(Arrays.asList("Error", "Bad"));
 
 		try{
-			service.doValidation(ml, true);
+			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			int status = e.getStatus();
@@ -335,28 +345,30 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			String body = e.getBody();
 			assertEquals(LEGACY_VALIDATION_ERROR_BODY, body);
 		}
-		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":400,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":400,\"details\":\"{\\\"error_message\\\": \\\"Error, Bad\\\"}"
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		String actualReport = mapper.writeValueAsString(BaseController.getReport());
-		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
+
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error, Bad\"}");
+		assertFalse(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertTrue(siteReport.getSteps().get(1).isSuccess());
+		assertFalse(siteReport.isSuccess());
 	}
 	
 	@Test
 	public void validatorService_doValidation_DuplicateValidationError() throws Exception {
 		Map<String, Object> ml = getAdd();
-		ResponseEntity<String> validatorResponse = new ResponseEntity<> ("{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}", HttpStatus.OK);
-
+		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
-		given(legacyCruService.validateMonitoringLocation(ml)).willThrow(new RuntimeException("error"));
+		given(legacyCruService.validateMonitoringLocation(anyObject(), anyObject())).willThrow(new RuntimeException("error"));
 
 		try{
-			service.doValidation(ml, true);
+			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			int status = e.getStatus();
@@ -365,12 +377,44 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			assertEquals(LEGACY_VALIDATION_ERROR_BODY, body);
 		}
 		
-		//Verify Report Contents
-		String expectedReport = "{\"name\":\"" + reportName + "\",\"status\":500,\"steps\":["
-				+ "{\"name\":\"" + LegacyValidatorService.VALIDATION_STEP + "\",\"status\":500,\"details\":\"error"
-				+ "\",\"agencyCode\": \"USGS \",\"siteNumber\": \"12345678       \"}"
-				+ "]}";
-		String actualReport = mapper.writeValueAsString(BaseController.getReport());
-		JSONAssert.assertEquals(expectedReport, actualReport, JSONCompareMode.STRICT);
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), "error");
+		assertFalse(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertTrue(siteReport.getSteps().get(1).isSuccess());
+		assertFalse(siteReport.isSuccess());
+	}
+	
+	@Test
+	public void validatorService_doValidation_DuplicateValidationFailure_InvalidData() throws Exception {
+		Map<String, Object> ml = getAdd();
+		String responseMsg = "{\"fatal_error_message\": \"Fatal Error.\"}";
+		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
+		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
+		
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
+		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
+		given(legacyCruService.validateMonitoringLocation(anyObject(), anyObject())).willReturn(Arrays.asList("Error", "Bad"));
+
+		try{
+			service.doValidation(ml, true, siteReport);
+			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
+		} catch (FeignBadResponseWrapper e) {
+			int status = e.getStatus();
+			assertEquals(400, status);
+			String body = e.getBody();
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, body);
+		}
+
+		assertEquals(siteReport.getSteps().size(), 2);
+		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
+		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error, Bad\"}");
+		assertFalse(siteReport.getSteps().get(0).isSuccess());
+		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
+		assertFalse(siteReport.getSteps().get(1).isSuccess());
+		assertFalse(siteReport.isSuccess());
 	}
 }
