@@ -22,7 +22,7 @@ public class SiteReport {
 		this.agencyCode = agencyCode;
 		this.siteNumber = siteNumber;
 		this.success = true;
-		steps = new ArrayList<>();
+		setSteps(new ArrayList<>());
 	}
 
 	public boolean isSuccess() {
@@ -53,9 +53,13 @@ public class SiteReport {
 	public void setTransactionType(String transactionType) {
 		this.transactionType = transactionType;
 	}
-
+	
 	public List<StepReport> getSteps(){
 		return steps;
+	}
+
+	public void setSteps(List<StepReport> steps) {
+		this.steps = steps;
 	}
 
 	public void addStepReport(StepReport stepReport) {
@@ -63,7 +67,7 @@ public class SiteReport {
 			//Steps that fail should fail the site.
 			setSuccess(stepReport.isSuccess());
 		}
-		steps.add(stepReport);
+		getSteps().add(stepReport);
 	}
 
 }

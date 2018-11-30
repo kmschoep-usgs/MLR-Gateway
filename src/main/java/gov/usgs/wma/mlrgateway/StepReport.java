@@ -8,7 +8,7 @@ public class StepReport {
 	private String name;
 	private Integer httpStatus;
 	private boolean success;
-	private String details;
+	private Object details;
 
 	public StepReport() {}
 
@@ -39,10 +39,10 @@ public class StepReport {
 		this.success = success;
 	}
 
-	public String getDetails() {
+	public Object getDetails() {
 		return details;
 	}
-	public void setDetails(String details) {
+	public void setDetails(Object details) {
 		this.details = details;
 	}
 
