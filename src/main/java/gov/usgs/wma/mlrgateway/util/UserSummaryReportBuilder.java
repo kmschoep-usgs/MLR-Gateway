@@ -28,51 +28,50 @@ public class UserSummaryReportBuilder {
 	}
 
 	public UserSummaryReport buildUserSummaryReport(GatewayReport report) {
+
 		UserSummaryReport userSummaryReport = new UserSummaryReport();
 		List<SiteReport> reportedSites = new ArrayList<>();
 		
 		try {
-		List<SiteReport> successfulSites = report.getSites().stream()
-				.filter(s -> s.isSuccess())
+			List<SiteReport> successfulSites = report.getSites().stream()
+					.filter(s -> s.isSuccess())
+					.collect(Collectors.toList());
+			
+			List<SiteReport> failureSites = report.getSites().stream()
+					.filter(s -> !s.isSuccess())
+					.collect(Collectors.toList());
+			
+			List<SiteReport> warningFailureSites = report.getSites().stream()
+					.filter(s -> s.getSteps().stream()
+							.anyMatch(st -> st.getDetails().toString().contains("warning")) || !s.isSuccess())
+					.collect(Collectors.toList());
+			
+			reportedSites.addAll(warningFailureSites);
+			
+			for (SiteReport site : reportedSites) {
+				List<StepReport> warningFailureSteps = site.getSteps().stream()
+				.filter(st -> st.getDetails().toString().contains("warning") || !st.isSuccess())
 				.collect(Collectors.toList());
-		
-		List<SiteReport> failureSites = report.getSites().stream()
-				.filter(s -> !s.isSuccess())
-				.collect(Collectors.toList());
-		
-		List<SiteReport> warningFailureSites = report.getSites().stream()
-				.filter(s -> s.getSteps().stream()
-						.anyMatch(st -> st.getDetails().toString().contains("warning")) || !s.isSuccess())
-				.collect(Collectors.toList());
-		
-		for (SiteReport site : warningFailureSites) {
-			List<StepReport> warningFailureSteps = site.getSteps().stream()
-			.filter(st -> st.getDetails().toString().contains("warning") || !st.isSuccess())
-			.collect(Collectors.toList());
-			// clear out existing steps
-			site.setSteps(null);
-			// add just the warning/failure steps
-			site.setSteps(warningFailureSteps);
-		}
-		
-		List<StepReport> failureWorkflowSteps = report.getWorkflowSteps().stream()
-				.filter(w -> !w.isSuccess())
-				.collect(Collectors.toList());
-		
-		userSummaryReport.setInputFileName(report.getInputFileName());
-		userSummaryReport.setName(report.getName());
-		userSummaryReport.setReportDateTime(report.getReportDateTime());
-		userSummaryReport.setUserName(report.getUserName());
-		userSummaryReport.setNumberSiteSuccess(successfulSites.size());
-		userSummaryReport.setNumberSiteFailure(failureSites.size());
-		userSummaryReport.setWorkflowSteps(failureWorkflowSteps);
-		
-		userSummaryReport.setSites(warningFailureSites);
+				// add just the warning/failure steps
+				site.setSteps(warningFailureSteps);
+			}
+			
+			List<StepReport> failureWorkflowSteps = report.getWorkflowSteps().stream()
+					.filter(w -> !w.isSuccess())
+					.collect(Collectors.toList());
+			
+			userSummaryReport.setInputFileName(report.getInputFileName());
+			userSummaryReport.setName(report.getName());
+			userSummaryReport.setReportDateTime(report.getReportDateTime());
+			userSummaryReport.setUserName(report.getUserName());
+			userSummaryReport.setNumberSiteSuccess(successfulSites.size());
+			userSummaryReport.setNumberSiteFailure(failureSites.size());
+			userSummaryReport.setWorkflowSteps(failureWorkflowSteps);
+			
+			userSummaryReport.setSites(reportedSites);
 		} catch(Exception e) {
 			log.error("User Summary Report builder failed: " + e.getMessage());
 		}
 		return userSummaryReport;
 	}
-	
-
 }
