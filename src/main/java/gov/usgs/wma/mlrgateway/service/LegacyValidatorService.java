@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 @Service
 public class LegacyValidatorService {
 	private Logger log = LoggerFactory.getLogger(LegacyTransformerService.class);
-
+	
 	private final LegacyCruService legacyCruService;
 	private final LegacyValidatorClient legacyValidatorClient;
 	public static final String VALIDATION_STEP = "Validate";

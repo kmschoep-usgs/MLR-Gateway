@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,13 +40,19 @@ public class DdotService {
 		List<Map<String, Object>> ddots = null;
 		ObjectMapper mapper = new ObjectMapper();
 		TypeReference<List<Map<String, Object>>> mapType = new TypeReference<List<Map<String, Object>>>() {};
-
+		
 		try {
-			ddots = mapper.readValue(ddotClient.ingestDdot(file), mapType);
+			String ddotResponse = ddotClient.ingestDdot(file);
+			ddots = mapper.readValue(ddotResponse, mapType);
 		} catch (Exception e) {
 			int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-			WorkflowController.addWorkflowStepReport(new StepReport(STEP_NAME, status, false, INTERNAL_ERROR_MESSAGE));
 			log.error(STEP_NAME + ": " + e.getMessage());
+			if(e instanceof FeignBadResponseWrapper){
+				WorkflowController.addWorkflowStepReport(new StepReport(STEP_NAME, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
+			} else {
+				WorkflowController.addWorkflowStepReport(new StepReport(STEP_NAME, status, false, INTERNAL_ERROR_MESSAGE));
+
+			}
 			throw new FeignBadResponseWrapper(status, null, INTERNAL_ERROR_MESSAGE);
 		}
 

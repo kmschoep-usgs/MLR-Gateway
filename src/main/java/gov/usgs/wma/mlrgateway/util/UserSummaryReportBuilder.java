@@ -1,26 +1,22 @@
 package gov.usgs.wma.mlrgateway.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
+import gov.usgs.wma.mlrgateway.SiteReport;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
-import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.time.Instant;
-import java.time.temporal.Temporal;
-import java.util.HashMap;
+import java.util.ArrayList;
+
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class UserSummaryReportBuilder {
@@ -33,15 +29,48 @@ public class UserSummaryReportBuilder {
 
 	public UserSummaryReport buildUserSummaryReport(GatewayReport report) {
 		UserSummaryReport userSummaryReport = new UserSummaryReport();
-		long stepReports = report.getWorkflowSteps().stream()
-				.filter(st -> (st.isSuccess() || st.getDetails().toString().contains("warning"))).count();
+		List<SiteReport> reportedSites = new ArrayList<>();
 		
-		long successSites = report.getSites().stream()
+		try {
+		List<SiteReport> successfulSites = report.getSites().stream()
+				.filter(s -> s.isSuccess())
+				.collect(Collectors.toList());
+		
+		List<SiteReport> failureSites = report.getSites().stream()
+				.filter(s -> !s.isSuccess())
+				.collect(Collectors.toList());
+		
+		List<SiteReport> warningFailureSites = report.getSites().stream()
 				.filter(s -> s.getSteps().stream()
-						.filter(st -> (st.isSuccess() || st.getDetails().toString().contains("warning")))
-						.collect(Collectors.toList()))
-				.count();
+						.anyMatch(st -> st.getDetails().toString().contains("warning")) || !s.isSuccess())
+				.collect(Collectors.toList());
 		
+		for (SiteReport site : warningFailureSites) {
+			List<StepReport> warningFailureSteps = site.getSteps().stream()
+			.filter(st -> st.getDetails().toString().contains("warning") || !st.isSuccess())
+			.collect(Collectors.toList());
+			// clear out existing steps
+			site.setSteps(null);
+			// add just the warning/failure steps
+			site.setSteps(warningFailureSteps);
+		}
+		
+		List<StepReport> failureWorkflowSteps = report.getWorkflowSteps().stream()
+				.filter(w -> !w.isSuccess())
+				.collect(Collectors.toList());
+		
+		userSummaryReport.setInputFileName(report.getInputFileName());
+		userSummaryReport.setName(report.getName());
+		userSummaryReport.setReportDateTime(report.getReportDateTime());
+		userSummaryReport.setUserName(report.getUserName());
+		userSummaryReport.setNumberSiteSuccess(successfulSites.size());
+		userSummaryReport.setNumberSiteFailure(failureSites.size());
+		userSummaryReport.setWorkflowSteps(failureWorkflowSteps);
+		
+		userSummaryReport.setSites(warningFailureSites);
+		} catch(Exception e) {
+			log.error("User Summary Report builder failed: " + e.getMessage());
+		}
 		return userSummaryReport;
 	}
 	
