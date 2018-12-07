@@ -17,8 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
+import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -29,6 +31,7 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping("/workflows")
 public class WorkflowController extends BaseController {
 	private LegacyWorkflowService legacy;
+	private UserSummaryReportBuilder userSummaryReportbuilder;
 	public static final String COMPLETE_WORKFLOW_SUBJECT = "Submitted Ddot Transaction";
 	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "Submitted Ddot Validation";
 
@@ -36,6 +39,7 @@ public class WorkflowController extends BaseController {
 	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService) {
 		super(notificationService);
 		this.legacy = legacy;
+		this.userSummaryReportbuilder = new UserSummaryReportBuilder();
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")
@@ -45,7 +49,7 @@ public class WorkflowController extends BaseController {
 			@ApiResponse(code=403, message="Forbidden")})
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/ddots")
-	public GatewayReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
+	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW, file.getName()));
 		try {
 			legacy.completeWorkflow(file);
@@ -66,8 +70,9 @@ public class WorkflowController extends BaseController {
 		GatewayReport rtn = getReport();
 		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
 		response.setStatus(maxStatusStep.getHttpStatus());
+		UserSummaryReport userSummaryReport = userSummaryReportbuilder.buildUserSummaryReport(rtn);
 		remove();
-		return rtn;
+		return userSummaryReport;
 	}
 
 	@ApiOperation(value="Validate a D dot file, DOES NOT update the repository or send transaction file(s) to WSC.")
@@ -75,7 +80,7 @@ public class WorkflowController extends BaseController {
 	@ApiResponse(code=400, message="Bad Request"),
 	@ApiResponse(code=401, message="Unauthorized")})
 	@PostMapping("/ddots/validate")
-	public GatewayReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
+	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, file.getOriginalFilename()));
 		try {
 			legacy.ddotValidation(file);
@@ -97,7 +102,8 @@ public class WorkflowController extends BaseController {
 		GatewayReport rtn = getReport();
 		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
 		response.setStatus(maxStatusStep.getHttpStatus());
+		UserSummaryReport userSummaryReport = userSummaryReportbuilder.buildUserSummaryReport(rtn);
 		remove();
-		return rtn;
+		return userSummaryReport;
 	}
 }

@@ -30,18 +30,21 @@ public class UserSummaryReportBuilder {
 	public UserSummaryReport buildUserSummaryReport(GatewayReport report) {
 
 		UserSummaryReport userSummaryReport = new UserSummaryReport();
-		List<SiteReport> reportedSites = new ArrayList<>();
+		List<SiteReport> reportedSites = new ArrayList<SiteReport>();
+		List<StepReport> warningFailureSteps = new ArrayList<StepReport>();
 		
 		try {
-			List<SiteReport> successfulSites = report.getSites().stream()
+			GatewayReport clonedReport = new GatewayReport(report);
+			
+			List<SiteReport> successfulSites = clonedReport.getSites().stream()
 					.filter(s -> s.isSuccess())
 					.collect(Collectors.toList());
 			
-			List<SiteReport> failureSites = report.getSites().stream()
+			List<SiteReport> failureSites = clonedReport.getSites().stream()
 					.filter(s -> !s.isSuccess())
 					.collect(Collectors.toList());
 			
-			List<SiteReport> warningFailureSites = report.getSites().stream()
+			List<SiteReport> warningFailureSites = clonedReport.getSites().stream()
 					.filter(s -> s.getSteps().stream()
 							.anyMatch(st -> st.getDetails().toString().contains("warning")) || !s.isSuccess())
 					.collect(Collectors.toList());
@@ -49,7 +52,7 @@ public class UserSummaryReportBuilder {
 			reportedSites.addAll(warningFailureSites);
 			
 			for (SiteReport site : reportedSites) {
-				List<StepReport> warningFailureSteps = site.getSteps().stream()
+				warningFailureSteps = site.getSteps().stream()
 				.filter(st -> st.getDetails().toString().contains("warning") || !st.isSuccess())
 				.collect(Collectors.toList());
 				// add just the warning/failure steps
@@ -60,10 +63,10 @@ public class UserSummaryReportBuilder {
 					.filter(w -> !w.isSuccess())
 					.collect(Collectors.toList());
 			
-			userSummaryReport.setInputFileName(report.getInputFileName());
-			userSummaryReport.setName(report.getName());
-			userSummaryReport.setReportDateTime(report.getReportDateTime());
-			userSummaryReport.setUserName(report.getUserName());
+			userSummaryReport.setInputFileName(clonedReport.getInputFileName());
+			userSummaryReport.setName(clonedReport.getName());
+			userSummaryReport.setReportDateTime(clonedReport.getReportDateTime());
+			userSummaryReport.setUserName(clonedReport.getUserName());
 			userSummaryReport.setNumberSiteSuccess(successfulSites.size());
 			userSummaryReport.setNumberSiteFailure(failureSites.size());
 			userSummaryReport.setWorkflowSteps(failureWorkflowSteps);

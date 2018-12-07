@@ -2,6 +2,7 @@ package gov.usgs.wma.mlrgateway;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -21,6 +22,13 @@ public class SiteReport {
 		this.siteNumber = siteNumber;
 		this.success = true;
 		setSteps(new ArrayList<>());
+	}
+	
+	public SiteReport(SiteReport siteReport) {
+		this.agencyCode = siteReport.agencyCode;
+		this.siteNumber = siteReport.siteNumber;
+		this.success = siteReport.success;
+		this.steps = siteReport.getSteps().stream().map(step -> new StepReport(step)).collect(Collectors.toList());
 	}
 
 	public boolean isSuccess() {

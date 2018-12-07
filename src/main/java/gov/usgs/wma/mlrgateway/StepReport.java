@@ -8,7 +8,7 @@ public class StepReport {
 	private String name;
 	private Integer httpStatus;
 	private boolean success;
-	private Object details;
+	private String details;
 
 	public StepReport() {}
 
@@ -17,6 +17,13 @@ public class StepReport {
 		this.httpStatus = httpStatus;
 		this.success = success;
 		this.details = details;
+	}
+	
+	public StepReport(StepReport stepReport) {
+		this.name = stepReport.name;
+		this.httpStatus = stepReport.httpStatus;
+		this.success = stepReport.success;
+		this.details = stepReport.details;
 	}
 
 	public String getName() {
@@ -39,10 +46,10 @@ public class StepReport {
 		this.success = success;
 	}
 
-	public Object getDetails() {
+	public String getDetails() {
 		return details;
 	}
-	public void setDetails(Object details) {
+	public void setDetails(String details) {
 		this.details = details;
 	}
 

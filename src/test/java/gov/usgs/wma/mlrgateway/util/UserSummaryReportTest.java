@@ -16,6 +16,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.SiteReport;
@@ -58,6 +60,7 @@ public class UserSummaryReportTest {
 	private StepReport siteStationNameDuplicateValidationFailure;
 	private StepReport siteStationNameDuplicateValidationSuccess;
 	private List<StepReport> stepReports;
+	private ObjectMapper mapper;
 
 	@Before
 	public void setUp() throws Exception {
@@ -80,6 +83,7 @@ public class UserSummaryReportTest {
 		gatewayReport.setUserName(userName);
 		gatewayReport.setReportDateTime(reportDateTime);
 		userSummaryReport = new UserSummaryReport();
+		mapper = new ObjectMapper();
 	}
 
 	@Test
@@ -107,7 +111,11 @@ public class UserSummaryReportTest {
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationSuccess);
 		
+		String gatewayReportBefore = mapper.writeValueAsString(gatewayReport);
+		
 		userSummaryReport = builder.buildUserSummaryReport(gatewayReport);
+		
+		String gatewayReportAfter = mapper.writeValueAsString(gatewayReport);
 		
 		assertEquals(fileName, userSummaryReport.getInputFileName());
 		assertEquals(reportName, userSummaryReport.getName());
@@ -117,6 +125,7 @@ public class UserSummaryReportTest {
 		assertEquals(2, userSummaryReport.getNumberSiteSuccess().intValue());
 		assertEquals(0, userSummaryReport.getNumberSiteFailure().intValue());
 		assertEquals(0, userSummaryReport.getWorkflowSteps().size());
+		assertEquals(gatewayReportAfter, gatewayReportBefore);
 	}
 	
 	@Test
@@ -146,13 +155,18 @@ public class UserSummaryReportTest {
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationSuccess);
 		
+		String gatewayReportBefore = mapper.writeValueAsString(gatewayReport);
+		
 		userSummaryReport = builder.buildUserSummaryReport(gatewayReport);
+		
+		String gatewayReportAfter = mapper.writeValueAsString(gatewayReport);
 		
 		assertEquals(1, userSummaryReport.getSites().size());
 		assertEquals(1, userSummaryReport.getSites().get(0).getSteps().size());
 		assertEquals(2, userSummaryReport.getNumberSiteSuccess().intValue());
 		assertEquals(0, userSummaryReport.getNumberSiteFailure().intValue());
 		assertEquals(0, userSummaryReport.getWorkflowSteps().size());
+		assertEquals(gatewayReportAfter, gatewayReportBefore);
 	}
 	
 	@Test
@@ -182,7 +196,11 @@ public class UserSummaryReportTest {
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationSuccess);
 		
+		String gatewayReportBefore = mapper.writeValueAsString(gatewayReport);
+		
 		userSummaryReport = builder.buildUserSummaryReport(gatewayReport);
+		
+		String gatewayReportAfter = mapper.writeValueAsString(gatewayReport);
 		
 		assertEquals(2, userSummaryReport.getSites().size());
 		assertEquals(1, userSummaryReport.getSites().get(0).getSteps().size());
@@ -190,6 +208,7 @@ public class UserSummaryReportTest {
 		assertEquals(1, userSummaryReport.getNumberSiteSuccess().intValue());
 		assertEquals(1, userSummaryReport.getNumberSiteFailure().intValue());
 		assertEquals(0, userSummaryReport.getWorkflowSteps().size());
+		assertEquals(gatewayReportAfter, gatewayReportBefore);
 	}
 
 	@Test
@@ -219,7 +238,11 @@ public class UserSummaryReportTest {
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationSuccess);
 		
+		String gatewayReportBefore = mapper.writeValueAsString(gatewayReport);
+		
 		userSummaryReport = builder.buildUserSummaryReport(gatewayReport);
+		
+		String gatewayReportAfter = mapper.writeValueAsString(gatewayReport);
 		
 		assertEquals(2, userSummaryReport.getSites().size());
 		assertEquals(1, userSummaryReport.getSites().get(0).getSteps().size());
@@ -227,6 +250,7 @@ public class UserSummaryReportTest {
 		assertEquals(1, userSummaryReport.getNumberSiteSuccess().intValue());
 		assertEquals(1, userSummaryReport.getNumberSiteFailure().intValue());
 		assertEquals(0, userSummaryReport.getWorkflowSteps().size());
+		assertEquals(gatewayReportAfter, gatewayReportBefore);
 	}
 	
 	
@@ -257,7 +281,11 @@ public class UserSummaryReportTest {
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationSuccess);
 		
+		String gatewayReportBefore = mapper.writeValueAsString(gatewayReport);
+		
 		userSummaryReport = builder.buildUserSummaryReport(gatewayReport);
+		
+		String gatewayReportAfter = mapper.writeValueAsString(gatewayReport);
 		
 		assertEquals(2, userSummaryReport.getSites().size());
 		assertEquals(1, userSummaryReport.getSites().get(0).getSteps().size());
@@ -265,6 +293,7 @@ public class UserSummaryReportTest {
 		assertEquals(1, userSummaryReport.getNumberSiteSuccess().intValue());
 		assertEquals(1, userSummaryReport.getNumberSiteFailure().intValue());
 		assertEquals(0, userSummaryReport.getWorkflowSteps().size());
+		assertEquals(gatewayReportAfter, gatewayReportBefore);
 	}
 	
 	@Test
@@ -274,12 +303,17 @@ public class UserSummaryReportTest {
 		gatewayReport.addWorkflowStepReport(workflowFailure);
 		gatewayReport.addWorkflowStepReport(notificationSuccess);
 		
+		String gatewayReportBefore = mapper.writeValueAsString(gatewayReport);
+		
 		userSummaryReport = builder.buildUserSummaryReport(gatewayReport);
+		
+		String gatewayReportAfter = mapper.writeValueAsString(gatewayReport);
 		
 		assertEquals(0, userSummaryReport.getSites().size());
 		assertEquals(0, userSummaryReport.getNumberSiteSuccess().intValue());
 		assertEquals(0, userSummaryReport.getNumberSiteFailure().intValue());
 		assertEquals(2, userSummaryReport.getWorkflowSteps().size());
+		assertEquals(gatewayReportAfter, gatewayReportBefore);
 	}
 	
 	@Test
@@ -306,12 +340,17 @@ public class UserSummaryReportTest {
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationFailure);
 		
+		String gatewayReportBefore = mapper.writeValueAsString(gatewayReport);
+		
 		userSummaryReport = builder.buildUserSummaryReport(gatewayReport);
+		
+		String gatewayReportAfter = mapper.writeValueAsString(gatewayReport);
 		
 		assertEquals(0, userSummaryReport.getSites().size());
 		assertEquals(2, userSummaryReport.getNumberSiteSuccess().intValue());
 		assertEquals(0, userSummaryReport.getNumberSiteFailure().intValue());
 		assertEquals(1, userSummaryReport.getWorkflowSteps().size());
+		assertEquals(gatewayReportAfter, gatewayReportBefore);
 	}
 	
 	@Test
@@ -341,13 +380,18 @@ public class UserSummaryReportTest {
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationFailure);
 		
+		String gatewayReportBefore = mapper.writeValueAsString(gatewayReport);
+		
 		userSummaryReport = builder.buildUserSummaryReport(gatewayReport);
+		
+		String gatewayReportAfter = mapper.writeValueAsString(gatewayReport);
 		
 		assertEquals(1, userSummaryReport.getSites().size());
 		assertEquals(1, userSummaryReport.getSites().get(0).getSteps().size());
 		assertEquals(2, userSummaryReport.getNumberSiteSuccess().intValue());
 		assertEquals(0, userSummaryReport.getNumberSiteFailure().intValue());
 		assertEquals(1, userSummaryReport.getWorkflowSteps().size());
+		assertEquals(gatewayReportAfter, gatewayReportBefore);
 	}
 	
 	@Test
@@ -377,7 +421,11 @@ public class UserSummaryReportTest {
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationFailure);
 		
+		String gatewayReportBefore = mapper.writeValueAsString(gatewayReport);
+		
 		userSummaryReport = builder.buildUserSummaryReport(gatewayReport);
+		
+		String gatewayReportAfter = mapper.writeValueAsString(gatewayReport);
 		
 		assertEquals(2, userSummaryReport.getSites().size());
 		assertEquals(1, userSummaryReport.getSites().get(0).getSteps().size());
@@ -385,5 +433,6 @@ public class UserSummaryReportTest {
 		assertEquals(1, userSummaryReport.getNumberSiteSuccess().intValue());
 		assertEquals(1, userSummaryReport.getNumberSiteFailure().intValue());
 		assertEquals(1, userSummaryReport.getWorkflowSteps().size());
+		assertEquals(gatewayReportAfter, gatewayReportBefore);
 	}
 }
