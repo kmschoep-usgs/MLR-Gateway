@@ -65,7 +65,8 @@ public class WorkflowController extends BaseController {
 		}
 
 		//Send Notification
-		notificationStep(COMPLETE_WORKFLOW_SUBJECT);
+		notificationStep(COMPLETE_WORKFLOW_SUBJECT, "process-" + file.getName());
+
 		//Return report
 		GatewayReport rtn = getReport();
 		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
@@ -98,7 +99,8 @@ public class WorkflowController extends BaseController {
 		}
 
 		//Send Notification
-		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT);
+		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT, "validate-" + file.getName());
+
 		//Return report
 		GatewayReport rtn = getReport();
 		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
