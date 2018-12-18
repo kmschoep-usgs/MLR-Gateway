@@ -1,39 +1,22 @@
 package gov.usgs.wma.mlrgateway.util;
 
-import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
-
 import static org.junit.Assert.assertEquals;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
-import gov.usgs.wma.mlrgateway.controller.ExportWorkflowController;
-import gov.usgs.wma.mlrgateway.service.FileExportService;
-import gov.usgs.wma.mlrgateway.service.LegacyCruService;
-import gov.usgs.wma.mlrgateway.service.NotificationService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import static org.mockito.Mockito.never;
 
 @RunWith(SpringRunner.class)
 public class UserSummaryReportTest {

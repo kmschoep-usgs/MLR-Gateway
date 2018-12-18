@@ -81,7 +81,7 @@ public class FileExportServiceTest {
 		assertEquals(rtn.getSites().get(0).getAgencyCode(), agencyCode);
 		assertEquals(rtn.getSites().get(0).getSiteNumber(), siteNumber);
 		assertFalse(rtn.getSites().get(0).isSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), FileExportService.EXPORT_ADD_FAILED);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\":\"null.  This error requires manual intervention to resolve. Please contact the support team for assistance.\"}");
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), FileExportService.EXPORT_ADD_STEP);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "500");
 		assertFalse(rtn.getSites().get(0).getSteps().get(0).isSuccess());
@@ -130,7 +130,7 @@ public class FileExportServiceTest {
 		assertEquals(rtn.getSites().get(0).getAgencyCode(), agencyCode);
 		assertEquals(rtn.getSites().get(0).getSiteNumber(), siteNumber);
 		assertFalse(rtn.getSites().get(0).isSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), FileExportService.EXPORT_UPDATE_FAILED);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\":\"null.  This error requires manual intervention to resolve. Please contact the support team for assistance.\"}");
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), FileExportService.EXPORT_UPDATE_STEP);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "500");
 		assertFalse(rtn.getSites().get(0).getSteps().get(0).isSuccess());

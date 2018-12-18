@@ -39,7 +39,6 @@ public class WorkflowController extends BaseController {
 	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService) {
 		super(notificationService);
 		this.legacy = legacy;
-		this.userSummaryReportbuilder = new UserSummaryReportBuilder();
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")
@@ -51,6 +50,7 @@ public class WorkflowController extends BaseController {
 	@PostMapping("/ddots")
 	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW, file.getName()));
+		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
 			legacy.completeWorkflow(file);
 			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.COMPLETE_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.COMPLETE_WORKFLOW_SUCCESS));
@@ -82,6 +82,7 @@ public class WorkflowController extends BaseController {
 	@PostMapping("/ddots/validate")
 	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, file.getOriginalFilename()));
+		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
 			legacy.ddotValidation(file);
 			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_SUCCESS));

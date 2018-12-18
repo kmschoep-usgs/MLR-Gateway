@@ -28,6 +28,7 @@ public class SiteReport {
 		this.agencyCode = siteReport.agencyCode;
 		this.siteNumber = siteReport.siteNumber;
 		this.success = siteReport.success;
+		this.transactionType = siteReport.transactionType;
 		this.steps = siteReport.getSteps().stream().map(step -> new StepReport(step)).collect(Collectors.toList());
 	}
 

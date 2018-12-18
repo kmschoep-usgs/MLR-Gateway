@@ -29,7 +29,7 @@ public class NotificationService {
 	
 	public static final String NOTIFICATION_STEP = "Notification";
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
-	public static final String NOTIFICATION_FAILURE = "Notification failed to send.";
+	public static final String NOTIFICATION_FAILURE = "{\"error_message\": \"Notification failed to send.\"}";
 	public static Temporal reportDateTime;
 	public static final String ATTACHMENT_FILE_NAME = "mlr.json";
 	

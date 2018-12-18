@@ -8,13 +8,11 @@ import org.springframework.stereotype.Service;
 
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
-import gov.usgs.wma.mlrgateway.controller.BaseController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

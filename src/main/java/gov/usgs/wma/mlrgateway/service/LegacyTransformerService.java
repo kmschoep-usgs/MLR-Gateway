@@ -25,9 +25,9 @@ public class LegacyTransformerService {
 
 	protected static final String STEP_NAME = "Transform Data";
 	protected static final String GEO_SUCCESS = "Decimal Location Transformed Successfully.";
-	protected static final String GEO_FAILURE = "{\"error\":{\"message\": \"Unable to read transformer decimal_location output.\"}}";
+	protected static final String GEO_FAILURE = "{\"error_message\": \"Unable to read transformer decimal_location output.\"}";
 	protected static final String STATION_IX_SUCCESS = "StationIX Tranformed Successfully.";
-	protected static final String STATION_IX_FAILURE = "{\"error\":{\"message\": \"Unable to read transformer station_ix output.\"}}";
+	protected static final String STATION_IX_FAILURE = "{\"error_message\": \"Unable to read transformer station_ix output.\"}";
 	protected static final String LATITUDE = "latitude";
 	protected static final String LONGITUDE = "longitude";
 	protected static final String COORDINATE_DATUM_CODE = "coordinateDatumCode";
@@ -54,7 +54,7 @@ public class LegacyTransformerService {
 			} catch (Exception e) {
 				siteReport.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, GEO_FAILURE));
 				log.error(STEP_NAME + ": " + e.getMessage());
-				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + GEO_FAILURE + "\"}");	
+				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, GEO_FAILURE);	
 			}
 		}
 		return transforms;
@@ -75,7 +75,7 @@ public class LegacyTransformerService {
 			} catch (Exception e) {
 				siteReport.addStepReport(new StepReport(STEP_NAME, HttpStatus.SC_INTERNAL_SERVER_ERROR, false,  STATION_IX_FAILURE));
 				log.error(STEP_NAME + ": " + e.getMessage());
-				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"" + STATION_IX_FAILURE + "\"}");	
+				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, STATION_IX_FAILURE);	
 			}
 		}
 		return transformed;

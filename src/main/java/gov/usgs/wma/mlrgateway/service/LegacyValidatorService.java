@@ -1,12 +1,16 @@
 package gov.usgs.wma.mlrgateway.service;
 
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import org.apache.http.HttpStatus;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +20,8 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
+import gov.usgs.wma.mlrgateway.util.ClientErrorParser;
+
 import org.codehaus.jackson.io.JsonStringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +32,13 @@ public class LegacyValidatorService {
 	
 	private final LegacyCruService legacyCruService;
 	private final LegacyValidatorClient legacyValidatorClient;
+	private ClientErrorParser clientErrorParser;
 	public static final String VALIDATION_STEP = "Validate";
 	public static final String VALIDATION_SUCCESSFUL = "Transaction validated successfully.";
-	public static final String VALIDATION_FAILED = "Transaction validation failed.";
+	public static final String VALIDATION_FAILED = "{\"error_message\":\"Transaction validation failed.\"}";
 	public static final String SITE_VALIDATE_STEP = "Validate Duplicate Monitoring Location Name";
 	public static final String SITE_VALIDATE_SUCCESSFUL = "Monitoring Location Duplicate Name Validation Succeeded";
-	public static final String SITE_VALIDATE_FAILED = "Monitoring Location Duplicate Name Validation Failed";
+	public static final String SITE_VALIDATE_FAILED = "{\"error_message\":\"Monitoring Location Duplicate Name Validation Failed\"}";
 
 	@Autowired
 	public LegacyValidatorService(LegacyCruService legacyCruService, LegacyValidatorClient legacyValidatorClient){
@@ -40,6 +47,7 @@ public class LegacyValidatorService {
 	}
 
 	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction, SiteReport siteReport) throws FeignBadResponseWrapper {
+		clientErrorParser = new ClientErrorParser();
 		int duplicateValidationStatus = 200;
 		int otherValidationStatus = 200;
 		try {
@@ -47,7 +55,7 @@ public class LegacyValidatorService {
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
 				duplicateValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
-				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, ((FeignBadResponseWrapper)e).getBody()));
+				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, clientErrorParser.parseClientError("LegacyCruClient#validateMonitoringLocation(String)", ((FeignBadResponseWrapper)e).getBody())));
 			} else {
 				duplicateValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, e.getMessage()));
@@ -70,7 +78,7 @@ public class LegacyValidatorService {
 				
 			} else {
 				otherValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				siteReport.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus, false, e.getMessage()));
+				siteReport.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus, false, "{\"error_message\":\"" + e.getMessage() + "\"}"));
 			}
 		}
 		//We have to choose between two status codes.
@@ -84,7 +92,7 @@ public class LegacyValidatorService {
 			return ml;
 		} else {
 			//Throw error to stop additional transaction processing
-			throw new FeignBadResponseWrapper(finalStatus, null, "{\"error_message\": \"" + VALIDATION_FAILED + "\"}");	
+			throw new FeignBadResponseWrapper(finalStatus, null, VALIDATION_FAILED );	
 		}
 		
 	}
@@ -107,10 +115,10 @@ public class LegacyValidatorService {
 			     !validationMessage.containsKey(LegacyValidatorClient.RESPONSE_WARNING_MESSAGE) &&
 			     !validationMessage.containsKey(LegacyValidatorClient.RESPONSE_ERROR_MESSAGE)) || 
 			      validationMessage.isEmpty()) {
-				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": " + validationResponse.getBody() + "}");	
+				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"validator_message\": " + validationResponse.getBody() + "}");	
 			}
 			else if (validationMessage.containsKey(LegacyValidatorClient.RESPONSE_ERROR_MESSAGE)) {
-				throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": " + validationResponse.getBody() + "}");
+				throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"validator_message\": " + validationResponse.getBody() + "}");
 			}
 		} else {
 			throw new FeignBadResponseWrapper(validationResponse.getStatusCodeValue(), null, "{\"error_message\": \"An internal error occurred during validation: " + validationResponse.getBody() + "\"}");	
@@ -150,12 +158,34 @@ public class LegacyValidatorService {
 	 * @throws FeignBadResponseWrapper 
 	 */
 	protected void doDuplicateValidation(Map<String, Object> ml, SiteReport siteReport) throws FeignBadResponseWrapper {
-		List<String> msgs = legacyCruService.validateMonitoringLocation(ml, siteReport);
-		if(!msgs.isEmpty()) {
+		String msgs = legacyCruService.validateMonitoringLocation(ml, siteReport);
+		if(!msgs.equals("{}")) {
 			String msgsString = new String(JsonStringEncoder.getInstance().quoteAsString(String.join(", ", msgs)));
 			throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"" + msgsString + "\"}");
 		} else {
 			siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_OK, true, SITE_VALIDATE_SUCCESSFUL ));
 		}
+	}
+	
+	protected String parseCruClientError(String input) {
+		ObjectMapper mapper = new ObjectMapper();
+		TypeReference<Map<String, List<Object>>> mapType = new TypeReference<Map<String, List<Object>>>() {};
+		Map<String, List<Object>> map = new HashMap<>();
+		String rtn;
+		try {
+			map = mapper.readValue(input, mapType);
+			rtn = mapper.writeValueAsString(map.get("LegacyCruClient#validateMonitoringLocation(String)").get(0));
+		} catch (JsonGenerationException e) {
+			rtn = input;
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			rtn = input;
+			e.printStackTrace();
+		} catch (IOException e) {
+			rtn = input;
+			e.printStackTrace();
+		}
+		
+		return rtn;
 	}
 }

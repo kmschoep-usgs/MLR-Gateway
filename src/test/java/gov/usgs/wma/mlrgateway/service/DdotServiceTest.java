@@ -21,13 +21,11 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.hystrix.exception.HystrixBadRequestException;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
@@ -35,7 +33,6 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.DdotClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 
 @RunWith(SpringRunner.class)
 public class DdotServiceTest extends BaseSpringTest {

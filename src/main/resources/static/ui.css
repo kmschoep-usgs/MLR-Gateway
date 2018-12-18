@@ -77,3 +77,22 @@
 #export-header {
 	margin-bottom: 10px;
 }
+
+* {
+  box-sizing: border-box;
+}
+
+#error-container{
+	margin: 0 auto;
+}
+.error-warning {
+	margin-left:50px; 
+}
+.steps {
+	width: 10%;
+	float: left;
+}
+.errors {
+	width: 90%;
+	float: left;
+}
