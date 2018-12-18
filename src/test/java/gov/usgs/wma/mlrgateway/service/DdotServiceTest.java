@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -80,9 +81,10 @@ public class DdotServiceTest extends BaseSpringTest {
 	@Test
 	public void failedDdotValidation_thenReturnInternalServerError() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		String badFile = "{\"DdotClient#ingestDdot(MultipartFile)\": [{\"error_message\": \"Contains lines exceeding 80 characters: line 3\"}\n]}";
-		String ddotRtn = badFile;
-		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotRtn);
+		String badFile = "{\"DdotClient#ingestDdot(MultipartFile)\": [{\"error_message\":\"Contains lines exceeding 80 characters: line 3\"}\n]}";
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.add("thing", "value");
+		given(ddotClient.ingestDdot(any(MultipartFile.class))).willThrow(new FeignBadResponseWrapper(500, httpHeaders, badFile));
 		try {
 			service.parseDdot(file);
 			fail("Did not get expected Exception.");
@@ -97,7 +99,7 @@ public class DdotServiceTest extends BaseSpringTest {
 				.filter(s -> DdotService.STEP_NAME.equals(s.getName()))
 				.findAny().orElse(null);
 		verify(ddotClient).ingestDdot(any(MultipartFile.class));
-		assertEquals(ddotStep.getDetails(), DdotService.INTERNAL_ERROR_MESSAGE);
+		assertEquals(ddotStep.getDetails(), "{\"error_message\":\"Contains lines exceeding 80 characters: line 3\"}");
 		assertEquals(ddotStep.getName(), DdotService.STEP_NAME);
 		assertEquals(rtn.getName(), reportName);
 		assertEquals(ddotStep.getHttpStatus().toString(), "500");
