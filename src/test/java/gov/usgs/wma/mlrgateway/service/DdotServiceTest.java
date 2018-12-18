@@ -20,8 +20,8 @@ import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,7 +34,6 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.client.DdotClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 
 @RunWith(SpringRunner.class)
 public class DdotServiceTest extends BaseSpringTest {
@@ -56,7 +55,8 @@ public class DdotServiceTest extends BaseSpringTest {
 	public void garbageFromDdot_thenReturnInternalServerError() throws Exception {
 
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn("not json");
+		String ddotRtn = "not json";
+		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotRtn);
 		try {
 			service.parseDdot(file);
 			fail("Did not get expected Exception.");
@@ -79,13 +79,16 @@ public class DdotServiceTest extends BaseSpringTest {
 	}
 	
 	@Test
-	public void nullFromDdot_thenReturnInternalServerError() throws Exception {
+	public void failedDdotValidation_thenReturnInternalServerError() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		given(ddotClient.ingestDdot(any(MultipartFile.class))).willThrow(new RuntimeException());
+		String badFile = "{\"DdotClient#ingestDdot(MultipartFile)\": [{\"error_message\":\"Contains lines exceeding 80 characters: line 3\"}\n]}";
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.add("thing", "value");
+		given(ddotClient.ingestDdot(any(MultipartFile.class))).willThrow(new FeignBadResponseWrapper(500, httpHeaders, badFile));
 		try {
 			service.parseDdot(file);
 			fail("Did not get expected Exception.");
-		} catch (Exception e) {
+		} catch (FeignBadResponseWrapper e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), ((FeignBadResponseWrapper) e).getStatus());
 				JSONAssert.assertEquals(DdotService.INTERNAL_ERROR_MESSAGE , ((FeignBadResponseWrapper) e).getBody(), JSONCompareMode.STRICT);
@@ -96,7 +99,7 @@ public class DdotServiceTest extends BaseSpringTest {
 				.filter(s -> DdotService.STEP_NAME.equals(s.getName()))
 				.findAny().orElse(null);
 		verify(ddotClient).ingestDdot(any(MultipartFile.class));
-		assertEquals(ddotStep.getDetails(), DdotService.INTERNAL_ERROR_MESSAGE);
+		assertEquals(ddotStep.getDetails(), "{\"error_message\":\"Contains lines exceeding 80 characters: line 3\"}");
 		assertEquals(ddotStep.getName(), DdotService.STEP_NAME);
 		assertEquals(rtn.getName(), reportName);
 		assertEquals(ddotStep.getHttpStatus().toString(), "500");

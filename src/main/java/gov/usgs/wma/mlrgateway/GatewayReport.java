@@ -2,6 +2,7 @@ package gov.usgs.wma.mlrgateway;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +24,15 @@ public class GatewayReport {
 		sites = new ArrayList<>();
 		workflowSteps = new ArrayList<>();
 	}
+	
+	public GatewayReport(GatewayReport gatewayReport) {
+        this.name = gatewayReport.name;
+        this.inputFileName = gatewayReport.inputFileName;
+        this.reportDateTime = gatewayReport.reportDateTime;
+        this.userName = gatewayReport.userName;
+        this.workflowSteps = gatewayReport.getWorkflowSteps().stream().map(step -> new StepReport(step)).collect(Collectors.toList());
+        this.sites = gatewayReport.getSites().stream().map(site -> new SiteReport(site)).collect(Collectors.toList());
+    }
 	
 	public String getName() {
 		return name;

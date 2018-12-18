@@ -1,6 +1,7 @@
 package gov.usgs.wma.mlrgateway.controller;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
 
@@ -19,9 +20,12 @@ import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
+import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import static org.mockito.Mockito.verify;
+
+import java.util.ArrayList;
 
 
 @RunWith(SpringRunner.class)
@@ -45,12 +49,10 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	public void happyPath_LegacyWorkflow() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
-		GatewayReport rtn = controller.legacyWorkflow(file, response);
-		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
-				.filter(s -> LegacyWorkflowService.COMPLETE_WORKFLOW.equals(s.getName()))
-				.findAny().orElse(null);
+		UserSummaryReport rtn = controller.legacyWorkflow(file, response);
 		assertEquals(rtn.getName(), LegacyWorkflowService.COMPLETE_WORKFLOW );
-		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "200");
+		assertEquals(rtn.getWorkflowSteps(), new ArrayList<>());
+		assertEquals(rtn.getSites(), new ArrayList<>());
 		assertEquals(rtn.getInputFileName(), "file");
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
@@ -61,7 +63,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).completeWorkflow(any(MultipartFile.class));
 
-		GatewayReport rtn = controller.legacyWorkflow(file, response);
+		UserSummaryReport rtn = controller.legacyWorkflow(file, response);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
@@ -78,7 +80,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		String badText = "This is really bad.";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new HystrixBadRequestException(badText)).given(legacy).completeWorkflow(any(MultipartFile.class));
-		GatewayReport rtn = controller.legacyWorkflow(file, response);
+		UserSummaryReport rtn = controller.legacyWorkflow(file, response);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
@@ -95,13 +97,11 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	public void happyPath_LegacyValidationWorkflow() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
-		GatewayReport rtn = controller.legacyValidationWorkflow(file, response);
-		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
-				.filter(s -> LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW.equals(s.getName()))
-				.findAny().orElse(null);
-		assertEquals(rtn.getName(), LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW);
-		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "200");
-		assertEquals(rtn.getInputFileName(), "d.");
+		UserSummaryReport userSummaryReport = controller.legacyValidationWorkflow(file, response);	
+		assertEquals(userSummaryReport.getName(), LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW);
+		assertEquals(userSummaryReport.getWorkflowSteps(), new ArrayList<>());
+		assertEquals(userSummaryReport.getSites(), new ArrayList<>());
+		assertEquals(userSummaryReport.getInputFileName(), "d.");
 		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
 
@@ -111,7 +111,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).ddotValidation(any(MultipartFile.class));
 
-		GatewayReport rtn = controller.legacyValidationWorkflow(file, response);
+		UserSummaryReport rtn = controller.legacyValidationWorkflow(file, response);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
@@ -130,7 +130,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new HystrixBadRequestException(badText)).given(legacy).ddotValidation(any(MultipartFile.class));
 
-		GatewayReport rtn = controller.legacyValidationWorkflow(file, response);
+		UserSummaryReport rtn = controller.legacyValidationWorkflow(file, response);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
