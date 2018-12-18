@@ -34,15 +34,9 @@ public class ClientErrorParser {
 		try {
 			map = mapper.readValue(clientErrorMessage, mapType);
 			rtn = mapper.writeValueAsString(map.get(key).get(0));
-		} catch (JsonGenerationException e) {
-			rtn = clientErrorMessage;
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			rtn = clientErrorMessage;
-			e.printStackTrace();
 		} catch (IOException e) {
 			rtn = clientErrorMessage;
-			e.printStackTrace();
+			log.error("An error occurred while trying to parse a client error message: ", e);
 		}
 		
 		return rtn;

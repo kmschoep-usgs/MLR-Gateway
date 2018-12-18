@@ -26,13 +26,13 @@ public class GatewayReport {
 	}
 	
 	public GatewayReport(GatewayReport gatewayReport) {
-        this.name = gatewayReport.name;
-        this.inputFileName = gatewayReport.inputFileName;
-        this.reportDateTime = gatewayReport.reportDateTime;
-        this.userName = gatewayReport.userName;
-        this.workflowSteps = gatewayReport.getWorkflowSteps().stream().map(step -> new StepReport(step)).collect(Collectors.toList());
-        this.sites = gatewayReport.getSites().stream().map(site -> new SiteReport(site)).collect(Collectors.toList());
-    }
+		this.name = gatewayReport.name;
+		this.inputFileName = gatewayReport.inputFileName;
+		this.reportDateTime = gatewayReport.reportDateTime;
+		this.userName = gatewayReport.userName;
+		this.workflowSteps = gatewayReport.getWorkflowSteps().stream().map(step -> new StepReport(step)).collect(Collectors.toList());
+		this.sites = gatewayReport.getSites().stream().map(site -> new SiteReport(site)).collect(Collectors.toList());
+	}
 	
 	public String getName() {
 		return name;
