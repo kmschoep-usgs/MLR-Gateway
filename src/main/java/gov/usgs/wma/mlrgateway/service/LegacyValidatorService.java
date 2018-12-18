@@ -70,7 +70,7 @@ public class LegacyValidatorService {
 				 validationResponse = legacyValidatorClient.validateUpdate(validationPayload);
 			}
 			ml = verifyValidationStatus(ml, validationResponse);
-			siteReport.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(), true, validationResponse.getBody() ));
+			siteReport.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(), true, "{\"validator_message\": " + validationResponse.getBody() + "}" ));
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
 				otherValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
