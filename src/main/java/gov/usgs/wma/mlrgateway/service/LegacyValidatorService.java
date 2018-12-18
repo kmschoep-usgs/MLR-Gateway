@@ -2,15 +2,11 @@ package gov.usgs.wma.mlrgateway.service;
 
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.List;
 import org.apache.http.HttpStatus;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +66,7 @@ public class LegacyValidatorService {
 				 validationResponse = legacyValidatorClient.validateUpdate(validationPayload);
 			}
 			ml = verifyValidationStatus(ml, validationResponse);
-			siteReport.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(), true, validationResponse.getBody() ));
+			siteReport.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(), true, "{\"validator_message\": " + validationResponse.getBody() + "}" ));
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
 				otherValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
@@ -165,27 +161,5 @@ public class LegacyValidatorService {
 		} else {
 			siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, HttpStatus.SC_OK, true, SITE_VALIDATE_SUCCESSFUL ));
 		}
-	}
-	
-	protected String parseCruClientError(String input) {
-		ObjectMapper mapper = new ObjectMapper();
-		TypeReference<Map<String, List<Object>>> mapType = new TypeReference<Map<String, List<Object>>>() {};
-		Map<String, List<Object>> map = new HashMap<>();
-		String rtn;
-		try {
-			map = mapper.readValue(input, mapType);
-			rtn = mapper.writeValueAsString(map.get("LegacyCruClient#validateMonitoringLocation(String)").get(0));
-		} catch (JsonGenerationException e) {
-			rtn = input;
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			rtn = input;
-			e.printStackTrace();
-		} catch (IOException e) {
-			rtn = input;
-			e.printStackTrace();
-		}
-		
-		return rtn;
 	}
 }
