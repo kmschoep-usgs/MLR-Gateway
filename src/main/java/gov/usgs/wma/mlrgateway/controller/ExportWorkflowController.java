@@ -59,7 +59,7 @@ public class ExportWorkflowController extends BaseController {
 		}
 		
 		//Send Notification
-		notificationStep(EXPORT_WORKFLOW_SUBJECT);
+		notificationStep(EXPORT_WORKFLOW_SUBJECT, "export-" + agencyCode + "-" + siteNumber);
 		
 		//Return Report
 		GatewayReport rtn = getReport();
