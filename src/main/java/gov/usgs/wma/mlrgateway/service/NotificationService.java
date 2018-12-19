@@ -31,23 +31,19 @@ public class NotificationService {
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 	public static final String NOTIFICATION_FAILURE = "{\"error_message\": \"Notification failed to send.\"}";
 	public static Temporal reportDateTime;
-	public static final String ATTACHMENT_FILE_NAME = "mlr.json";
+	public static final String ATTACHMENT_FILE_NAME = "mlr-%NAME%-report.json";
 	
 	@Autowired
 	public NotificationService(NotificationClient notificationClient){
 		this.notificationClient = notificationClient;
 	}
 
-	public void sendNotification(List<String> recipientList, String subject, String user, GatewayReport report) {
+	public void sendNotification(List<String> recipientList, String subject, String user, String attachmentFileName, GatewayReport report) {
 		ObjectMapper mapper = new ObjectMapper();
 		String messageJson;
-		HashMap<String, Object> messageMap = new HashMap<>();
-		
-		messageMap.put(NotificationClient.MESSAGE_TO_KEY, recipientList);
-		messageMap.put(NotificationClient.MESSAGE_SUBJECT_KEY, subject);
-		messageMap.put(NotificationClient.MESSAGE_TEXT_BODY_KEY, buildMessageBody(report, user));
-		messageMap.put(NotificationClient.MESSAGE_ATTACHMENT_KEY, report.toPrettyPrintString());
-		messageMap.put(NotificationClient.MESSAGE_ATTACHMENT_FILE_NAME_KEY, ATTACHMENT_FILE_NAME);
+		report.setReportDateTime(Instant.now().toString());
+		HashMap<String, Object> messageMap = buildRequestMap(recipientList, subject, user, attachmentFileName, report);
+
 		try {
 			messageJson = mapper.writeValueAsString(messageMap);
 			ResponseEntity<String> notifResp = notificationClient.sendEmail(messageJson);
@@ -57,19 +53,35 @@ public class NotificationService {
 			log.error(NOTIFICATION_STEP + ": " + e.getMessage());
 		}
 	}
+
+	protected HashMap<String, Object> buildRequestMap(List<String> recipientList, String subject, String user, String attachmentFileName, GatewayReport report) {
+		HashMap<String, Object> messageMap = new HashMap<>();
+
+		//Build Request
+		messageMap.put(NotificationClient.MESSAGE_TO_KEY, recipientList);
+		messageMap.put(NotificationClient.MESSAGE_SUBJECT_KEY, subject);
+		messageMap.put(NotificationClient.MESSAGE_TEXT_BODY_KEY, buildMessageBody(report, user));
+		messageMap.put(NotificationClient.MESSAGE_ATTACHMENT_KEY, report.toPrettyPrintString());
+		messageMap.put(NotificationClient.MESSAGE_ATTACHMENT_FILE_NAME_KEY, buildAttachmentName(attachmentFileName));
+
+		return messageMap;
+	}
 	
-	private String buildMessageBody(GatewayReport report, String user) {
-		reportDateTime = Instant.now();
-		report.setReportDateTime(reportDateTime.toString());
+	protected String buildMessageBody(GatewayReport report, String user) {
 		report.setUserName(user);
 		String reportBody = "An MLR Workflow has completed on the " + 
 				environmentTier + " environment. The workflow output report is below.\n\n\n";
-		reportBody += "User:     " + user + "\n\n";
-		reportBody += "Workflow: " + report.getName() + "\n\n";
-		reportBody += "Report Date: " + report.getReportDateTime(); 		
+		reportBody += "User:        " + user + "\n\n";
+		reportBody += "Workflow:    " + report.getName() + "\n\n";
+		reportBody += "Report Date: " + report.getReportDateTime() + "\n\n"; 		
 		reportBody += "The full, raw report output is attached.\n";
 		
 		return reportBody;
 	}
 
+	protected String buildAttachmentName(String attachmentFileName) {
+		return ATTACHMENT_FILE_NAME.replace("%NAME%", 
+			(attachmentFileName != null && !attachmentFileName.isEmpty()) ? attachmentFileName : "output"
+		); 
+	}
 }
