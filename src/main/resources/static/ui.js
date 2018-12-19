@@ -2,7 +2,7 @@ var reportUrl = null;
 var uploadRequest = false;
 
 function startLoading(headerText) {
-	document
+	//document
 	$("#ddotForm :input").prop("disabled", true);
 	$("#exportForm :input").prop("disabled", true);
 	$('.mlr-response').show();
