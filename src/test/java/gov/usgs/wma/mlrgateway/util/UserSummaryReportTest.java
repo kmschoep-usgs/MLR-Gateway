@@ -43,6 +43,8 @@ public class UserSummaryReportTest {
 	private StepReport siteStationNameDuplicateValidationFailure;
 	private StepReport siteStationNameDuplicateValidationSuccess;
 	private List<StepReport> stepReports;
+	private SiteReport siteReport1;
+	private SiteReport siteReport2;
 	private ObjectMapper mapper;
 
 	@Before
@@ -67,26 +69,28 @@ public class UserSummaryReportTest {
 		gatewayReport.setReportDateTime(reportDateTime);
 		userSummaryReport = new UserSummaryReport();
 		mapper = new ObjectMapper();
+		
+		siteReport1 = new SiteReport();
+		siteReport1.setAgencyCode("USGS");
+		siteReport1.setSiteNumber("12345678");
+		siteReport1.setTransactionType("A");
+		
+		siteReport2 = new SiteReport();
+		siteReport2.setAgencyCode("USGS");
+		siteReport2.setSiteNumber("12345679");
+		siteReport2.setTransactionType("A");
 	}
 
 	@Test
 	public void successWorkflow_goodSite() throws Exception {
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationSuccess, siteValidationSuccess));
-		
-		SiteReport siteReport1 = new SiteReport();
+
 		siteReport1.setSuccess(true);
-		siteReport1.setAgencyCode("USGS");
-		siteReport1.setSiteNumber("12345678");
-		siteReport1.setTransactionType("A");
 		siteReport1.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport1);
 		
-		SiteReport siteReport2 = new SiteReport();
 		siteReport2.setSuccess(true);
-		siteReport2.setAgencyCode("USGS");
-		siteReport2.setSiteNumber("12345679");
-		siteReport2.setTransactionType("A");
 		siteReport2.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport2);
 		
@@ -116,21 +120,14 @@ public class UserSummaryReportTest {
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationSuccess, siteValidationSuccess, siteValidationWarning));
 		
-		SiteReport siteReport1 = new SiteReport();
 		siteReport1.setSuccess(true);
-		siteReport1.setAgencyCode("USGS");
-		siteReport1.setSiteNumber("12345678");
-		siteReport1.setTransactionType("A");
 		siteReport1.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport1);
 		
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationSuccess));
-		SiteReport siteReport2 = new SiteReport();
+
 		siteReport2.setSuccess(true);
-		siteReport2.setAgencyCode("USGS");
-		siteReport2.setSiteNumber("12345679");
-		siteReport2.setTransactionType("A");
 		siteReport2.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport2);
 		
@@ -157,21 +154,14 @@ public class UserSummaryReportTest {
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationSuccess, siteValidationSuccess, siteValidationWarning));
 		
-		SiteReport siteReport1 = new SiteReport();
 		siteReport1.setSuccess(true);
-		siteReport1.setAgencyCode("USGS");
-		siteReport1.setSiteNumber("12345678");
-		siteReport1.setTransactionType("A");
 		siteReport1.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport1);
 		
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerFailure, siteStationNameDuplicateValidationSuccess, siteValidationFailure));
-		SiteReport siteReport2 = new SiteReport();
+
 		siteReport2.setSuccess(false);
-		siteReport2.setAgencyCode("USGS");
-		siteReport2.setSiteNumber("12345679");
-		siteReport2.setTransactionType("A");
 		siteReport2.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport2);
 		
@@ -199,21 +189,14 @@ public class UserSummaryReportTest {
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationSuccess, siteValidationSuccess, siteValidationWarning));
 		
-		SiteReport siteReport1 = new SiteReport();
 		siteReport1.setSuccess(true);
-		siteReport1.setAgencyCode("USGS");
-		siteReport1.setSiteNumber("12345678");
-		siteReport1.setTransactionType("A");
 		siteReport1.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport1);
 		
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerFailure, siteStationNameDuplicateValidationSuccess, siteValidationWarning));
-		SiteReport siteReport2 = new SiteReport();
+
 		siteReport2.setSuccess(false);
-		siteReport2.setAgencyCode("USGS");
-		siteReport2.setSiteNumber("12345679");
-		siteReport2.setTransactionType("A");
 		siteReport2.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport2);
 		
@@ -242,21 +225,14 @@ public class UserSummaryReportTest {
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationSuccess, siteValidationSuccess, siteValidationWarningFailure));
 		
-		SiteReport siteReport1 = new SiteReport();
 		siteReport1.setSuccess(true);
-		siteReport1.setAgencyCode("USGS");
-		siteReport1.setSiteNumber("12345678");
-		siteReport1.setTransactionType("A");
 		siteReport1.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport1);
 		
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerFailure, siteStationNameDuplicateValidationSuccess, siteValidationWarning));
-		SiteReport siteReport2 = new SiteReport();
+
 		siteReport2.setSuccess(false);
-		siteReport2.setAgencyCode("USGS");
-		siteReport2.setSiteNumber("12345679");
-		siteReport2.setTransactionType("A");
 		siteReport2.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport2);
 		
@@ -304,21 +280,14 @@ public class UserSummaryReportTest {
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationSuccess, siteValidationSuccess));
 		
-		SiteReport siteReport1 = new SiteReport();
 		siteReport1.setSuccess(true);
-		siteReport1.setAgencyCode("USGS");
-		siteReport1.setSiteNumber("12345678");
-		siteReport1.setTransactionType("A");
 		siteReport1.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport1);
 		
-		SiteReport siteReport2 = new SiteReport();
 		siteReport2.setSuccess(true);
-		siteReport2.setAgencyCode("USGS");
-		siteReport2.setSiteNumber("12345679");
-		siteReport2.setTransactionType("A");
 		siteReport2.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport2);
+		
 		gatewayReport.addWorkflowStepReport(ingestDdotFileSuccess);
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationFailure);
@@ -341,24 +310,17 @@ public class UserSummaryReportTest {
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationSuccess, siteValidationSuccess, siteValidationWarning));
 		
-		SiteReport siteReport1 = new SiteReport();
 		siteReport1.setSuccess(true);
-		siteReport1.setAgencyCode("USGS");
-		siteReport1.setSiteNumber("12345678");
-		siteReport1.setTransactionType("A");
 		siteReport1.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport1);
 		
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationSuccess, siteValidationSuccess));
 		
-		SiteReport siteReport2 = new SiteReport();
 		siteReport2.setSuccess(true);
-		siteReport2.setAgencyCode("USGS");
-		siteReport2.setSiteNumber("12345679");
-		siteReport2.setTransactionType("A");
 		siteReport2.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport2);
+		
 		gatewayReport.addWorkflowStepReport(ingestDdotFileSuccess);
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationFailure);
@@ -382,24 +344,17 @@ public class UserSummaryReportTest {
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationSuccess, siteValidationSuccess, siteValidationWarning));
 		
-		SiteReport siteReport1 = new SiteReport();
 		siteReport1.setSuccess(true);
-		siteReport1.setAgencyCode("USGS");
-		siteReport1.setSiteNumber("12345678");
-		siteReport1.setTransactionType("A");
 		siteReport1.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport1);
 		
 		stepReports = new ArrayList<>();
 		stepReports.addAll(Arrays.asList(siteTransformerSuccess, siteStationNameDuplicateValidationFailure, siteValidationFailure));
 		
-		SiteReport siteReport2 = new SiteReport();
 		siteReport2.setSuccess(false);
-		siteReport2.setAgencyCode("USGS");
-		siteReport2.setSiteNumber("12345679");
-		siteReport2.setTransactionType("A");
 		siteReport2.setSteps(stepReports);
 		gatewayReport.addSiteReport(siteReport2);
+		
 		gatewayReport.addWorkflowStepReport(ingestDdotFileSuccess);
 		gatewayReport.addWorkflowStepReport(workflowSuccess);
 		gatewayReport.addWorkflowStepReport(notificationFailure);

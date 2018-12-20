@@ -150,17 +150,19 @@ function formatJsonResponse(response) {
 	var workflowErrorRow = "";
 	var siteErrorRows = "";
 	
-	responseStr = "MLR Workflow:&nbsp;&nbsp;" + response.name + "<br/>";
-	responseStr = responseStr + "User:&nbsp;&nbsp;" + response.userName + "<br/>";
-	responseStr = responseStr + "Date:&nbsp;&nbsp;" + response.reportDateTime + "<br/>";
-	responseStr = responseStr + "Input File:&nbsp;&nbsp;" + response.inputFileName + "<br/><br/>";
+	responseStr =  "<ul>";
+	responseStr = "<li>MLR Workflow:&nbsp;&nbsp;" + response.name + "</li>";
+	responseStr = responseStr + "<li>User:&nbsp;&nbsp;" + response.userName + "</li>";
+	responseStr = responseStr + "<li>Date:&nbsp;&nbsp;" + response.reportDateTime + "</li>";
+	responseStr = responseStr + "<li>Input File:&nbsp;&nbsp;" + response.inputFileName + "</li>";
+	responseStr = responseStr + "</ul>";
 	
 	if (response.name === 'Complete Export Workflow'){
 		var workflowFailureMsg = "";
 		response.workflowSteps.forEach(function(w){
 			if (w.name === "Complete Export Workflow"){
 				if (w.success === false) {
-					workflowFailureMsg = "<b>" + w.name + " Failed: " + JSON.parse(w.details).error_message + "</b><br/><br/>";
+					workflowFailureMsg = "<p><b>" + w.name + " Failed: " + JSON.parse(w.details).error_message + "</b></p>";
 				}
 			}
 		});
@@ -171,7 +173,7 @@ function formatJsonResponse(response) {
 				return x.name.search("workflow") > 0;
 			});
 			if (workflowFailure.length > 0) {
-				var workflowFailureMsg = "<b>" + workflowFailure[0].name + " (" + JSON.parse(workflowFailure[0].details).error_message + ") : No Transactions were processed.</b><p></p>Error details listed below: <br/><br/>";
+				var workflowFailureMsg = "<p><b>" + workflowFailure[0].name + " (" + JSON.parse(workflowFailure[0].details).error_message + ") : No Transactions were processed.</b></p><p>Error details listed below: </p>";
 			}
 			
 			var workflowErrors = response.workflowSteps.filter(function(x){
@@ -182,7 +184,7 @@ function formatJsonResponse(response) {
 		if (workflowFailureMsg != null){
 			responseStr = responseStr + workflowFailureMsg 
 		} else {
-			responseStr = responseStr + "Status:&nbsp;&nbsp;" + response.numberSiteSuccess + " Transactions Succeeded, " + response.numberSiteFailure + " Transactions Failed<br/><br/>";		
+			responseStr = responseStr + "<p>Status:&nbsp;&nbsp;" + response.numberSiteSuccess + " Transactions Succeeded, " + response.numberSiteFailure + " Transactions Failed</p>";		
 		}
 		
 		if (workflowErrors != null) {
