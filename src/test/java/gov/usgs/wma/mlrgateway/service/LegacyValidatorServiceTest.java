@@ -20,9 +20,7 @@ import gov.usgs.wma.mlrgateway.client.LegacyValidatorClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 
-import java.util.Arrays;
 import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -46,7 +44,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	private String fileName = "test.d";
 	private final String agencyCode = "USGS ";
 	private final String siteNumber = "12345678       ";
-	public static String LEGACY_VALIDATION_ERROR_BODY = "{\"error_message\": \""+LegacyValidatorService.VALIDATION_FAILED+"\"}";
+	public static String LEGACY_VALIDATION_ERROR_BODY = LegacyValidatorService.VALIDATION_FAILED;
 	
 	@Before
 	public void init() {
@@ -61,17 +59,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
 		assertTrue(((Map)mlValid.get("validation")).size() == 1);
@@ -85,17 +83,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn("{}");
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, false, siteReport);
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
 		assertTrue(((Map)mlValid.get("validation")).size() == 1);
@@ -109,7 +107,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
@@ -119,7 +117,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
 		assertTrue(((Map)mlValid.get("validation")).size() == 1);
@@ -134,17 +132,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
 		assertTrue(((Map)mlValid.get("validation")).size() == 2);
@@ -159,17 +157,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn("{}");
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		Map<String, Object> mlValid = service.doValidation(ml, false, siteReport);
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
 		assertTrue(((Map)mlValid.get("validation")).size() == 2);
@@ -185,7 +183,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -204,7 +202,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
+		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -216,7 +214,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -232,7 +230,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
+		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
 		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
@@ -245,7 +243,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -261,7 +259,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
+		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
 		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
@@ -274,7 +272,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.BAD_REQUEST);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -303,7 +301,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
-		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn(Arrays.asList());
+		given(legacyCruService.validateMonitoringLocation(any(), anyObject())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
@@ -334,7 +332,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
-		given(legacyCruService.validateMonitoringLocation(anyObject(), anyObject())).willReturn(Arrays.asList("Error", "Bad"));
+		given(legacyCruService.validateMonitoringLocation(anyObject(), anyObject())).willReturn("Error");
 
 		try{
 			service.doValidation(ml, true, siteReport);
@@ -348,10 +346,10 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 
 		assertEquals(siteReport.getSteps().size(), 2);
 		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error, Bad\"}");
+		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error\"}");
 		assertFalse(siteReport.getSteps().get(0).isSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -377,12 +375,12 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			assertEquals(LEGACY_VALIDATION_ERROR_BODY, body);
 		}
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), "error");
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals("error", siteReport.getSteps().get(0).getDetails());
 		assertFalse(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), responseMsg);
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -396,7 +394,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		
 		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(ml);
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
-		given(legacyCruService.validateMonitoringLocation(anyObject(), anyObject())).willReturn(Arrays.asList("Error", "Bad"));
+		given(legacyCruService.validateMonitoringLocation(anyObject(), anyObject())).willReturn("Error");
 
 		try{
 			service.doValidation(ml, true, siteReport);
@@ -410,10 +408,10 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 
 		assertEquals(siteReport.getSteps().size(), 2);
 		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error, Bad\"}");
+		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error\"}");
 		assertFalse(siteReport.getSteps().get(0).isSuccess());
 		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": " + responseMsg + "}");
+		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}

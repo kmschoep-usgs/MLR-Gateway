@@ -2,6 +2,7 @@ var reportUrl = null;
 var uploadRequest = false;
 
 function startLoading(headerText) {
+	//document
 	$("#ddotForm :input").prop("disabled", true);
 	$("#exportForm :input").prop("disabled", true);
 	$('.mlr-response').show();
@@ -43,7 +44,7 @@ function handleResponseText(text) {
 }
 
 function generalSuccess (response) {
-	stopLoading($('.mlr-response-header').text() + " - Success", handleResponseJson(response));
+	stopLoading($('.mlr-response-header').text(), handleResponseJson(response));
 }
 
 function generalError (response) {	
@@ -71,7 +72,7 @@ function generalError (response) {
 		}
 	}
 	
-	stopLoading($('.mlr-response-header').text() + " - Failure");
+	stopLoading($('.mlr-response-header').text());
 }
 
 function postExport(responseHeader, success, error) {
@@ -145,7 +146,102 @@ function exportLocation() {
 }
 
 function formatJsonResponse(response) {
-	return JSON.stringify(response, null, 4).split("\n").join("<br/>").split(" ").join("&nbsp;");
+	var responseStr; 
+	var workflowErrorRow = "";
+	var siteErrorRows = "";
+	
+	responseStr =  "<ul>";
+	responseStr = "<li>MLR Workflow:&nbsp;&nbsp;" + response.name + "</li>";
+	responseStr = responseStr + "<li>User:&nbsp;&nbsp;" + response.userName + "</li>";
+	responseStr = responseStr + "<li>Date:&nbsp;&nbsp;" + response.reportDateTime + "</li>";
+	responseStr = responseStr + "<li>Input File:&nbsp;&nbsp;" + response.inputFileName + "</li>";
+	responseStr = responseStr + "</ul>";
+	
+	if (response.name === 'Complete Export Workflow'){
+		var workflowFailureMsg = "";
+		response.workflowSteps.forEach(function(w){
+			if (w.name === "Complete Export Workflow"){
+				if (w.success === false) {
+					workflowFailureMsg = "<p><b>" + w.name + " Failed: " + JSON.parse(w.details).error_message + "</b></p>";
+				}
+			}
+		});
+		responseStr = responseStr + workflowFailureMsg;
+	} else {
+		if (response.workflowSteps.length > 0){
+			var workflowFailure = response.workflowSteps.filter(function(x){
+				return x.name.search("workflow") > 0;
+			});
+			if (workflowFailure.length > 0) {
+				var workflowFailureMsg = "<p><b>" + workflowFailure[0].name + " (" + JSON.parse(workflowFailure[0].details).error_message + ") : No Transactions were processed.</b></p><p>Error details listed below: </p>";
+			}
+			
+			var workflowErrors = response.workflowSteps.filter(function(x){
+				return x.name.search("workflow") < 0;
+			})
+		}
+		
+		if (workflowFailureMsg != null){
+			responseStr = responseStr + workflowFailureMsg 
+		} else {
+			responseStr = responseStr + "<p>Status:&nbsp;&nbsp;" + response.numberSiteSuccess + " Transactions Succeeded, " + response.numberSiteFailure + " Transactions Failed</p>";		
+		}
+		
+		if (workflowErrors != null) {
+			responseStr = responseStr + "<div id=\"error-container\">Workflow-level Errors: <br/><div class=\"error-warning\">";
+			workflowErrors.forEach(function(e){
+				workflowErrorRow = workflowErrorRow + "<div class=\"steps\">" + e.name + ": </div><div class=\"errors\">" + JSON.parse(e.details).error_message + "</div>";
+			})
+			workflowErrorRow = workflowErrorRow + "</div>"
+		}
+		
+		if (response.sites.length > 0){
+			siteErrorRows = "Site-level Errors and Warnings: <br/><div class=\"error-warning\">";
+			siteErrorRows = siteErrorRows + parseSiteErrorRows(response.sites);
+			siteErrorRows = siteErrorRows + "</div></div>";
+		}
+		
+		responseStr = responseStr + workflowErrorRow + siteErrorRows;
+	}
+	responseStr = responseStr + "</br></br>" + JSON.stringify(response, null, 4).split("\n").join("<br/>").split(" ").join("&nbsp;");
+	return responseStr;
+}
+
+function parseSiteErrorRows(errorList){
+	var result = "";
+	var errorRow = "";
+	var warningRow = "";
+	errorList.forEach(function(s){
+		var site = s.agencyCode.trim() + "-" + s.siteNumber.trim();
+		var steps = s.steps;
+		steps.forEach(function(st){
+			var detailMsg = JSON.parse(st.details);
+			if (detailMsg.hasOwnProperty("error_message")){
+				if (typeof detailMsg.error_message === "object") {
+				Object.keys(detailMsg.error_message).forEach(function(key){
+					errorRow = errorRow + "<div class=\"steps\">" + site + " </div><div class=\"errors\">" + st.name + " Fatal Error: " + key + " &mdash; " + detailMsg.error_message[key] + "</div>";					
+				})
+				} else {
+					errorRow = errorRow + "<div class=\"steps\">" + site + " </div><div class=\"errors\">" + st.name + " Fatal Error: " + detailMsg.error_message + "</div>";
+				}
+			}
+			if (detailMsg.hasOwnProperty("validator_message")){
+				if (detailMsg.validator_message.hasOwnProperty("fatal_error_message")){
+					Object.keys(detailMsg.validator_message.fatal_error_message).forEach(function(key){
+						errorRow = errorRow + "<div class=\"steps\">" + site + " </div><div class=\"errors\">" + st.name + " Fatal Error: " + key + " &mdash; " + detailMsg.validator_message.fatal_error_message[key] + "</div>";
+					})
+				}
+				if (detailMsg.validator_message.hasOwnProperty("warning_message")){
+					Object.keys(detailMsg.validator_message.warning_message).forEach(function(key){
+						warningRow = warningRow + "<div class=\"steps\">" + site + " </div><div class=\"errors\">" + st.name + " Warning: " + key + " &mdash; " + detailMsg.validator_message.warning_message[key] + "</div>";
+					})
+				}
+			}
+		})
+		
+	})
+	result = errorRow + warningRow;
+	return result;
 }
 
 $(function () {

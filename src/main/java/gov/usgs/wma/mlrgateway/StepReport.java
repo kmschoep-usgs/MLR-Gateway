@@ -18,6 +18,13 @@ public class StepReport {
 		this.success = success;
 		this.details = details;
 	}
+	
+	public StepReport(StepReport stepReport) {
+		this.name = stepReport.name;
+		this.httpStatus = stepReport.httpStatus;
+		this.success = stepReport.success;
+		this.details = stepReport.details;
+	}
 
 	public String getName() {
 		return name;
