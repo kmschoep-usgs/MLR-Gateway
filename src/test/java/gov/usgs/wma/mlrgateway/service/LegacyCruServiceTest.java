@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minidev.json.JSONObject;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -183,7 +185,14 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 		ResponseEntity<String> addRtn = new ResponseEntity<>(legacyJson, HttpStatus.NOT_FOUND);
 		given(legacyCruClient.getMonitoringLocation(anyString(), anyString())).willReturn(addRtn);
 
-		service.getMonitoringLocation(agencyCode, siteNumber, false, siteReport);
+		try {
+			service.getMonitoringLocation(agencyCode, siteNumber, false, siteReport);
+			fail("getMonitoringLocation did not throw an exception to its caller");
+		} catch (FeignBadResponseWrapper e) {
+			assertTrue(e.getStatus() == 404);
+			assertTrue(LegacyCruService.SITE_GET_DOES_NOT_EXIST_FAILED.equals(e.getBody()));
+		}
+		
 		GatewayReport rtn = WorkflowController.getReport();
 		rtn.addSiteReport(siteReport);
 		

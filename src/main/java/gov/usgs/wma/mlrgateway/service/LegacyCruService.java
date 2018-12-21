@@ -91,6 +91,7 @@ public class LegacyCruService {
 			} else {
 				isSuccess = false;
 				siteReport.addStepReport(new StepReport(preValMsg + SITE_GET_STEP, cruStatus, isSuccess, SITE_GET_DOES_NOT_EXIST_FAILED));
+				throw new FeignBadResponseWrapper(cruStatus, null, SITE_GET_DOES_NOT_EXIST_FAILED);
 			}
 			
   		} else {

@@ -23,9 +23,10 @@ function stopLoading(headerText) {
 }
 
 function handleResponseJson(json) {
-	if(json.hasOwnProperty("steps")) {
+	if(json.hasOwnProperty("workflowSteps")) {
 		reportUrl = URL.createObjectURL(new Blob([JSON.stringify(json, null, 4)], {type: "application/json"}));
-		$('.mlr-response-text').hide();
+		$('.mlr-response-text').html(formatJsonResponse(json));
+		$('.mlr-response-text').show();
 		$('#mlr-response-link').show();
 		$('#mlr-response-link').attr("href", reportUrl);
 	} else {
@@ -203,7 +204,6 @@ function formatJsonResponse(response) {
 		
 		responseStr = responseStr + workflowErrorRow + siteErrorRows;
 	}
-	responseStr = responseStr + "</br></br>" + JSON.stringify(response, null, 4).split("\n").join("<br/>").split(" ").join("&nbsp;");
 	return responseStr;
 }
 

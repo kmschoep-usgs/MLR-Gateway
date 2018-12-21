@@ -176,7 +176,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	@Test
 	public void ddotAddValidation_callsCorrectBackingServices() throws Exception {
