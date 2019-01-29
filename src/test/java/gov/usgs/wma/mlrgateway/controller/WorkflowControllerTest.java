@@ -1,7 +1,6 @@
 package gov.usgs.wma.mlrgateway.controller;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
 
@@ -18,7 +17,6 @@ import com.netflix.hystrix.exception.HystrixBadRequestException;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
-import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
@@ -53,7 +51,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		assertEquals(rtn.getName(), LegacyWorkflowService.COMPLETE_WORKFLOW );
 		assertEquals(rtn.getWorkflowSteps(), new ArrayList<>());
 		assertEquals(rtn.getSites(), new ArrayList<>());
-		assertEquals(rtn.getInputFileName(), "file");
+		assertEquals(rtn.getInputFileName(), "d.");
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
 
@@ -71,7 +69,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "400");
 		assertEquals(completeWorkflowStep.getName(), LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED);
 		assertEquals(completeWorkflowStep.getDetails(), badText);
-		assertEquals(rtn.getInputFileName(), "file");
+		assertEquals(rtn.getInputFileName(), "d.");
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
 
@@ -88,7 +86,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		assertEquals(completeWorkflowStep.getHttpStatus().toString(), "500");
 		assertEquals(completeWorkflowStep.getName(), LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED);
 		assertEquals(completeWorkflowStep.getDetails(), badText);
-		assertEquals(rtn.getInputFileName(), "file");
+		assertEquals(rtn.getInputFileName(), "d.");
 		
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}

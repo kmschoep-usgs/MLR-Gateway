@@ -49,7 +49,7 @@ public class WorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/ddots")
 	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
-		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW, file.getName()));
+		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW, file.getOriginalFilename()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
 			legacy.completeWorkflow(file);
@@ -65,7 +65,7 @@ public class WorkflowController extends BaseController {
 		}
 
 		//Send Notification
-		notificationStep(COMPLETE_WORKFLOW_SUBJECT, "process-" + file.getName());
+		notificationStep(COMPLETE_WORKFLOW_SUBJECT, "process-" + file.getOriginalFilename());
 
 		//Return report
 		GatewayReport rtn = getReport();
@@ -99,7 +99,7 @@ public class WorkflowController extends BaseController {
 		}
 
 		//Send Notification
-		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT, "validate-" + file.getName());
+		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT, "validate-" + file.getOriginalFilename());
 
 		//Return report
 		GatewayReport rtn = getReport();
