@@ -67,7 +67,7 @@ public class WorkflowControllerMVCTest {
 
 	@Test
 	public void happyPathLegacyWorkflow() throws Exception {
-		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"file\","
+		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"workflowSteps\":[],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 
 		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots")
@@ -81,7 +81,7 @@ public class WorkflowControllerMVCTest {
 
 	@Test
 	public void badResponse_LegacyWorkflow() throws Exception {
-		String badJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"file\",\"workflowSteps\":[{\"name\":\"" 
+		String badJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\",\"workflowSteps\":[{\"name\":\"" 
 				+ LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED + "\",\"httpStatus\":400,\"success\":false,\"details\":\"{\\\"error\\\": 123}\"}],"
 				+ "\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).completeWorkflow(any(MultipartFile.class));
@@ -97,7 +97,7 @@ public class WorkflowControllerMVCTest {
 
 	@Test
 	public void serverError_LegacyWorkflow() throws Exception {
-		String badJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"file\","
+		String badJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"workflowSteps\":[{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED + "\",\"httpStatus\":500,"
 				+  "\"success\":false,\"details\":\"wow 456\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new RuntimeException("wow 456")).given(legacy).completeWorkflow(any(MultipartFile.class));
