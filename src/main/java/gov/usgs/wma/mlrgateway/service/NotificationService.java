@@ -1,15 +1,21 @@
 package gov.usgs.wma.mlrgateway.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import gov.usgs.wma.mlrgateway.GatewayReport;
+import gov.usgs.wma.mlrgateway.SiteReport;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import gov.usgs.wma.mlrgateway.StepReport;
+import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.controller.BaseController;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.HashMap;
@@ -38,7 +44,7 @@ public class NotificationService {
 		this.notificationClient = notificationClient;
 	}
 
-	public void sendNotification(List<String> recipientList, String subject, String user, String attachmentFileName, GatewayReport report) {
+	public void sendNotification(List<String> recipientList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
 		ObjectMapper mapper = new ObjectMapper();
 		String messageJson;
 		report.setReportDateTime(Instant.now().toString());
@@ -54,7 +60,7 @@ public class NotificationService {
 		}
 	}
 
-	protected HashMap<String, Object> buildRequestMap(List<String> recipientList, String subject, String user, String attachmentFileName, GatewayReport report) {
+	protected HashMap<String, Object> buildRequestMap(List<String> recipientList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
 		HashMap<String, Object> messageMap = new HashMap<>();
 
 		//Build Request
@@ -67,14 +73,15 @@ public class NotificationService {
 		return messageMap;
 	}
 	
-	protected String buildMessageBody(GatewayReport report, String user) {
+	protected String buildMessageBody(UserSummaryReport report, String user) {
 		report.setUserName(user);
 		String reportBody = "An MLR Workflow has completed on the " + 
 				environmentTier + " environment. The workflow output report is below.\n\n\n";
-		reportBody += "User:        " + user + "\n\n";
-		reportBody += "Workflow:    " + report.getName() + "\n\n";
-		reportBody += "Report Date: " + report.getReportDateTime() + "\n\n"; 		
-		reportBody += "The full, raw report output is attached.\n";
+		reportBody += "User:        " + user + "\n";
+		reportBody += "Workflow:    " + report.getName() + "\n";
+		reportBody += "Report Date: " + report.getReportDateTime() + "\n"; 		
+		reportBody += "The full, raw report output is attached.\n\n";
+		reportBody += buildErrorReport(report); 
 		
 		return reportBody;
 	}
@@ -83,5 +90,140 @@ public class NotificationService {
 		return ATTACHMENT_FILE_NAME.replace("%NAME%", 
 			(attachmentFileName != null && !attachmentFileName.isEmpty()) ? attachmentFileName : "output"
 		); 
+	}
+	
+	protected String buildErrorReport(UserSummaryReport report){
+		String errorReport = "";
+		String workflowFailureMsg = "";
+		String siteMsg = "";
+		if (report.getName() == "Complete Export Workflow"){
+			StepReport workflowFailureStep = report.getWorkflowSteps().stream()
+					.filter(w -> w.getName() == "Complete Export Workflow" && w.isSuccess() == false)
+					.collect(Collectors.toList()).get(0);
+			workflowFailureMsg = workflowFailureStep.getName() + " Failed: " + getDetailErrorMessage(workflowFailureStep.getDetails()) + "\n\n";
+			errorReport += workflowFailureMsg;
+		} else {
+			if (report.getWorkflowSteps().size() > 0){
+				List<StepReport> workflowFailureSteps = report.getWorkflowSteps().stream()
+						.filter(w -> w.getName().contains("workflow"))
+						.collect(Collectors.toList());
+				if (workflowFailureSteps.size() > 0) {
+					workflowFailureMsg = workflowFailureSteps.get(0).getName() + " (" + getDetailErrorMessage(workflowFailureSteps.get(0).getDetails()) + ") : No Transactions were processed.\n\nError details listed below:\n\n";
+				} 
+				List<StepReport> workflowErrorSteps = report.getWorkflowSteps().stream()
+						.filter(w -> !w.getName().contains("workflow"))
+						.collect(Collectors.toList());
+				if (workflowErrorSteps.size() > 0) {
+					workflowFailureMsg += "Workflow-level Errors:\n\n";
+					for (StepReport w: workflowErrorSteps) {
+						workflowFailureMsg += w.getName() + ": " + getDetailErrorMessage(w.getDetails()) + "\n";
+					};
+				}
+			}
+			if (workflowFailureMsg != "") {
+				errorReport += workflowFailureMsg;
+			} else {
+				errorReport += "Status:  " + report.getNumberSiteSuccess().toString() + " Transactions Succeeded, " + report.getNumberSiteFailure().toString() + " Transactions Failed\n\n";
+			}
+		
+			if (report.getSites().size() > 0) {
+				siteMsg = parseSiteErrors(report.getSites());
+				errorReport += siteMsg;
+			}
+		}
+		
+		return errorReport;
+	}
+	
+	protected String parseSiteErrors(List<SiteReport> siteErrors) {
+		String siteReportRows = "";
+		String errorRow = "";
+		String warningRow = "";
+		String siteAgencyNumber = "";
+		for (SiteReport site : siteErrors) {
+			siteAgencyNumber = site.getAgencyCode().trim() + "-" + site.getSiteNumber().trim();
+			for (StepReport siteStep : site.getSteps()) {
+				errorRow += getDetailSiteMessage(siteAgencyNumber,siteStep, "error");
+				warningRow += getDetailSiteMessage(siteAgencyNumber,siteStep, "warning");
+			}
+		}
+		siteReportRows += errorRow + warningRow ;
+		return siteReportRows;
+		
+	};
+	
+	protected String getDetailErrorMessage(String detailMessage) {
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, String> jsonMap = new HashMap<>();
+		String result = "";
+		try {
+			jsonMap = objectMapper.readValue(detailMessage,
+				new TypeReference<Map<String,String>>(){});
+			result = jsonMap.get("error_message");
+		} catch (IOException e) {
+			log.error(NOTIFICATION_STEP + ": error parsing error message; " + e.getMessage());
+				result = detailMessage;
+		}
+		return result;
+	}
+	
+	protected String getDetailSiteMessage(String site, StepReport siteStep, String messageType) {
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, String> jsonMap = new HashMap<>();
+		Map<String, Map<String, String>> jsonObjMap = new HashMap<>();
+		Map<String, Map<String, Map<String, List<String>>>> jsonValMap = new HashMap<>();
+		String result = "";
+		if (messageType.equals("error") && siteStep.getDetails().toString().contains("error_message")) {
+			try {
+				jsonMap = objectMapper.readValue(siteStep.getDetails(),
+					new TypeReference<Map<String,String>>(){});
+				if (jsonMap.containsKey("error_message")) {
+					result += site + ", " + siteStep.getName() + " Fatal Error: " + jsonMap.get("error_message");
+				}
+			} catch (IOException e) {
+				log.error(NOTIFICATION_STEP + ": error message might be object, trying to parse; " + e.getMessage());
+				try {
+					jsonObjMap = objectMapper.readValue(siteStep.getDetails(),
+							new TypeReference<Map<String,Map<String, String>>>(){});
+					if (jsonObjMap.containsKey("error_message")) {
+						for (Map.Entry<String, String> entry : jsonObjMap.get("error_message").entrySet()) {
+							result += site + ", " + siteStep.getName() + " Fatal Error: " + entry.getKey() + " - " + entry.getValue() + "\n";
+						}
+					}
+				} catch (IOException e1) {
+					log.error(NOTIFICATION_STEP + ": error parsing object error message, could be validation message; " + e1.getMessage());
+					try {
+						jsonValMap = objectMapper.readValue(siteStep.getDetails(),
+								new TypeReference<Map<String,Map<String, Map<String, List<String>>>>>(){});
+						if (jsonValMap.containsKey("validator_message")){
+							if (jsonValMap.get("validator_message").containsKey("fatal_error_message")) {
+								for (Map.Entry<String, List<String>> entry : jsonValMap.get("validator_message").get("fatal_error_message").entrySet()) {
+									result += site + ", " + siteStep.getName() + " Fatal Error: " + entry.getKey() + " - " + entry.getValue().stream().map(Object::toString).collect(Collectors.joining("; ")) + "\n";
+								}
+							}
+						}
+					} catch (IOException e2) {
+						log.error(NOTIFICATION_STEP + ": error parsing object error message" + e2.getMessage());
+						result += siteStep.getDetails();
+					}
+				}
+			}
+		} else if (messageType.equals("warning") && siteStep.getDetails().toString().contains("warning_message")) {
+			try {
+				jsonValMap = objectMapper.readValue(siteStep.getDetails(),
+						new TypeReference<Map<String,Map<String, Map<String, List<String>>>>>(){});
+				if (jsonValMap.containsKey("validator_message")){
+					if (jsonValMap.get("validator_message").containsKey("warning_message")) {
+						for (Map.Entry<String, List<String>> entry : jsonValMap.get("validator_message").get("warning_message").entrySet()) {
+							result += site + ", " + siteStep.getName() + " Warning: " + entry.getKey() + " - " + entry.getValue().stream().map(Object::toString).collect(Collectors.joining("; ")) + "\n";
+						}
+					}
+				}
+			} catch (IOException e2) {
+				log.error(NOTIFICATION_STEP + ": error parsing object warning message" + e2.getMessage());
+				result += siteStep.getDetails();
+			}
+		}
+		return result;
 	}
 }
