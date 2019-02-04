@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.HashMap;
@@ -104,7 +105,10 @@ public class NotificationService {
 			StepReport workflowFailureStep = report.getWorkflowSteps().stream()
 					.filter(w -> w.getName() == "Complete Export Workflow" && w.isSuccess() == false)
 					.collect(Collectors.toList()).get(0);
-			workflowFailureMsg = workflowFailureStep.getName() + " Failed: " + getDetailErrorMessage(workflowFailureStep.getDetails()) + "\n\n";
+			String errorPattern = "{0} Failed: {1}\n\n";
+			MessageFormat message = new MessageFormat(errorPattern);
+			Object[] arguments = {workflowFailureStep.getName(), getDetailErrorMessage(workflowFailureStep.getDetails())};
+			workflowFailureMsg = message.format(arguments);
 			errorReport += workflowFailureMsg;
 		} else {
 			if (report.getWorkflowSteps().size() > 0){
@@ -112,22 +116,31 @@ public class NotificationService {
 						.filter(w -> w.getName().contains("workflow"))
 						.collect(Collectors.toList());
 				if (workflowFailureSteps.size() > 0) {
-					workflowFailureMsg = workflowFailureSteps.get(0).getName() + " (" + getDetailErrorMessage(workflowFailureSteps.get(0).getDetails()) + ") : No Transactions were processed.\n\nError details listed below:\n\n";
+					String errorPattern = "{0} ({1}) : No Transactions were processed.\n\nError details listed below:\n\n";
+					MessageFormat message = new MessageFormat(errorPattern);
+					Object[] arguments = {workflowFailureSteps.get(0).getName(), getDetailErrorMessage(workflowFailureSteps.get(0).getDetails())};
+					workflowFailureMsg = message.format(arguments);
 				} 
 				List<StepReport> workflowErrorSteps = report.getWorkflowSteps().stream()
 						.filter(w -> !w.getName().contains("workflow"))
 						.collect(Collectors.toList());
 				if (workflowErrorSteps.size() > 0) {
 					workflowFailureMsg += "Workflow-level Errors:\n\n";
+					String errorPattern = "{0}: {1}\n";
+					MessageFormat message = new MessageFormat(errorPattern);
 					for (StepReport w: workflowErrorSteps) {
-						workflowFailureMsg += w.getName() + ": " + getDetailErrorMessage(w.getDetails()) + "\n";
+						Object[] arguments = {w.getName(),getDetailErrorMessage(w.getDetails())};
+						workflowFailureMsg += message.format(arguments);
 					};
 				}
 			}
 			if (workflowFailureMsg != "") {
 				errorReport += workflowFailureMsg;
 			} else {
-				errorReport += "Status:  " + report.getNumberSiteSuccess().toString() + " Transactions Succeeded, " + report.getNumberSiteFailure().toString() + " Transactions Failed\n\n";
+				String messagePattern = "Status:  {0} Transactions Succeeded, {1} Transactions Failed\n\n";
+				MessageFormat message = new MessageFormat(messagePattern);
+				Object[] arguments = {report.getNumberSiteSuccess().toString(), report.getNumberSiteFailure().toString()};
+				errorReport += message.format(arguments);
 			}
 		
 			if (report.getSites().size() > 0) {
@@ -182,8 +195,11 @@ public class NotificationService {
 			jsonMap = new ObjectMapper().readValue(siteStep.getDetails(),
 				new TypeReference<Map<String,String>>(){});
 			if (jsonMap.containsKey(ERROR_MESSAGE)) {
-				result += site + ", " + siteStep.getName() + " Fatal Error: " + jsonMap.get(ERROR_MESSAGE);
-			}
+				String errorPattern = "{0}, {1} Fatal Error: {2}";
+				MessageFormat message = new MessageFormat(errorPattern);
+				Object[] arguments = {site, siteStep.getName(), jsonMap.get(ERROR_MESSAGE)};
+				result += message.format(arguments);
+				}
 		} catch (IOException e) {
 			log.warn(NOTIFICATION_STEP + ": error message might be object, trying to parse; " + e.getMessage());
 			try {
@@ -191,8 +207,11 @@ public class NotificationService {
 				jsonObjMap = new ObjectMapper().readValue(siteStep.getDetails(),
 						new TypeReference<Map<String,Map<String, String>>>(){});
 				if (jsonObjMap.containsKey("error_message")) {
+					String errorPattern = "{0}, {1} Fatal Error: {2} - {3}\n";
+					MessageFormat message = new MessageFormat(errorPattern);
 					for (Map.Entry<String, String> entry : jsonObjMap.get(ERROR_MESSAGE).entrySet()) {
-						result += site + ", " + siteStep.getName() + " Fatal Error: " + entry.getKey() + " - " + entry.getValue() + "\n";
+						Object[] arguments = {site, siteStep.getName(), entry.getKey(),entry.getValue()};
+						result += message.format(arguments);
 					}
 				}
 			} catch (IOException e1) {
@@ -201,10 +220,13 @@ public class NotificationService {
 					Map<String, Map<String, Map<String, List<String>>>> jsonValMap = new HashMap<>();
 					jsonValMap = new ObjectMapper().readValue(siteStep.getDetails(),
 							new TypeReference<Map<String,Map<String, Map<String, List<String>>>>>(){});
+					String errorPattern = "{0}, {1} Fatal Error: {2} - {3}\n";
+					MessageFormat message = new MessageFormat(errorPattern);
 					if (jsonValMap.containsKey(VALIDATOR_MESSAGE)){
 						if (jsonValMap.get(VALIDATOR_MESSAGE).containsKey(FATAL_ERROR_MESSAGE)) {
 							for (Map.Entry<String, List<String>> entry : jsonValMap.get(VALIDATOR_MESSAGE).get(FATAL_ERROR_MESSAGE).entrySet()) {
-								result += site + ", " + siteStep.getName() + " Fatal Error: " + entry.getKey() + " - " + entry.getValue().stream().map(Object::toString).collect(Collectors.joining("; ")) + "\n";
+								Object[] arguments = {site, siteStep.getName(), entry.getKey(),entry.getValue().stream().map(Object::toString).collect(Collectors.joining("; "))};
+								result += message.format(arguments);
 							}
 						}
 					}
@@ -222,10 +244,13 @@ public class NotificationService {
 			Map<String, Map<String, Map<String, List<String>>>> jsonValMap = new HashMap<>();
 			jsonValMap = new ObjectMapper().readValue(siteStep.getDetails(),
 					new TypeReference<Map<String,Map<String, Map<String, List<String>>>>>(){});
+			String warningPattern = "{0}, {1} Warning: {2} - {3}\n";
+			MessageFormat message = new MessageFormat(warningPattern);
 			if (jsonValMap.containsKey(VALIDATOR_MESSAGE)){
 				if (jsonValMap.get(VALIDATOR_MESSAGE).containsKey(WARNING_MESSAGE)) {
 					for (Map.Entry<String, List<String>> entry : jsonValMap.get(VALIDATOR_MESSAGE).get(WARNING_MESSAGE).entrySet()) {
-						result += site + ", " + siteStep.getName() + " Warning: " + entry.getKey() + " - " + entry.getValue().stream().map(Object::toString).collect(Collectors.joining("; ")) + "\n";
+						Object[] arguments = {site, siteStep.getName(), entry.getKey(),entry.getValue().stream().map(Object::toString).collect(Collectors.joining("; "))};
+						result += message.format(arguments);
 					}
 				}
 			}
