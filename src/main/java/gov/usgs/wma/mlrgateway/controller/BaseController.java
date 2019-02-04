@@ -4,8 +4,11 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
+import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.config.WaterAuthJwtConverter;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +34,8 @@ public abstract class BaseController {
 		
 	private Logger log = LoggerFactory.getLogger(BaseController.class);
 	private static ThreadLocal<GatewayReport> gatewayReport = new ThreadLocal<>();
+	private UserSummaryReport userSummaryReport = new UserSummaryReport();
+	private UserSummaryReportBuilder userSummaryReportBuilder = new UserSummaryReportBuilder();
 	
 	public BaseController() {};
 	public BaseController(NotificationService notificationService) {
@@ -64,7 +69,6 @@ public abstract class BaseController {
 	protected void notificationStep(String subject, String attachmentFileName) {
 		List<String> notificationRecipientList;
 		String userName = "Unknown";
-		
 		//Send Notification
 		try {
 			if(additionalNotificationRecipientsString != null && additionalNotificationRecipientsString.length() > 0){
@@ -88,7 +92,8 @@ public abstract class BaseController {
 				log.warn("No Authentication present in the Web Security Context when sending the Notification Email!");
 			}
 			String fullSubject = SUBJECT_PREFIX.replace("%environment%", environmentTier != null && environmentTier.length() > 0 ? environmentTier : "") + subject;
-			notificationService.sendNotification(notificationRecipientList, fullSubject, userName, attachmentFileName, getReport());
+			userSummaryReport = userSummaryReportBuilder.buildUserSummaryReport(getReport());
+			notificationService.sendNotification(notificationRecipientList, fullSubject, userName, attachmentFileName, userSummaryReport);
 		} catch(Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
