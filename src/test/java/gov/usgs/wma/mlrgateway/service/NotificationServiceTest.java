@@ -15,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.SiteReport;
@@ -40,7 +38,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 	private NotificationService service;
 	private String reportName = "TEST NOTIFICATION";
 	private String fileName = "test.d";
-	private ObjectMapper mapper;
 	private UserSummaryReport userSummaryReport;
 	private MockHttpServletResponse response;
 	
@@ -57,7 +54,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		userSummaryReport.setName(reportName);
 		userSummaryReport.setInputFileName(fileName);
 		userSummaryReport.setSites(sites);
-		mapper = new ObjectMapper();
 	}
 
 	@Test
