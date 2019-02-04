@@ -152,6 +152,32 @@ public class NotificationServiceTest extends BaseSpringTest {
 	}
 	
 	@Test
+	public void buildMessageBodyParsingExportErrorExceptionTest() throws Exception {
+		UserSummaryReport report = new UserSummaryReport();
+		List<StepReport> workflowSteps = new ArrayList<>();
+		List<SiteReport> sites = new ArrayList<>();
+		StepReport workflowStep = new StepReport("Complete Export Workflow", 404, false, "{\"bad error message\"}");
+		workflowSteps.add(workflowStep);
+		report.setName("Complete Export Workflow");
+		report.setUserName("report-user");
+		report.setInputFileName("report-file-name");
+		report.setReportDateTime("report-date-time");
+		report.setWorkflowSteps(workflowSteps);
+		report.setSites(sites);
+		
+		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+			"User:        report-user\n" +
+			"Workflow:    Complete Export Workflow\n" +
+			"Report Date: report-date-time\n" +
+			"The full, raw report output is attached.\n\n" +
+			"Complete Export Workflow Failed: {\"bad error message\"}\n\n";
+		
+		String result = service.buildMessageBody(report, "report-user");
+
+		assertEquals(expected, result);
+	}
+	
+	@Test
 	public void buildMessageBodyFailedWorkflowTest() throws Exception {
 		UserSummaryReport report = new UserSummaryReport();
 		List<StepReport> workflowSteps = new ArrayList<>();
@@ -210,6 +236,39 @@ public class NotificationServiceTest extends BaseSpringTest {
 			"Status:  0 Transactions Succeeded, 1 Transactions Failed\n\n" +
 			"USGS-12345678, Validate Duplicate Monitoring Location Name Fatal Error: stationIx - Duplicate normalized station name locations found for 'GILBERTLAKESPRING4NESIDENRWESTBENDWI': USGS-432452088151501, stateFipsCode: 55\n" + 
 			"USGS-12345678, Validate Duplicate Monitoring Location Name Fatal Error: duplicate_site - Duplicate Agency Code and Site Number found in MLR.\n";
+		
+		String result = service.buildMessageBody(report, "report-user");
+
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void buildMessageBodyParseSiteErrorMessageTest() throws Exception {
+		UserSummaryReport report = new UserSummaryReport();
+		List<StepReport> workflowSteps = new ArrayList<>();
+		List<SiteReport> sites = new ArrayList<>();
+		List<StepReport> siteSteps = new ArrayList<>();
+		StepReport siteErrorStep = new StepReport("Validate Duplicate Monitoring Location Name", 406, false, "{\"error_message\":{\"stationIx\":\"Duplicate normalized station name locations found for site\",{\"badJsonObject\":\"Duplicate Agency Code and Site Number found in MLR.\"}}}");
+		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
+		siteSteps.add(siteErrorStep);
+		siteReport.setSteps(siteSteps);
+		sites.add(siteReport);
+		report.setName("Validate D dot File");
+		report.setUserName("report-user");
+		report.setInputFileName("report-file-name");
+		report.setReportDateTime("report-date-time");
+		report.setWorkflowSteps(workflowSteps);
+		report.setSites(sites);
+		report.setNumberSiteSuccess(0);
+		report.setNumberSiteFailure(1);
+		
+		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+			"User:        report-user\n" +
+			"Workflow:    Validate D dot File\n" +
+			"Report Date: report-date-time\n" +
+			"The full, raw report output is attached.\n\n" +
+			"Status:  0 Transactions Succeeded, 1 Transactions Failed\n\n" + 
+			siteErrorStep.getDetails();
 		
 		String result = service.buildMessageBody(report, "report-user");
 
@@ -277,6 +336,38 @@ public class NotificationServiceTest extends BaseSpringTest {
 			"Status:  0 Transactions Succeeded, 1 Transactions Failed\n\n" +
 			"USGS-12345678, Validate Warning: latitude - Latitude is out of range for county 067\n" +
 			"USGS-12345678, Validate Warning: longitude - Longitude is out of range for county 067\n";
+		
+		String result = service.buildMessageBody(report, "report-user");
+
+		assertEquals(expected, result);
+	}
+	@Test
+	public void buildMessageBodyParseSiteWarningMessageTest() throws Exception {
+		UserSummaryReport report = new UserSummaryReport();
+		List<StepReport> workflowSteps = new ArrayList<>();
+		List<SiteReport> sites = new ArrayList<>();
+		List<StepReport> siteSteps = new ArrayList<>();
+		StepReport siteErrorStep = new StepReport("Validate", 406, false, "{\"warning_message\":{\"stationIx\":\"Some warning stuff\",{\"badJsonObject\":\"Another warning\"}}}");
+		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
+		siteSteps.add(siteErrorStep);
+		siteReport.setSteps(siteSteps);
+		sites.add(siteReport);
+		report.setName("Validate D dot File");
+		report.setUserName("report-user");
+		report.setInputFileName("report-file-name");
+		report.setReportDateTime("report-date-time");
+		report.setWorkflowSteps(workflowSteps);
+		report.setSites(sites);
+		report.setNumberSiteSuccess(0);
+		report.setNumberSiteFailure(1);
+		
+		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+			"User:        report-user\n" +
+			"Workflow:    Validate D dot File\n" +
+			"Report Date: report-date-time\n" +
+			"The full, raw report output is attached.\n\n" +
+			"Status:  0 Transactions Succeeded, 1 Transactions Failed\n\n" + 
+			siteErrorStep.getDetails();
 		
 		String result = service.buildMessageBody(report, "report-user");
 
