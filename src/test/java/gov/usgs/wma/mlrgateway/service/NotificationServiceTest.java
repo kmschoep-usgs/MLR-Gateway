@@ -374,6 +374,40 @@ public class NotificationServiceTest extends BaseSpringTest {
 		assertEquals(expected, result);
 	}
 	
+	
+	@Test
+	public void buildMessageBodyFailedOneErrorTest() throws Exception {
+		UserSummaryReport report = new UserSummaryReport();
+		List<StepReport> workflowSteps = new ArrayList<>();
+		List<SiteReport> sites = new ArrayList<>();
+		List<StepReport> siteSteps = new ArrayList<>();
+		StepReport siteErrorStep = new StepReport("Validate", 400, false, "{\"error_message\": \"this is an error\"}");
+		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
+		siteSteps.add(siteErrorStep);
+		siteReport.setSteps(siteSteps);
+		sites.add(siteReport);
+		report.setName("Validate D dot File");
+		report.setUserName("report-user");
+		report.setInputFileName("report-file-name");
+		report.setReportDateTime("report-date-time");
+		report.setWorkflowSteps(workflowSteps);
+		report.setSites(sites);
+		report.setNumberSiteSuccess(0);
+		report.setNumberSiteFailure(1);
+		
+		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+			"User:        report-user\n" +
+			"Workflow:    Validate D dot File\n" +
+			"Report Date: report-date-time\n" +
+			"The full, raw report output is attached.\n\n" +
+			"Status:  0 Transactions Succeeded, 1 Transactions Failed\n\n" +
+			"USGS-12345678, Validate Fatal Error: this is an error\n";
+		
+		String result = service.buildMessageBody(report, "report-user");
+
+		assertEquals(expected, result);
+	}
+	
 	@Test
 	public void buildMessageBodyFailedOneValidationErrorTest() throws Exception {
 		UserSummaryReport report = new UserSummaryReport();

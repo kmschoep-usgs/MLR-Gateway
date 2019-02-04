@@ -195,7 +195,7 @@ public class NotificationService {
 			jsonMap = new ObjectMapper().readValue(siteStep.getDetails(),
 				new TypeReference<Map<String,String>>(){});
 			if (jsonMap.containsKey(ERROR_MESSAGE)) {
-				String errorPattern = "{0}, {1} Fatal Error: {2}";
+				String errorPattern = "{0}, {1} Fatal Error: {2}\n";
 				MessageFormat message = new MessageFormat(errorPattern);
 				Object[] arguments = {site, siteStep.getName(), jsonMap.get(ERROR_MESSAGE)};
 				result += message.format(arguments);
