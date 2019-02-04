@@ -38,6 +38,11 @@ public class NotificationService {
 	public static final String NOTIFICATION_FAILURE = "{\"error_message\": \"Notification failed to send.\"}";
 	public static Temporal reportDateTime;
 	public static final String ATTACHMENT_FILE_NAME = "mlr-%NAME%-report.json";
+	public enum MessageType {error, warning};
+	public static final String ERROR_MESSAGE = "error_message";
+	public static final String FATAL_ERROR_MESSAGE = "fatal_error_message";
+	public static final String WARNING_MESSAGE = "warning_message";
+	public static final String VALIDATOR_MESSAGE = "validator_message";
 	
 	@Autowired
 	public NotificationService(NotificationClient notificationClient){
@@ -143,8 +148,8 @@ public class NotificationService {
 		for (SiteReport site : siteErrors) {
 			siteAgencyNumber = site.getAgencyCode().trim() + "-" + site.getSiteNumber().trim();
 			for (StepReport siteStep : site.getSteps()) {
-				errorRow += getDetailSiteMessage(siteAgencyNumber,siteStep, "error");
-				warningRow += getDetailSiteMessage(siteAgencyNumber,siteStep, "warning");
+				errorRow += getDetailSiteMessage(siteAgencyNumber,siteStep, MessageType.error);
+				warningRow += getDetailSiteMessage(siteAgencyNumber,siteStep, MessageType.warning);
 			}
 		}
 		siteReportRows += errorRow + warningRow ;
@@ -167,37 +172,37 @@ public class NotificationService {
 		return result;
 	}
 	
-	protected String getDetailSiteMessage(String site, StepReport siteStep, String messageType) {
+	protected String getDetailSiteMessage(String site, StepReport siteStep, MessageType messageType) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		Map<String, String> jsonMap = new HashMap<>();
 		Map<String, Map<String, String>> jsonObjMap = new HashMap<>();
 		Map<String, Map<String, Map<String, List<String>>>> jsonValMap = new HashMap<>();
 		String result = "";
-		if (messageType.equals("error") && siteStep.getDetails().toString().contains("error_message")) {
+		if ((messageType == MessageType.error) && siteStep.getDetails().toString().contains(ERROR_MESSAGE)) {
 			try {
 				jsonMap = objectMapper.readValue(siteStep.getDetails(),
 					new TypeReference<Map<String,String>>(){});
-				if (jsonMap.containsKey("error_message")) {
-					result += site + ", " + siteStep.getName() + " Fatal Error: " + jsonMap.get("error_message");
+				if (jsonMap.containsKey(ERROR_MESSAGE)) {
+					result += site + ", " + siteStep.getName() + " Fatal Error: " + jsonMap.get(ERROR_MESSAGE);
 				}
 			} catch (IOException e) {
-				log.error(NOTIFICATION_STEP + ": error message might be object, trying to parse; " + e.getMessage());
+				log.warn(NOTIFICATION_STEP + ": error message might be object, trying to parse; " + e.getMessage());
 				try {
 					jsonObjMap = objectMapper.readValue(siteStep.getDetails(),
 							new TypeReference<Map<String,Map<String, String>>>(){});
 					if (jsonObjMap.containsKey("error_message")) {
-						for (Map.Entry<String, String> entry : jsonObjMap.get("error_message").entrySet()) {
+						for (Map.Entry<String, String> entry : jsonObjMap.get(ERROR_MESSAGE).entrySet()) {
 							result += site + ", " + siteStep.getName() + " Fatal Error: " + entry.getKey() + " - " + entry.getValue() + "\n";
 						}
 					}
 				} catch (IOException e1) {
-					log.error(NOTIFICATION_STEP + ": error parsing object error message, could be validation message; " + e1.getMessage());
+					log.warn(NOTIFICATION_STEP + ": error parsing object error message, could be validation message; " + e1.getMessage());
 					try {
 						jsonValMap = objectMapper.readValue(siteStep.getDetails(),
 								new TypeReference<Map<String,Map<String, Map<String, List<String>>>>>(){});
-						if (jsonValMap.containsKey("validator_message")){
-							if (jsonValMap.get("validator_message").containsKey("fatal_error_message")) {
-								for (Map.Entry<String, List<String>> entry : jsonValMap.get("validator_message").get("fatal_error_message").entrySet()) {
+						if (jsonValMap.containsKey(VALIDATOR_MESSAGE)){
+							if (jsonValMap.get(VALIDATOR_MESSAGE).containsKey(FATAL_ERROR_MESSAGE)) {
+								for (Map.Entry<String, List<String>> entry : jsonValMap.get(VALIDATOR_MESSAGE).get(FATAL_ERROR_MESSAGE).entrySet()) {
 									result += site + ", " + siteStep.getName() + " Fatal Error: " + entry.getKey() + " - " + entry.getValue().stream().map(Object::toString).collect(Collectors.joining("; ")) + "\n";
 								}
 							}
@@ -208,13 +213,13 @@ public class NotificationService {
 					}
 				}
 			}
-		} else if (messageType.equals("warning") && siteStep.getDetails().toString().contains("warning_message")) {
+		} else if (messageType == MessageType.warning && siteStep.getDetails().toString().contains(WARNING_MESSAGE)) {
 			try {
 				jsonValMap = objectMapper.readValue(siteStep.getDetails(),
 						new TypeReference<Map<String,Map<String, Map<String, List<String>>>>>(){});
-				if (jsonValMap.containsKey("validator_message")){
-					if (jsonValMap.get("validator_message").containsKey("warning_message")) {
-						for (Map.Entry<String, List<String>> entry : jsonValMap.get("validator_message").get("warning_message").entrySet()) {
+				if (jsonValMap.containsKey(VALIDATOR_MESSAGE)){
+					if (jsonValMap.get(VALIDATOR_MESSAGE).containsKey(WARNING_MESSAGE)) {
+						for (Map.Entry<String, List<String>> entry : jsonValMap.get(VALIDATOR_MESSAGE).get(WARNING_MESSAGE).entrySet()) {
 							result += site + ", " + siteStep.getName() + " Warning: " + entry.getKey() + " - " + entry.getValue().stream().map(Object::toString).collect(Collectors.joining("; ")) + "\n";
 						}
 					}

@@ -69,7 +69,6 @@ public abstract class BaseController {
 	protected void notificationStep(String subject, String attachmentFileName) {
 		List<String> notificationRecipientList;
 		String userName = "Unknown";
-		userSummaryReport = userSummaryReportBuilder.buildUserSummaryReport(getReport());
 		//Send Notification
 		try {
 			if(additionalNotificationRecipientsString != null && additionalNotificationRecipientsString.length() > 0){
@@ -93,6 +92,7 @@ public abstract class BaseController {
 				log.warn("No Authentication present in the Web Security Context when sending the Notification Email!");
 			}
 			String fullSubject = SUBJECT_PREFIX.replace("%environment%", environmentTier != null && environmentTier.length() > 0 ? environmentTier : "") + subject;
+			userSummaryReport = userSummaryReportBuilder.buildUserSummaryReport(getReport());
 			notificationService.sendNotification(notificationRecipientList, fullSubject, userName, attachmentFileName, userSummaryReport);
 		} catch(Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
