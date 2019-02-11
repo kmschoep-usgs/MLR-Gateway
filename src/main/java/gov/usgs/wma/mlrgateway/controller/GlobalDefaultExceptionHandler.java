@@ -31,7 +31,7 @@ public class GlobalDefaultExceptionHandler {
 	@Value("${SPRING_HTTP_MULTIPART_MAX_FILE_SIZE:1MB}")
 	private String MAX_FILE_SIZE;
 	
-	static final String ERROR_MESSAGE_KEY = "Error Message";
+	static final String ERROR_MESSAGE_KEY = "error_message";
 
 	@ExceptionHandler(Exception.class)
 	public @ResponseBody Map<String, String> handleUncaughtException(Exception ex, WebRequest request, HttpServletResponse response) throws IOException {

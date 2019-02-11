@@ -51,7 +51,11 @@ function generalSuccess (response) {
 function generalError (response) {	
 	if(response.status > 0){
 		if(response.hasOwnProperty("responseJSON")){
+			if(response.status == 403) {
+				handleResponseText(response.responseJSON.error_message);
+			} else {
 			handleResponseJson(response.responseJSON);
+			}
 		} else if(response.status == 401) {
 			// Got a 401 before a response map could be built, so warn of a potential expired session.
 			handleResponseText("It appears that your session may have expired or you are not logged in. Please refresh " + 
