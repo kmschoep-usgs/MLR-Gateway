@@ -7,6 +7,8 @@ import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -23,7 +25,7 @@ import gov.usgs.wma.mlrgateway.service.LegacyTransformerService;
 
 @Service
 public class LegacyWorkflowService {
-
+	private static final Logger LOG = LoggerFactory.getLogger(LegacyWorkflowService.class);
 	private DdotService ddotService;
 	private LegacyTransformerService transformService;
 	private LegacyValidatorService legacyValidatorService;
@@ -63,9 +65,13 @@ public class LegacyWorkflowService {
 		String json;
 		
 		//1. Parse Ddot File
+		LOG.trace("Start DDOT Parsing");
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
+		LOG.trace("End DDOT Parsing");
+
 		//2. Process Individual Transactions
 		for (int i = 0; i < ddots.size(); i++) {
+			LOG.trace("Start processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size());
 			Map<String, Object> ml = ddots.get(i);
 			SiteReport siteReport = new SiteReport(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString());
 			try {
@@ -100,15 +106,19 @@ public class LegacyWorkflowService {
 					WorkflowController.addSiteReport(siteReport);
 				}
 			}
+			LOG.trace("End processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size());
 		}
 	}
 
 	public void ddotValidation(MultipartFile file) throws HystrixBadRequestException {
 		//1. Parse Ddot File
+		LOG.trace("Start DDOT Parsing");
 		List<Map<String, Object>> ddots = ddotService.parseDdot(file);
+		LOG.trace("End DDOT Parsing");
 		
 		//2. Process Individual Transactions
 		for (int i = 0; i < ddots.size(); i++) {
+			LOG.trace("Start processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size());
 			Map<String, Object> ml = ddots.get(i);
 			SiteReport siteReport = new SiteReport(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString());
 			try {
@@ -133,6 +143,7 @@ public class LegacyWorkflowService {
 				}
 			}
 			WorkflowController.addSiteReport(siteReport);
+			LOG.trace("End processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size());
 		}
 	}
 	
