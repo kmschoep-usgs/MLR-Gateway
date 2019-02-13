@@ -51,7 +51,7 @@ function generalSuccess (response) {
 function generalError (response) {	
 	if(response.status > 0){
 		if(response.hasOwnProperty("responseJSON")){
-			if(response.status == 403) {
+			if(response.responseJSON.hasOwnProperty("error_message")) {
 				handleResponseText(response.responseJSON.error_message);
 			} else {
 			handleResponseJson(response.responseJSON);
