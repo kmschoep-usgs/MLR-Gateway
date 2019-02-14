@@ -50,9 +50,11 @@ public class LegacyValidatorService {
 			doDuplicateValidation(ml, siteReport);
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
+				log.debug("An error occured during LegacyCRU Duplicate Validation: ", e);
 				duplicateValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
 				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, clientErrorParser.parseClientError("LegacyCruClient#validateMonitoringLocation(String)", ((FeignBadResponseWrapper)e).getBody())));
 			} else {
+				log.error("An error occured during LegacyCRU Duplicate Validation: ", e);
 				duplicateValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, e.getMessage()));
 			}
@@ -69,10 +71,11 @@ public class LegacyValidatorService {
 			siteReport.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(), true, "{\"validator_message\": " + validationResponse.getBody() + "}" ));
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
+				log.debug("An error occured during LegacyValidator Validation: ", e);
 				otherValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
 				siteReport.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus, false, ((FeignBadResponseWrapper)e).getBody()));
-				
 			} else {
+				log.error("An error occured during LegacyValidator Validation: ", e);
 				otherValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 				siteReport.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus, false, "{\"error_message\":\"" + e.getMessage() + "\"}"));
 			}

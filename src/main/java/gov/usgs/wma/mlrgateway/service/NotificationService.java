@@ -102,14 +102,16 @@ public class NotificationService {
 		String workflowFailureMsg = "";
 		String siteMsg = "";
 		if (report.getName() == "Complete Export Workflow"){
-			StepReport workflowFailureStep = report.getWorkflowSteps().stream()
+			List<StepReport> workflowErrorSteps = report.getWorkflowSteps().stream()
 					.filter(w -> w.getName() == "Complete Export Workflow" && w.isSuccess() == false)
-					.collect(Collectors.toList()).get(0);
-			String errorPattern = "{0} Failed: {1}\n\n";
-			MessageFormat message = new MessageFormat(errorPattern);
-			Object[] arguments = {workflowFailureStep.getName(), getDetailErrorMessage(workflowFailureStep.getDetails())};
-			workflowFailureMsg = message.format(arguments);
-			errorReport += workflowFailureMsg;
+					.collect(Collectors.toList());
+			if(workflowErrorSteps.size() > 0) {
+				String errorPattern = "{0} Failed: {1}\n\n";
+				MessageFormat message = new MessageFormat(errorPattern);
+				Object[] arguments = {workflowErrorSteps.get(0).getName(), getDetailErrorMessage(workflowErrorSteps.get(0).getDetails())};
+				workflowFailureMsg = message.format(arguments);
+				errorReport += workflowFailureMsg;
+			}
 		} else {
 			if (report.getWorkflowSteps().size() > 0){
 				List<StepReport> workflowFailureSteps = report.getWorkflowSteps().stream()
