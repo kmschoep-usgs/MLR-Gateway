@@ -95,12 +95,13 @@ public abstract class BaseController {
 			userSummaryReport = userSummaryReportBuilder.buildUserSummaryReport(getReport());
 			notificationService.sendNotification(notificationRecipientList, fullSubject, userName, attachmentFileName, userSummaryReport);
 		} catch(Exception e) {
+			log.error("An error occured while attempting to send the notification email: ", e);
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
 				WorkflowController.addWorkflowStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.addWorkflowStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, e.getLocalizedMessage()));
+				WorkflowController.addWorkflowStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, e.getMessage()));
 			}
 		}
 	}

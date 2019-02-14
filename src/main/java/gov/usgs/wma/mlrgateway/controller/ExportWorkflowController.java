@@ -57,14 +57,16 @@ public class ExportWorkflowController extends BaseController {
 				ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, status, false,  e.getMessage()));
 			}
 		}
+
+		// Overall Status ignores Notification Status
+		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
 		
 		//Send Notification
 		notificationStep(EXPORT_WORKFLOW_SUBJECT, "export-" + agencyCode + "-" + siteNumber);
 		
 		//Return Report
 		GatewayReport rtn = getReport();
-		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
-		response.setStatus(maxStatusStep.getHttpStatus());
+		
 		remove();
 		return rtn;
 	}	

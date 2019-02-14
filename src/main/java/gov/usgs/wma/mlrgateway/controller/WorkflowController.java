@@ -64,13 +64,14 @@ public class WorkflowController extends BaseController {
 			}
 		}
 
+		// Overall Status ignores Notification Status
+		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
+		
 		//Send Notification
 		notificationStep(COMPLETE_WORKFLOW_SUBJECT, "process-" + file.getOriginalFilename());
 
 		//Return report
 		GatewayReport rtn = getReport();
-		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
-		response.setStatus(maxStatusStep.getHttpStatus());
 		UserSummaryReport userSummaryReport = userSummaryReportbuilder.buildUserSummaryReport(rtn);
 		remove();
 		return userSummaryReport;
@@ -98,13 +99,14 @@ public class WorkflowController extends BaseController {
 			}
 		}
 
+		// Overall Status ignores Notification Status
+		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
+		
 		//Send Notification
 		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT, "validate-" + file.getOriginalFilename());
 
 		//Return report
 		GatewayReport rtn = getReport();
-		StepReport maxStatusStep = Collections.max(rtn.getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus()));
-		response.setStatus(maxStatusStep.getHttpStatus());
 		UserSummaryReport userSummaryReport = userSummaryReportbuilder.buildUserSummaryReport(rtn);
 		remove();
 		return userSummaryReport;

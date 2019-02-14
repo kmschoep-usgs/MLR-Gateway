@@ -5,6 +5,8 @@ import java.util.Map;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
@@ -20,6 +22,7 @@ public class ExportWorkflowService {
 
 	private LegacyCruService legacyCruService;
 	private FileExportService fileExportService;
+	private Logger log = LoggerFactory.getLogger(ExportWorkflowService.class);
 
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";
@@ -40,6 +43,7 @@ public class ExportWorkflowService {
 			try {
 				json = mapper.writeValueAsString(site);
 			} catch (Exception e) {
+				log.error("An error occured during the export workflow: ", e);
 				// Unable to determine when this might actually happen, but the api says it can...
 				siteReport.addStepReport(new StepReport(FileExportService.EXPORT_ADD_FAILED, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, FileExportService.EXPORT_ADD_FAILED + ": " + "Unable to serialize site as JSON"));
 				WorkflowController.addSiteReport(siteReport);

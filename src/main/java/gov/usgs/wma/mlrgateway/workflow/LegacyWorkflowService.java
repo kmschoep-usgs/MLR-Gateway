@@ -76,32 +76,32 @@ public class LegacyWorkflowService {
 			SiteReport siteReport = new SiteReport(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString());
 			try {
 				if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
+					Boolean isAddTransaction = ((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD);
 					siteReport.setTransactionType(ml.get(TRANSACTION_TYPE).toString());
-					if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
-						ml = transformService.transformStationIx(ml, siteReport);
-						ml = legacyValidatorService.doValidation(ml, true, siteReport);
-						ml = transformService.transformGeo(ml, siteReport);
-						json = mlToJson(ml);
+					ml = transformService.transformStationIx(ml, siteReport);
+					ml = legacyValidatorService.doValidation(ml, isAddTransaction, siteReport);
+					ml = transformService.transformGeo(ml, siteReport);
+					json = mlToJson(ml);
+
+					if (isAddTransaction) {
 						json = legacyCruService.addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json, siteReport);
 						fileExportService.exportAdd(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString(), json, siteReport);
-						WorkflowController.addSiteReport(siteReport);
 					} else {
-						ml = transformService.transformStationIx(ml, siteReport);
-						ml = legacyValidatorService.doValidation(ml, false, siteReport);
-						ml = transformService.transformGeo(ml, siteReport);
-						json = mlToJson(ml);
 						json = legacyCruService.updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json, siteReport);
 						fileExportService.exportUpdate(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString(), json, siteReport);
-						WorkflowController.addSiteReport(siteReport);
 					}
+
+					WorkflowController.addSiteReport(siteReport);
 				} else {
 					throw new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error_message\": \"Validation failed due to a missing transaction type.\"}");
 				}
 			} catch (Exception e) {
 				if(e instanceof FeignBadResponseWrapper){
+					LOG.debug("An error occurred while processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size(), e);
 					siteReport.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
 					WorkflowController.addSiteReport(siteReport);
 				} else {
+					LOG.error("An error occurred while processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size(), e);
 					siteReport.addStepReport(new StepReport(COMPLETE_TRANSACTION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
 					WorkflowController.addSiteReport(siteReport);
 				}
@@ -137,8 +137,10 @@ public class LegacyWorkflowService {
 				
 			} catch (Exception e) {
 				if(e instanceof FeignBadResponseWrapper){
+					LOG.debug("An error occurred while processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size(), e);
 					siteReport.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP , ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
 				} else {
+					LOG.error("An error occurred while processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size(), e);
 					siteReport.addStepReport(new StepReport(VALIDATE_DDOT_TRANSACTION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
 				}
 			}
