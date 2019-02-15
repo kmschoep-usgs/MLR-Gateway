@@ -22,6 +22,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
@@ -55,7 +56,7 @@ public class DdotServiceTest extends BaseSpringTest {
 	public void garbageFromDdot_thenReturnInternalServerError() throws Exception {
 
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		String ddotRtn = "not json";
+		ResponseEntity<String> ddotRtn = new ResponseEntity<> ("not json", HttpStatus.OK);
 		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotRtn);
 		try {
 			service.parseDdot(file);
@@ -110,8 +111,8 @@ public class DdotServiceTest extends BaseSpringTest {
 	public void happyPath() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		ObjectMapper mapper = new ObjectMapper();
-		String ddotResponse = mapper.writeValueAsString(singleAdd());
-		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotResponse);
+		ResponseEntity<String> ddotRtn = new ResponseEntity<> (mapper.writeValueAsString(singleAdd()), HttpStatus.OK);
+		given(ddotClient.ingestDdot(any(MultipartFile.class))).willReturn(ddotRtn);
 		List<Map<String, Object>> rtn = service.parseDdot(file);
 		GatewayReport gatewayReport = WorkflowController.getReport();
 		StepReport ddotStep = gatewayReport.getWorkflowSteps().stream()
