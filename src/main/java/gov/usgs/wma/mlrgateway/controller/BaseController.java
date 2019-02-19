@@ -7,6 +7,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.config.WaterAuthJwtConverter;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import gov.usgs.wma.mlrgateway.util.GetSecurityContext;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
 
 import java.io.Serializable;
@@ -36,6 +37,7 @@ public abstract class BaseController {
 	private static ThreadLocal<GatewayReport> gatewayReport = new ThreadLocal<>();
 	private UserSummaryReport userSummaryReport = new UserSummaryReport();
 	private UserSummaryReportBuilder userSummaryReportBuilder = new UserSummaryReportBuilder();
+	private GetSecurityContext getSecurityContext = new GetSecurityContext();
 	
 	public BaseController() {};
 	public BaseController(NotificationService notificationService) {
@@ -68,7 +70,6 @@ public abstract class BaseController {
 	
 	protected void notificationStep(String subject, String attachmentFileName) {
 		List<String> notificationRecipientList;
-		String userName = "Unknown";
 		//Send Notification
 		try {
 			if(additionalNotificationRecipientsString != null && additionalNotificationRecipientsString.length() > 0){
@@ -77,23 +78,16 @@ public abstract class BaseController {
 			} else {
 				notificationRecipientList = new ArrayList<>();
 			}
-			
-			if(SecurityContextHolder.getContext().getAuthentication() != null){
-				Map<String, Serializable> oauthExtensions = ((OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication()).getOAuth2Request().getExtensions();
-				String userEmail = (String)oauthExtensions.get(WaterAuthJwtConverter.EMAIL_JWT_KEY);
-				userName = SecurityContextHolder.getContext().getAuthentication().getName();
+			String userEmail = getSecurityContext.getUserEmail();
 				
-				if(userEmail != null && userEmail.length() > 0){
-					notificationRecipientList.add(userEmail);
-				} else {
-					log.warn("No User Email present in the Web Security Context when sending the Notification Email!");
-				}
+			if(userEmail != null && userEmail.length() > 0){
+				notificationRecipientList.add(userEmail);
 			} else {
-				log.warn("No Authentication present in the Web Security Context when sending the Notification Email!");
+				log.warn("No User Email present in the Web Security Context when sending the Notification Email!");
 			}
 			String fullSubject = SUBJECT_PREFIX.replace("%environment%", environmentTier != null && environmentTier.length() > 0 ? environmentTier : "") + subject;
 			userSummaryReport = userSummaryReportBuilder.buildUserSummaryReport(getReport());
-			notificationService.sendNotification(notificationRecipientList, fullSubject, userName, attachmentFileName, userSummaryReport);
+			notificationService.sendNotification(notificationRecipientList, fullSubject, getReport().getUserName(), attachmentFileName, userSummaryReport);
 		} catch(Exception e) {
 			log.error("An error occured while attempting to send the notification email: ", e);
 			if (e instanceof FeignBadResponseWrapper) {

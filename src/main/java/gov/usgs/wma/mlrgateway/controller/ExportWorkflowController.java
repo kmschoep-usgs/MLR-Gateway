@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.controller;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -18,6 +19,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import gov.usgs.wma.mlrgateway.util.GetSecurityContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -29,6 +31,7 @@ public class ExportWorkflowController extends BaseController {
 	private ExportWorkflowService export;
 	public static final String COMPLETE_WORKFLOW = "Complete Export Workflow";
 	public static final String EXPORT_WORKFLOW_SUBJECT = "Transaction File Generation for Requested Location";
+	private GetSecurityContext getSecurityContext = new GetSecurityContext();
 	
 	@Autowired
 	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService) {
@@ -44,7 +47,10 @@ public class ExportWorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/legacy/location/{agencyCode}/{siteNumber}")
 	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response) {
-		setReport(new GatewayReport(COMPLETE_WORKFLOW, null));
+		setReport(new GatewayReport(COMPLETE_WORKFLOW
+				,null
+				,getSecurityContext.getUserName()
+				,Instant.now().toString()));
 		try {
 			export.exportWorkflow(agencyCode, siteNumber);
 			ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, HttpStatus.SC_OK, true, FileExportService.EXPORT_SUCCESSFULL));

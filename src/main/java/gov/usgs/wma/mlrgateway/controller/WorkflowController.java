@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.controller;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -20,6 +21,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import gov.usgs.wma.mlrgateway.util.GetSecurityContext;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -34,7 +36,8 @@ public class WorkflowController extends BaseController {
 	private UserSummaryReportBuilder userSummaryReportbuilder;
 	public static final String COMPLETE_WORKFLOW_SUBJECT = "Submitted Ddot Transaction";
 	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "Submitted Ddot Validation";
-
+	private GetSecurityContext getSecurityContext = new GetSecurityContext();
+	
 	@Autowired
 	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService) {
 		super(notificationService);
@@ -49,7 +52,10 @@ public class WorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/ddots")
 	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
-		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW, file.getOriginalFilename()));
+		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW
+				,file.getOriginalFilename()
+				,getSecurityContext.getUserName()
+				,Instant.now().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
 			legacy.completeWorkflow(file);
@@ -84,6 +90,7 @@ public class WorkflowController extends BaseController {
 	@PostMapping("/ddots/validate")
 	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, file.getOriginalFilename()));
+		setUserName();
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
 			legacy.ddotValidation(file);
