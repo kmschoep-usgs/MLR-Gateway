@@ -46,7 +46,7 @@ public class DdotService {
 		TypeReference<List<Map<String, Object>>> mapType = new TypeReference<List<Map<String, Object>>>() {};
 		
 		try {
-			String ddotResponse = ddotClient.ingestDdot(file);
+			String ddotResponse = ddotClient.ingestDdot(file).getBody();
 			ddots = mapper.readValue(ddotResponse, mapType);
 		} catch (Exception e) {
 			int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
@@ -64,5 +64,4 @@ public class DdotService {
 		WorkflowController.addWorkflowStepReport(new StepReport(STEP_NAME, HttpStatus.SC_OK, true, SUCCESS_MESSAGE));
 		return ddots;
 	}
-
 }
