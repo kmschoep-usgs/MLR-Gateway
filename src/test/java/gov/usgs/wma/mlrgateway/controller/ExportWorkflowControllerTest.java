@@ -36,14 +36,15 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	
 	private ExportWorkflowController controller;
 	private MockHttpServletResponse response;
-	public static final LocalDate REPORT_DATE = LocalDate.of(2018, 03, 16);
+	private String userName = "userName";
+	private String reportDate = "01/01/2019";
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 
 	@Before
 	public void init() {
 		controller = new ExportWorkflowController(export, notificationService);
 		response = new MockHttpServletResponse();
-		ExportWorkflowController.setReport(new GatewayReport(ExportWorkflowController.COMPLETE_WORKFLOW, null));
+		ExportWorkflowController.setReport(new GatewayReport(ExportWorkflowController.COMPLETE_WORKFLOW, null, userName, reportDate));
 	}
 
 	@SuppressWarnings("unchecked")

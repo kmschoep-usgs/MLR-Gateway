@@ -33,11 +33,13 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 	private ExportWorkflowService service;
 	private String fileName = "test.d";
 	private String reportName = "TEST Legacy Workflow";
+	private String userName = "userName";
+	private String reportDate = "01/01/2019";
 
 	@Before
 	public void init() {
 		service = new ExportWorkflowService(legacyCruService, fileExportService);
-		ExportWorkflowController.setReport(new GatewayReport(reportName, fileName));
+		ExportWorkflowController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));
 	}
 
 	@Test

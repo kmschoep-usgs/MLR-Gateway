@@ -45,11 +45,13 @@ public class DdotServiceTest extends BaseSpringTest {
 	private DdotService service;
 	private String reportName = "TEST DDOT";
 	private String fileName = "test.d";
+	private String userName = "userName";
+	private String reportDate = "01/01/2019";
 
 	@Before
 	public void init() {
 		service = new DdotService(ddotClient);
-		WorkflowController.setReport(new GatewayReport(reportName, fileName));
+		WorkflowController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));
 	}
 
 	@Test

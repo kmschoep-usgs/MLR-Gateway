@@ -38,6 +38,8 @@ public class NotificationServiceTest extends BaseSpringTest {
 	private NotificationService service;
 	private String reportName = "TEST NOTIFICATION";
 	private String fileName = "test.d";
+	private String userName = "userName";
+	private String reportDate = "01/01/2019";
 	private UserSummaryReport userSummaryReport;
 	private MockHttpServletResponse response;
 	
@@ -46,7 +48,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 	public void init() {
 		service = new NotificationService(notificationClient);
 		response = new MockHttpServletResponse();
-		BaseController.setReport(new GatewayReport(reportName, fileName));
+		BaseController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));
 		List<StepReport> workflowSteps = new ArrayList<>();
 		List<SiteReport> sites = new ArrayList<>();
 		userSummaryReport = new UserSummaryReport();

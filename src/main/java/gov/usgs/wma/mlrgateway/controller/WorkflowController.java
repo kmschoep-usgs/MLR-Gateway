@@ -89,8 +89,10 @@ public class WorkflowController extends BaseController {
 	@ApiResponse(code=401, message="Unauthorized")})
 	@PostMapping("/ddots/validate")
 	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
-		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, file.getOriginalFilename()));
-		setUserName();
+		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
+				,file.getOriginalFilename()
+				,getSecurityContext.getUserName()
+				,Instant.now().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
 			legacy.ddotValidation(file);
