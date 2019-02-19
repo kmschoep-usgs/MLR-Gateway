@@ -7,7 +7,6 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.config.WaterAuthJwtConverter;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import gov.usgs.wma.mlrgateway.util.GetSecurityContext;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
 
 import java.io.Serializable;
@@ -37,7 +36,6 @@ public abstract class BaseController {
 	private static ThreadLocal<GatewayReport> gatewayReport = new ThreadLocal<>();
 	private UserSummaryReport userSummaryReport = new UserSummaryReport();
 	private UserSummaryReportBuilder userSummaryReportBuilder = new UserSummaryReportBuilder();
-	private GetSecurityContext getSecurityContext = new GetSecurityContext();
 	
 	public BaseController() {};
 	public BaseController(NotificationService notificationService) {
@@ -68,6 +66,28 @@ public abstract class BaseController {
 		gatewayReport.remove();
 	}
 	
+	public String getUserName() {
+		String userName = "Unknown";
+		if(SecurityContextHolder.getContext().getAuthentication() != null){
+			userName = SecurityContextHolder.getContext().getAuthentication().getName();
+		} else {
+			log.warn("No Authentication present in the Web Security Context when getting user name.");
+		}
+		return userName;
+	}
+
+	
+	public String getUserEmail() {
+		String userEmail = "";
+		if(SecurityContextHolder.getContext().getAuthentication() != null){
+			Map<String, Serializable> oauthExtensions = ((OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication()).getOAuth2Request().getExtensions();
+			userEmail = (String)oauthExtensions.get(WaterAuthJwtConverter.EMAIL_JWT_KEY);
+		} else {
+			log.warn("No Authentication present in the Web Security Context when getting user email!");
+		}
+		return userEmail;
+	}
+	
 	protected void notificationStep(String subject, String attachmentFileName) {
 		List<String> notificationRecipientList;
 		//Send Notification
@@ -78,7 +98,7 @@ public abstract class BaseController {
 			} else {
 				notificationRecipientList = new ArrayList<>();
 			}
-			String userEmail = getSecurityContext.getUserEmail();
+			String userEmail = getUserEmail();
 				
 			if(userEmail != null && userEmail.length() > 0){
 				notificationRecipientList.add(userEmail);
