@@ -1,7 +1,6 @@
 package gov.usgs.wma.mlrgateway.controller;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
 
