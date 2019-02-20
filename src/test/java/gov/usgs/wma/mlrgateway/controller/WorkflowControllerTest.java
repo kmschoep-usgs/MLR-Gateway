@@ -8,6 +8,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -23,6 +25,9 @@ import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import static org.mockito.Mockito.verify;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 
 
@@ -33,13 +38,19 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	private NotificationService notify;
 	@MockBean
 	private LegacyWorkflowService legacy;
+	
+	@Bean
+	@Primary
+	public Clock clock() {
+		return Clock.fixed(Instant.parse("2010-01-10T10:00:00Z"), ZoneId.of("UTC"));
+	}
 
 	private WorkflowController controller;
 	private MockHttpServletResponse response;
 
 	@Before
 	public void init() {
-		controller = new WorkflowController(legacy, notify);
+		controller = new WorkflowController(legacy, notify, clock());
 		response = new MockHttpServletResponse();
 	}
 

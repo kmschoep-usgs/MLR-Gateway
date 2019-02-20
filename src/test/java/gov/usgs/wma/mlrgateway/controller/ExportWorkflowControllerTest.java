@@ -7,12 +7,17 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -33,6 +38,12 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	private ExportWorkflowService export;
 	@MockBean
 	private NotificationService notificationService;
+
+	@Bean
+	@Primary
+	public Clock clock() {
+		return Clock.fixed(Instant.parse("2010-01-10T10:00:00Z"), ZoneId.of("UTC"));
+	}
 	
 	private ExportWorkflowController controller;
 	private MockHttpServletResponse response;
@@ -42,7 +53,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 
 	@Before
 	public void init() {
-		controller = new ExportWorkflowController(export, notificationService);
+		controller = new ExportWorkflowController(export, notificationService, clock());
 		response = new MockHttpServletResponse();
 		ExportWorkflowController.setReport(new GatewayReport(ExportWorkflowController.COMPLETE_WORKFLOW, null, userName, reportDate));
 	}

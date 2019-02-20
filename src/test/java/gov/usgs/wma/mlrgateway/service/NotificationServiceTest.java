@@ -55,6 +55,8 @@ public class NotificationServiceTest extends BaseSpringTest {
 		userSummaryReport.setWorkflowSteps(workflowSteps);
 		userSummaryReport.setName(reportName);
 		userSummaryReport.setInputFileName(fileName);
+		userSummaryReport.setUserName(userName);
+		userSummaryReport.setReportDateTime(reportDate);
 		userSummaryReport.setSites(sites);
 	}
 

@@ -52,7 +52,6 @@ public class NotificationService {
 	public void sendNotification(List<String> recipientList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
 		ObjectMapper mapper = new ObjectMapper();
 		String messageJson;
-		report.setReportDateTime(Instant.now().toString());
 		HashMap<String, Object> messageMap = buildRequestMap(recipientList, subject, user, attachmentFileName, report);
 
 		try {

@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.controller;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,11 +31,13 @@ public class ExportWorkflowController extends BaseController {
 	private ExportWorkflowService export;
 	public static final String COMPLETE_WORKFLOW = "Complete Export Workflow";
 	public static final String EXPORT_WORKFLOW_SUBJECT = "Transaction File Generation for Requested Location";
+	private final Clock clock;
 	
 	@Autowired
-	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService) {
+	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService, Clock clock) {
 		super(notificationService);
 		this.export = export;
+		this.clock = clock;
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including retrieving record from Legacy CRU and returning the Transaction file.")
@@ -48,7 +51,7 @@ public class ExportWorkflowController extends BaseController {
 		setReport(new GatewayReport(COMPLETE_WORKFLOW
 				,null
 				,getUserName()
-				,Instant.now().toString()));
+				,clock.instant().toString()));
 		try {
 			export.exportWorkflow(agencyCode, siteNumber);
 			ExportWorkflowController.addWorkflowStepReport(new StepReport(COMPLETE_WORKFLOW, HttpStatus.SC_OK, true, FileExportService.EXPORT_SUCCESSFULL));

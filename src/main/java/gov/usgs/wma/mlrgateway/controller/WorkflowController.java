@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.controller;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,11 +36,13 @@ public class WorkflowController extends BaseController {
 	private UserSummaryReportBuilder userSummaryReportbuilder;
 	public static final String COMPLETE_WORKFLOW_SUBJECT = "Submitted Ddot Transaction";
 	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "Submitted Ddot Validation";
+	private final Clock clock;
 	
 	@Autowired
-	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService) {
+	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, Clock clock) {
 		super(notificationService);
 		this.legacy = legacy;
+		this.clock = clock;
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")
@@ -53,7 +56,7 @@ public class WorkflowController extends BaseController {
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW
 				,file.getOriginalFilename()
 				,getUserName()
-				,Instant.now().toString()));
+				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
 			legacy.completeWorkflow(file);
@@ -90,7 +93,7 @@ public class WorkflowController extends BaseController {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
 				,file.getOriginalFilename()
 				,getUserName()
-				,Instant.now().toString()));
+				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
 			legacy.ddotValidation(file);

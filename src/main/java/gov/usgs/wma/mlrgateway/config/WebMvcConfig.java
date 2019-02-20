@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.config;
 
+import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,5 +31,10 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 						CacheControl.maxAge(30L, TimeUnit.DAYS).cachePublic())
 				.resourceChain(true)
 				.addResolver(new WebJarsResourceResolver());
+	}
+	
+	@Bean
+	public Clock clock() {
+	 return Clock.systemDefaultZone();
 	}
 }
