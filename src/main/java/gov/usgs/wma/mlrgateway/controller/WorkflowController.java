@@ -34,17 +34,15 @@ import io.swagger.annotations.ApiResponses;
 public class WorkflowController extends BaseController {
 	private LegacyWorkflowService legacy;
 	private UserSummaryReportBuilder userSummaryReportbuilder;
-	private Authentication authentication;
 	public static final String COMPLETE_WORKFLOW_SUBJECT = "Submitted Ddot Transaction";
 	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "Submitted Ddot Validation";
 	private final Clock clock;
 	
 	@Autowired
-	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, Clock clock, Authentication authentication) {
+	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, Clock clock) {
 		super(notificationService);
 		this.legacy = legacy;
 		this.clock = clock;
-		this.authentication = authentication;
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")
@@ -54,7 +52,7 @@ public class WorkflowController extends BaseController {
 			@ApiResponse(code=403, message="Forbidden")})
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/ddots")
-	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
+	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW
 				,file.getOriginalFilename()
 				,getUserName(authentication)
@@ -91,7 +89,7 @@ public class WorkflowController extends BaseController {
 	@ApiResponse(code=400, message="Bad Request"),
 	@ApiResponse(code=401, message="Unauthorized")})
 	@PostMapping("/ddots/validate")
-	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) {
+	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
 				,file.getOriginalFilename()
 				,getUserName(authentication)

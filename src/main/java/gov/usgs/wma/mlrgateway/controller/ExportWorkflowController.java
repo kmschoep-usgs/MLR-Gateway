@@ -29,17 +29,15 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 public class ExportWorkflowController extends BaseController {
 	private ExportWorkflowService export;
-	private Authentication authentication;
 	public static final String COMPLETE_WORKFLOW = "Complete Export Workflow";
 	public static final String EXPORT_WORKFLOW_SUBJECT = "Transaction File Generation for Requested Location";
 	private final Clock clock;
 	
 	@Autowired
-	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService, Clock clock, Authentication authentication) {
+	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService, Clock clock) {
 		super(notificationService);
 		this.export = export;
 		this.clock = clock;
-		this.authentication = authentication;
 	}
 
 	@ApiOperation(value="Perform the entire workflow, including retrieving record from Legacy CRU and returning the Transaction file.")
@@ -49,7 +47,7 @@ public class ExportWorkflowController extends BaseController {
 			@ApiResponse(code=403, message="Forbidden")})
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/legacy/location/{agencyCode}/{siteNumber}")
-	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response) {
+	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(COMPLETE_WORKFLOW
 				,null
 				,getUserName(authentication)

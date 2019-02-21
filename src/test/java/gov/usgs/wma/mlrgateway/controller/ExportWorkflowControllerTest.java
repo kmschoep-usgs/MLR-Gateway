@@ -55,7 +55,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 
 	@Before
 	public void init() {
-		controller = new ExportWorkflowController(export, notificationService, clock(), authentication);
+		controller = new ExportWorkflowController(export, notificationService, clock());
 		response = new MockHttpServletResponse();
 		ExportWorkflowController.setReport(new GatewayReport(ExportWorkflowController.COMPLETE_WORKFLOW, null, userName, reportDate));
 	}
@@ -63,7 +63,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void happyPath_ExportWorkflow() throws Exception {
-		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
+		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response, authentication);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> ExportWorkflowController.COMPLETE_WORKFLOW.equals(s.getName()))
 				.findAny().orElse(null);
@@ -80,7 +80,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		String badText = "This is really bad.";
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(export).exportWorkflow(anyString(), anyString());
 
-		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
+		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response, authentication);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> ExportWorkflowController.COMPLETE_WORKFLOW.equals(s.getName()))
 				.findAny().orElse(null);
@@ -97,7 +97,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 
 		willThrow(new HystrixBadRequestException(badText)).given(export).exportWorkflow(anyString(), anyString());
 
-		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response);
+		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response, authentication);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> ExportWorkflowController.COMPLETE_WORKFLOW.equals(s.getName()))
 				.findAny().orElse(null);
