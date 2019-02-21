@@ -18,6 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -37,6 +38,8 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	private ExportWorkflowService export;
 	@MockBean
 	private NotificationService notificationService;
+	@MockBean
+	private Authentication authentication;
 
 	@Bean
 	@Primary
@@ -52,7 +55,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 
 	@Before
 	public void init() {
-		controller = new ExportWorkflowController(export, notificationService, clock());
+		controller = new ExportWorkflowController(export, notificationService, clock(), authentication);
 		response = new MockHttpServletResponse();
 		ExportWorkflowController.setReport(new GatewayReport(ExportWorkflowController.COMPLETE_WORKFLOW, null, userName, reportDate));
 	}

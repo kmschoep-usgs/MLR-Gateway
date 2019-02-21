@@ -18,10 +18,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.stereotype.Controller;
 
+@Controller
 public abstract class BaseController {
 	private NotificationService notificationService;
 	
@@ -65,22 +69,21 @@ public abstract class BaseController {
 	public static void remove() {
 		gatewayReport.remove();
 	}
-	
-	public String getUserName() {
+
+	public String getUserName(Authentication authentication) {
 		String userName = "Unknown";
-		if(SecurityContextHolder.getContext().getAuthentication() != null){
-			userName = SecurityContextHolder.getContext().getAuthentication().getName();
+		if(authentication != null){
+			userName = authentication.getName();
 		} else {
 			log.warn("No Authentication present in the Web Security Context when getting user name.");
 		}
 		return userName;
 	}
-
 	
-	public String getUserEmail() {
+	public String getUserEmail(Authentication authentication) {
 		String userEmail = "";
-		if(SecurityContextHolder.getContext().getAuthentication() != null){
-			Map<String, Serializable> oauthExtensions = ((OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication()).getOAuth2Request().getExtensions();
+		if(authentication != null){
+			Map<String, Serializable> oauthExtensions = ((OAuth2Authentication) authentication).getOAuth2Request().getExtensions();
 			userEmail = (String)oauthExtensions.get(WaterAuthJwtConverter.EMAIL_JWT_KEY);
 		} else {
 			log.warn("No Authentication present in the Web Security Context when getting user email!");
@@ -88,7 +91,7 @@ public abstract class BaseController {
 		return userEmail;
 	}
 	
-	protected void notificationStep(String subject, String attachmentFileName) {
+	protected void notificationStep(String subject, String attachmentFileName, Authentication authentication) {
 		List<String> notificationRecipientList;
 		//Send Notification
 		try {
@@ -98,7 +101,7 @@ public abstract class BaseController {
 			} else {
 				notificationRecipientList = new ArrayList<>();
 			}
-			String userEmail = getUserEmail();
+			String userEmail = getUserEmail(authentication);
 				
 			if(userEmail != null && userEmail.length() > 0){
 				notificationRecipientList.add(userEmail);

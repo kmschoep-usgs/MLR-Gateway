@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,6 +39,8 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	private NotificationService notify;
 	@MockBean
 	private LegacyWorkflowService legacy;
+	@MockBean
+	private Authentication authentication;
 	
 	@Bean
 	@Primary
@@ -50,7 +53,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	@Before
 	public void init() {
-		controller = new WorkflowController(legacy, notify, clock());
+		controller = new WorkflowController(legacy, notify, clock(), authentication);
 		response = new MockHttpServletResponse();
 	}
 
