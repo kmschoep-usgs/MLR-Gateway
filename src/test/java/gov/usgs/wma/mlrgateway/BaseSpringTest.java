@@ -10,6 +10,7 @@ import org.springframework.util.FileCopyUtils;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 
 public class BaseSpringTest {
+
 	public static String legacyValidation = "{\"validation_passed_message\": \"Validations Passed\"}";
 	
 	public String getCompareFile(String folder, String file) throws IOException {

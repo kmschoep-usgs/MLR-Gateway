@@ -44,12 +44,14 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	private String fileName = "test.d";
 	private final String agencyCode = "USGS ";
 	private final String siteNumber = "12345678       ";
+	private String userName = "userName";
+	private String reportDate = "01/01/2019";
 	public static String LEGACY_VALIDATION_ERROR_BODY = LegacyValidatorService.VALIDATION_FAILED;
 	
 	@Before
 	public void init() {
 		service = new LegacyValidatorService(legacyCruService, legacyValidatorClient);
-		BaseController.setReport(new GatewayReport(reportName, fileName));
+		BaseController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));
 	}
 
 	@Test

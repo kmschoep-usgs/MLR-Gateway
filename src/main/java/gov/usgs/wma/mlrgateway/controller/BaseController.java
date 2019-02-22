@@ -19,9 +19,10 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.stereotype.Controller;
 
+@Controller
 public abstract class BaseController {
 	private NotificationService notificationService;
 	
@@ -65,10 +66,30 @@ public abstract class BaseController {
 	public static void remove() {
 		gatewayReport.remove();
 	}
-	
-	protected void notificationStep(String subject, String attachmentFileName) {
-		List<String> notificationRecipientList;
+
+	public String getUserName(OAuth2Authentication authentication) {
 		String userName = "Unknown";
+		if(authentication != null){
+			userName = authentication.getName();
+		} else {
+			log.warn("No Authentication present in the Web Security Context when getting user name.");
+		}
+		return userName;
+	}
+	
+	public String getUserEmail(OAuth2Authentication authentication) {
+		String userEmail = "";
+		if(authentication != null){
+			Map<String, Serializable> oauthExtensions = authentication.getOAuth2Request().getExtensions();
+			userEmail = (String)oauthExtensions.get(WaterAuthJwtConverter.EMAIL_JWT_KEY);
+		} else {
+			log.warn("No Authentication present in the Web Security Context when getting user email!");
+		}
+		return userEmail;
+	}
+	
+	protected void notificationStep(String subject, String attachmentFileName, OAuth2Authentication authentication) {
+		List<String> notificationRecipientList;
 		//Send Notification
 		try {
 			if(additionalNotificationRecipientsString != null && additionalNotificationRecipientsString.length() > 0){
@@ -77,23 +98,16 @@ public abstract class BaseController {
 			} else {
 				notificationRecipientList = new ArrayList<>();
 			}
-			
-			if(SecurityContextHolder.getContext().getAuthentication() != null){
-				Map<String, Serializable> oauthExtensions = ((OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication()).getOAuth2Request().getExtensions();
-				String userEmail = (String)oauthExtensions.get(WaterAuthJwtConverter.EMAIL_JWT_KEY);
-				userName = SecurityContextHolder.getContext().getAuthentication().getName();
+			String userEmail = getUserEmail(authentication);
 				
-				if(userEmail != null && userEmail.length() > 0){
-					notificationRecipientList.add(userEmail);
-				} else {
-					log.warn("No User Email present in the Web Security Context when sending the Notification Email!");
-				}
+			if(userEmail != null && userEmail.length() > 0){
+				notificationRecipientList.add(userEmail);
 			} else {
-				log.warn("No Authentication present in the Web Security Context when sending the Notification Email!");
+				log.warn("No User Email present in the Web Security Context when sending the Notification Email!");
 			}
 			String fullSubject = SUBJECT_PREFIX.replace("%environment%", environmentTier != null && environmentTier.length() > 0 ? environmentTier : "") + subject;
 			userSummaryReport = userSummaryReportBuilder.buildUserSummaryReport(getReport());
-			notificationService.sendNotification(notificationRecipientList, fullSubject, userName, attachmentFileName, userSummaryReport);
+			notificationService.sendNotification(notificationRecipientList, fullSubject, getReport().getUserName(), attachmentFileName, userSummaryReport);
 		} catch(Exception e) {
 			log.error("An error occured while attempting to send the notification email: ", e);
 			if (e instanceof FeignBadResponseWrapper) {

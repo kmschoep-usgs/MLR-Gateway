@@ -57,12 +57,14 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	private MockHttpServletResponse response;
 	private String reportName = "TEST Legacy Workflow";
 	private String fileName = "test.d";
+	private String userName = "userName";
+	private String reportDate = "01/01/2019";
 
 	@Before
 	public void init() {
 		service = new LegacyWorkflowService(ddotService, legacyCruService, transformService, legacyValidatorService, fileExportService);
 		response = new MockHttpServletResponse();
-		WorkflowController.setReport(new GatewayReport(reportName, fileName));
+		WorkflowController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));
 	}
 
 	@SuppressWarnings("unchecked")

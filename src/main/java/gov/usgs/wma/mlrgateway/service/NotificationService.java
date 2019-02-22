@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.HashMap;
 import org.apache.http.HttpStatus;
@@ -52,7 +51,6 @@ public class NotificationService {
 	public void sendNotification(List<String> recipientList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
 		ObjectMapper mapper = new ObjectMapper();
 		String messageJson;
-		report.setReportDateTime(Instant.now().toString());
 		HashMap<String, Object> messageMap = buildRequestMap(recipientList, subject, user, attachmentFileName, report);
 
 		try {

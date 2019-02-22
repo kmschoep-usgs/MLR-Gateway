@@ -29,6 +29,8 @@ public class FileExportServiceTest {
 	private String fileName = "test.d";
 	private final String agencyCode = "USGS ";
 	private final String siteNumber = "12345678       ";
+	private String userName = "userName";
+	private String reportDate = "01/01/2019";
 	
 	@MockBean
 	FileExportClient fileExportClient;
@@ -36,7 +38,7 @@ public class FileExportServiceTest {
 	@Before
 	public void init() {
 		service = new FileExportService(fileExportClient);
-		WorkflowController.setReport(new GatewayReport(reportName, fileName));
+		WorkflowController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));
 	}
 
 	@Test

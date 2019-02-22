@@ -21,9 +21,11 @@ public class GatewayReport {
 	
 	public GatewayReport() {};
 
-	public GatewayReport(String name, String inputFileName) {
+	public GatewayReport(String name, String inputFileName, String userName, String reportDateTime) {
 		this.name = name;
 		this.inputFileName = inputFileName;
+		this.userName = userName;
+		this.reportDateTime = reportDateTime;
 		sites = new ArrayList<>();
 		workflowSteps = new ArrayList<>();
 	}

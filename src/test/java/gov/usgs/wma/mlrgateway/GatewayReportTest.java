@@ -32,7 +32,9 @@ public class GatewayReportTest {
 	public void init() {
 		List<StepReport> steps = new ArrayList<>();
 		List<SiteReport> sites = new ArrayList<>();
-		BaseController.setReport(new GatewayReport(reportName, fileName));
+		String userName = "userName";
+		String reportDate = "01/01/2019";
+		BaseController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));
 		siteReport = new SiteReport(agencyCode, siteNumber);
 		stepReport = new StepReport("test step", 200, true, "step details");
 		steps.add(stepReport);
