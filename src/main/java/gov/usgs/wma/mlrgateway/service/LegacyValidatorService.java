@@ -111,9 +111,9 @@ public class LegacyValidatorService {
 			}
 
 			if((!validationMessage.containsKey(LegacyValidatorClient.RESPONSE_PASSED_MESSAGE) &&
-			     !validationMessage.containsKey(LegacyValidatorClient.RESPONSE_WARNING_MESSAGE) &&
-			     !validationMessage.containsKey(LegacyValidatorClient.RESPONSE_ERROR_MESSAGE)) || 
-			      validationMessage.isEmpty()) {
+				!validationMessage.containsKey(LegacyValidatorClient.RESPONSE_WARNING_MESSAGE) &&
+				!validationMessage.containsKey(LegacyValidatorClient.RESPONSE_ERROR_MESSAGE)) || 
+				validationMessage.isEmpty()) {
 				throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"validator_message\": " + validationResponse.getBody() + "}");	
 			}
 			else if (validationMessage.containsKey(LegacyValidatorClient.RESPONSE_ERROR_MESSAGE)) {
