@@ -10,6 +10,7 @@ import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -52,7 +53,7 @@ public class WorkflowController extends BaseController {
 			@ApiResponse(code=403, message="Forbidden")})
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/ddots")
-	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
+	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, OAuth2Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW
 				,file.getOriginalFilename()
 				,getUserName(authentication)
@@ -89,7 +90,7 @@ public class WorkflowController extends BaseController {
 	@ApiResponse(code=400, message="Bad Request"),
 	@ApiResponse(code=401, message="Unauthorized")})
 	@PostMapping("/ddots/validate")
-	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
+	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, OAuth2Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
 				,file.getOriginalFilename()
 				,getUserName(authentication)

@@ -8,14 +8,13 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,6 +46,8 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	private LegacyWorkflowService legacy;
 	@MockBean
 	private OAuth2Authentication authentication;
+	@MockBean
+	private OAuth2Request mockOAuth2Request;
 	
 	@Bean
 	@Primary
@@ -69,7 +70,8 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@Test
 	public void happyPath_LegacyWorkflow() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		when(authentication.getOAuth2Request().getExtensions()).thenReturn(testEmail); 
+		when(authentication.getOAuth2Request()).thenReturn(mockOAuth2Request);
+		when(mockOAuth2Request.getExtensions()).thenReturn(testEmail); 
 		UserSummaryReport rtn = controller.legacyWorkflow(file, response, authentication);
 		assertEquals(LegacyWorkflowService.COMPLETE_WORKFLOW, rtn.getName() );
 		assertEquals(new ArrayList<>(), rtn.getWorkflowSteps());
@@ -117,7 +119,8 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@Test
 	public void happyPath_LegacyValidationWorkflow() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-
+		when(authentication.getOAuth2Request()).thenReturn(mockOAuth2Request);
+		when(mockOAuth2Request.getExtensions()).thenReturn(testEmail); 
 		UserSummaryReport userSummaryReport = controller.legacyValidationWorkflow(file, response, authentication);	
 		assertEquals(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, userSummaryReport.getName());
 		assertEquals(new ArrayList<>(), userSummaryReport.getWorkflowSteps());

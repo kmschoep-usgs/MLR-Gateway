@@ -22,7 +22,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -69,7 +68,7 @@ public class WorkflowControllerMVCTest {
 	private Clock clockMock;
 	
 	@MockBean
-	private Authentication auth;
+	private OAuth2Authentication auth;
 
 	MockMultipartFile file;
 	

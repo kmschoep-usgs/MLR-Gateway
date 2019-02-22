@@ -18,10 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 
@@ -70,7 +67,7 @@ public abstract class BaseController {
 		gatewayReport.remove();
 	}
 
-	public String getUserName(Authentication authentication) {
+	public String getUserName(OAuth2Authentication authentication) {
 		String userName = "Unknown";
 		if(authentication != null){
 			userName = authentication.getName();
@@ -80,10 +77,10 @@ public abstract class BaseController {
 		return userName;
 	}
 	
-	public String getUserEmail(Authentication authentication) {
+	public String getUserEmail(OAuth2Authentication authentication) {
 		String userEmail = "";
 		if(authentication != null){
-			Map<String, Serializable> oauthExtensions = ((OAuth2Authentication) authentication).getOAuth2Request().getExtensions();
+			Map<String, Serializable> oauthExtensions = authentication.getOAuth2Request().getExtensions();
 			userEmail = (String)oauthExtensions.get(WaterAuthJwtConverter.EMAIL_JWT_KEY);
 		} else {
 			log.warn("No Authentication present in the Web Security Context when getting user email!");
@@ -91,7 +88,7 @@ public abstract class BaseController {
 		return userEmail;
 	}
 	
-	protected void notificationStep(String subject, String attachmentFileName, Authentication authentication) {
+	protected void notificationStep(String subject, String attachmentFileName, OAuth2Authentication authentication) {
 		List<String> notificationRecipientList;
 		//Send Notification
 		try {

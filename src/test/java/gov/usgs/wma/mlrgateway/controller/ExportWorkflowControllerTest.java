@@ -6,10 +6,14 @@ import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +22,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -39,7 +44,9 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	@MockBean
 	private NotificationService notificationService;
 	@MockBean
-	private Authentication authentication;
+	private OAuth2Authentication authentication;
+	@MockBean
+	private OAuth2Request mockOAuth2Request;
 
 	@Bean
 	@Primary
@@ -51,18 +58,23 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	private MockHttpServletResponse response;
 	private String userName = "userName";
 	private String reportDate = "01/01/2019";
+	private Map<String, Serializable> testEmail;
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
 
 	@Before
 	public void init() {
 		controller = new ExportWorkflowController(export, notificationService, clock());
 		response = new MockHttpServletResponse();
+		testEmail = new HashMap<>();
+		testEmail.put("email", "localuser@example.gov");
 		ExportWorkflowController.setReport(new GatewayReport(ExportWorkflowController.COMPLETE_WORKFLOW, null, userName, reportDate));
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	public void happyPath_ExportWorkflow() throws Exception {
+		when(authentication.getOAuth2Request()).thenReturn(mockOAuth2Request);
+		when(mockOAuth2Request.getExtensions()).thenReturn(testEmail); 
 		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response, authentication);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> ExportWorkflowController.COMPLETE_WORKFLOW.equals(s.getName()))
