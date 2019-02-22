@@ -3,16 +3,19 @@ package gov.usgs.wma.mlrgateway.controller;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,10 +29,13 @@ import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import static org.mockito.Mockito.verify;
 
+import java.io.Serializable;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RunWith(SpringRunner.class)
@@ -40,7 +46,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@MockBean
 	private LegacyWorkflowService legacy;
 	@MockBean
-	private Authentication authentication;
+	private OAuth2Authentication authentication;
 	
 	@Bean
 	@Primary
@@ -50,9 +56,12 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	private WorkflowController controller;
 	private MockHttpServletResponse response;
+	private Map<String, Serializable> testEmail;
 
 	@Before
 	public void init() {
+		testEmail = new HashMap<>();
+		testEmail.put("email", "localuser@example.gov");
 		controller = new WorkflowController(legacy, notify, clock());
 		response = new MockHttpServletResponse();
 	}
@@ -60,7 +69,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@Test
 	public void happyPath_LegacyWorkflow() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-
+		when(authentication.getOAuth2Request().getExtensions()).thenReturn(testEmail); 
 		UserSummaryReport rtn = controller.legacyWorkflow(file, response, authentication);
 		assertEquals(LegacyWorkflowService.COMPLETE_WORKFLOW, rtn.getName() );
 		assertEquals(new ArrayList<>(), rtn.getWorkflowSteps());
