@@ -154,11 +154,12 @@ function formatJsonResponse(response) {
 	var responseStr; 
 	var workflowErrorRow = "";
 	var siteErrorRows = "";
+	var reportDate = new Date(response.reportDateTime);
 	
 	responseStr =  "<ul>";
 	responseStr = "<li>MLR Workflow:&nbsp;&nbsp;" + response.name + "</li>";
 	responseStr = responseStr + "<li>User:&nbsp;&nbsp;" + response.userName + "</li>";
-	responseStr = responseStr + "<li>Date:&nbsp;&nbsp;" + response.reportDateTime + "</li>";
+	responseStr = responseStr + "<li>Date:&nbsp;&nbsp;" + reportDate + "</li>";
 	responseStr = responseStr + "<li>Input File:&nbsp;&nbsp;" + response.inputFileName + "</li>";
 	responseStr = responseStr + "</ul>";
 	
