@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html). (Patch version X.Y.0 is implied if not specified.)
 
-## [0.4.5] - 2019-02-28
+## [0.4.5] - 2019-03-01
 ### Added
 - user-friendly report output to email body.
 - Spring AOP configuration for profiling transactions when logging level is set to TRACE for org.springframework.aop and gov.usgs.wma.mlrgateway
@@ -101,6 +101,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Initial release - happy path - dDot injest and CRU only.
 
 [Unreleased]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.3.0...master
+[0.4.5]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.4...mlrgateway-0.4.5
+[0.4.4]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.3...mlrgateway-0.4.4
+[0.4.3]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.2...mlrgateway-0.4.3
+[0.4.2]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.1...mlrgateway-0.4.2
+[0.4.1]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.0...mlrgateway-0.4.1
+[0.4.0]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.3.0...mlrgateway-0.4.0
 [0.3.0]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.2.1...mlrgateway-0.3.0
 [0.2.1]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.2...mlrgateway-0.2.1
 [0.2]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.1...mlrgateway-0.2
