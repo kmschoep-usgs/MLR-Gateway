@@ -16,9 +16,9 @@
       file: ./docker/certificates/tomcat-wildcard.key
 
   services:
-    mlr-gateway-service:
+    mlr-gateway:
       build: .
-      image: mlr-gateway-service
+      image: mlr-gateway
       ports:
         - "6025:6025"
       << : *secrets-config
@@ -28,9 +28,9 @@
         - ./docker/config.env
         - ./docker/secrets.env
       
-    mlr-gateway-service-local-dev:
+    mlr-gateway-local-dev:
       build: .
-      image: mlr-gateway-service
+      image: mlr-gateway
       network_mode: "host"
       ports:
         - "6025:6025"
@@ -41,9 +41,9 @@
         - ./docker/config.env
         - ./docker/secrets.env
 
-    mlr-gateway-service-debug:
+    mlr-gateway-debug:
       build: .
-      image: mlr-gateway-service
+      image: mlr-gateway
       network_mode: "host"
       ports:
         - "6025:6025"

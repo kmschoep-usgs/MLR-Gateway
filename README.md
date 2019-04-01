@@ -70,7 +70,7 @@ The related environment variables are listed below:
 * mlrgateway_legacyValidatorServers - comma separated list of url(s) for the Legacy Validator Microservice
 * mlrgateway_legacyCruServers - comma separated list of url(s) for the Legacy CRU Microservice
 * mlrgateway_fileExportServers - comma separated list of url(s) for the File Export Microservice
-* mlrgateway_gatewayServers - comma separated list of url(s) for the gateway Microservice
+* mlrgateway_notificationServers - comma separated list of url(s) for the Notification Microservice
 * mlrgateway_ribbonMaxAutoRetries - maximum number of times to retry connecting to a microservice
 * mlrgateway_ribbonConnectTimeout - maximum milliseconds to wait for a connection to a microservice
 * mlrgateway_ribbonReadTimeout - maximum milliseconds to wait for a response from a microservice
