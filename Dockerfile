@@ -17,7 +17,6 @@ RUN ${BUILD_COMMAND}
 
 FROM usgswma/wma-spring-boot-base:8-jre-slim-0.0.4
 
-ENV requireSsl=true
 ENV serverPort=6026
 ENV mlrgateway_springFrameworkLogLevel=info
 ENV mlrgateway_ddotServers=http://localhost:6028
