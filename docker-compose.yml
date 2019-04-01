@@ -20,7 +20,7 @@
       build: .
       image: mlr-gateway
       ports:
-        - "6025:6025"
+        - "6026:6026"
       << : *secrets-config
       volumes: 
       - ./docker/certificates/import_certs:/certificates:ro
@@ -33,7 +33,7 @@
       image: mlr-gateway
       network_mode: "host"
       ports:
-        - "6025:6025"
+        - "6026:6026"
       << : *secrets-config
       volumes: 
         - ./docker/certificates/import_certs:/certificates:ro
@@ -46,7 +46,7 @@
       image: mlr-gateway
       network_mode: "host"
       ports:
-        - "6025:6025"
+        - "6026:6026"
         - "8000:8000"
       << : *secrets-config
       volumes: 
