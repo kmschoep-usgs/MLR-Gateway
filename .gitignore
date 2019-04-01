@@ -5,4 +5,10 @@
 /.vscode
 /application.yml
 /bin/
-**.jks
+**/*.jks
+**/*.p12
+**/*.crt
+**/*.csr
+**/*.chain
+**/*.key
+/run_app.sh

@@ -70,9 +70,21 @@ The related environment variables are listed below:
 * mlrgateway_legacyValidatorServers - comma separated list of url(s) for the Legacy Validator Microservice
 * mlrgateway_legacyCruServers - comma separated list of url(s) for the Legacy CRU Microservice
 * mlrgateway_fileExportServers - comma separated list of url(s) for the File Export Microservice
-* mlrgateway_notificationServers - comma separated list of url(s) for the Notification Microservice
+* mlrgateway_gatewayServers - comma separated list of url(s) for the gateway Microservice
 * mlrgateway_ribbonMaxAutoRetries - maximum number of times to retry connecting to a microservice
 * mlrgateway_ribbonConnectTimeout - maximum milliseconds to wait for a connection to a microservice
 * mlrgateway_ribbonReadTimeout - maximum milliseconds to wait for a response from a microservice
 * mlrgateway_hystrixThreadTimeout - maximum milliseconds for a request to process
 * mlrgateway_springFrameworkLogLevel - log level for org.springframework
+
+## Running the Application via Docker
+
+This application can be run locally using the docker container built during the build process or by directly building and running the application JAR. The included `docker-compose` file has 3 profiles to choose from when running the application locally:
+
+1. mlr-gateway-service: This is the default profile which runs the application as it would be in our cloud environment. This is not recommended for local development as it makes configuring connections to other services running locally on your machine more difficult.
+2. mlr-gateway-service-local-dev: This is the profile which runs the application as it would be in the aqcu-local-dev project, and is configured to make it easy to replace the mlr-gateway-service instance in the local-dev project with this instance. It is run the same as the `mlr-gateway-service` profile, except it uses the docker host network driver.
+3. mlr-gateway-service-debug: This is the profile which runs the application exactly the same as `mlr-gateway-service-local-dev` but also enables remote debugging for the application and opens up port 8000 into the container for that purpose.
+
+Before any of these options are able to be run you must also generate certificates for this application to serve using the `create_certificates` script in the `docker/certificates` directory. Additionally, this service must be able to connect to a running instance of Water Auth when starting, and it is recommended that you use the Water Auth instance from the `mlr-gateway-service-local-dev` project to accomplish this. In order for this application to communicate with any downstream services that it must call, including Water Auth, you must also place the certificates that are being served by those services into the `docker/certificates/import_certs` directory to be imported into the Java TrustStore of the running container.
+
+To build and run the application after completing the above steps you can run: `docker-compose up --build {profile}`, replacing `{profile}` with one of the options listed above.
