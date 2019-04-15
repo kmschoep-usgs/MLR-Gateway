@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html). (Patch version X.Y.0 is implied if not specified.)
 
+## [Unreleased]
+
+## [0.5.0] - 2019-04-12 - End of Pilot
+### Added
+- Docker configuration
+
+### Changed
+- Merged this repository with the mlr-ddot-ingester-docker repository
+- Changed versioning to proper semantic without the service name
+
+
 ## [0.4.5] - 2019-03-01
 ### Added
 - user-friendly report output to email body.
@@ -100,7 +111,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Initial release - happy path - dDot injest and CRU only.
 
-[Unreleased]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.5...master
+[Unreleased]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.5.0...master
+[0.4.5]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.5...0.5.0
 [0.4.5]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.4...mlrgateway-0.4.5
 [0.4.4]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.3...mlrgateway-0.4.4
 [0.4.3]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.2...mlrgateway-0.4.3
