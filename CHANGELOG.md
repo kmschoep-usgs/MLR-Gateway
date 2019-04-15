@@ -112,7 +112,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Initial release - happy path - dDot injest and CRU only.
 
 [Unreleased]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.5.0...master
-[0.4.5]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.5...0.5.0
+[0.5.0]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.5...0.5.0
 [0.4.5]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.4...mlrgateway-0.4.5
 [0.4.4]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.3...mlrgateway-0.4.4
 [0.4.3]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.2...mlrgateway-0.4.3
