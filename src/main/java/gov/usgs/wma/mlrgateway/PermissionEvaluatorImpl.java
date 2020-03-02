@@ -25,7 +25,7 @@ public class PermissionEvaluatorImpl implements PermissionEvaluator {
 		//This little bit of Java 8 voodoo compares the acceptable roles with the user's authorities and returns
 		// true if there is a match on any of them.
 		List<?> intersect = authentication.getAuthorities().stream()
-				.filter(auth -> Arrays.stream(roles).anyMatch(role -> role.equalsIgnoreCase(auth.getAuthority())))
+				.filter(auth -> Arrays.stream(roles).anyMatch(role -> role.equals(auth.getAuthority())))
 				.collect(Collectors.toList());
 
 		if (intersect.isEmpty()) {
