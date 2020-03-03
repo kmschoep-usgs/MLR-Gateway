@@ -187,7 +187,7 @@
                     <include>**/application*.yml</include>
                     <include>**/application*.yaml</include>
                     <include>**/application*.properties</include>
-                    <include>static/index.html</include>
+                    <include>static/*</include>
                  </includes>
             </resource>
         </resources> 
