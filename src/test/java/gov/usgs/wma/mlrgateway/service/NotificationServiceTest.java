@@ -87,15 +87,16 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildRequestMapTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		
+		report.setName("TEST NOTIFICATION");
 		report.setNumberSiteFailure(0);
 		report.setNumberSiteSuccess(0);
 		List<String> recipientList = Arrays.asList("test-recipient");
 		String subject = "test-subject";
 		String user = "test-user";
+		report.setUserName(user);
 		String attachmentFileName = "test-d.file";
 		String expectedBody = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
-			"User:        report-user\n" +
+			"User:        test-user\n" +
 			"Workflow:    TEST NOTIFICATION\n" +
 			"Report Date: report-date-time\n" +
 			"Input File: " + DEFAULT_FILE_NAME + "\n" +
