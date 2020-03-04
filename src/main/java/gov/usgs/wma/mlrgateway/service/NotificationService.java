@@ -82,7 +82,8 @@ public class NotificationService {
 				environmentTier + " environment. The workflow output report is below.\n\n\n";
 		reportBody += "User:        " + user + "\n";
 		reportBody += "Workflow:    " + report.getName() + "\n";
-		reportBody += "Report Date: " + report.getReportDateTime() + "\n"; 		
+		reportBody += "Report Date: " + report.getReportDateTime() + "\n"; 
+		reportBody += "Input File: " + report.getInputFileName() + "\n";
 		reportBody += "The full, raw report output is attached.\n\n";
 		reportBody += buildErrorReport(report); 
 		
