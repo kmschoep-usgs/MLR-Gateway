@@ -44,16 +44,13 @@ public class NotificationServiceTest extends BaseSpringTest {
 	
 
 	private UserSummaryReport basicReport() {
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		
 		UserSummaryReport basicReport = new UserSummaryReport();
-		basicReport.setWorkflowSteps(workflowSteps);
+		basicReport.setWorkflowSteps(Arrays.asList());
 		basicReport.setName(DEFAULT_REPORT_NAME);
 		basicReport.setInputFileName(DEFAULT_FILE_NAME);
 		basicReport.setUserName(DEFAULT_USER_NAME);
 		basicReport.setReportDateTime(DEFAULT_REPORT_DATE);
-		basicReport.setSites(sites);
+		basicReport.setSites(Arrays.asList());
 		
 		return basicReport;
 	}
@@ -68,8 +65,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void happyPath() throws Exception {
 		ResponseEntity<String> emailResp = new ResponseEntity<>("test", HttpStatus.OK);
-		List<String> recipientList = new ArrayList<>();
-		recipientList.add("test");
+		List<String> recipientList = Arrays.asList("test");
 		given(notificationClient.sendEmail(anyString())).willReturn(emailResp);
 		UserSummaryReport report = basicReport();
 		report.setNumberSiteFailure(0);
@@ -118,8 +114,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteFailure(0);
 		report.setNumberSiteSuccess(0);
 		given(notificationClient.sendEmail(anyString())).willThrow(new RuntimeException());
-		List<String> recipientList = new ArrayList<>();
-		recipientList.add("test");
+		List<String> recipientList = Arrays.asList("test");
 		service.sendNotification(recipientList, "test", "test", "test", report);
 	}
 
@@ -143,13 +138,10 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyFailedExportTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
 		StepReport workflowStep = new StepReport("Complete Export Workflow", 404, false, "{\"error_message\": \"Requested Location Not Found\"}");
-		workflowSteps.add(workflowStep);
 		report.setName("Complete Export Workflow");
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList(workflowStep));
+		report.setSites(Arrays.asList());
 		
 		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
@@ -167,13 +159,10 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyParsingExportErrorExceptionTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
 		StepReport workflowStep = new StepReport("Complete Export Workflow", 404, false, "{\"bad error message\"}");
-		workflowSteps.add(workflowStep);
 		report.setName("Complete Export Workflow");
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList(workflowStep));
+		report.setSites(Arrays.asList());
 		
 		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
@@ -191,15 +180,11 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyFailedWorkflowTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
 		StepReport workflowFailureStep = new StepReport("Validate D dot File workflow failed", 404, false, "{\"error_message\": \"Unable to read ingestor output.\"}");
 		StepReport workflowErrorStep = new StepReport("Ingest D dot File", 400, false, "{\"error_message\":\"Contains lines with invalid site number format: lines 2, 3, 4, 5, 6, 7, 8, 9, 10, 11.\"}");
-		List<SiteReport> sites = new ArrayList<>();
-		workflowSteps.add(workflowFailureStep);
-		workflowSteps.add(workflowErrorStep);
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList(workflowFailureStep, workflowErrorStep));
+		report.setSites(Arrays.asList());
 		
 		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
@@ -220,17 +205,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyFailedDuplicateStationNameTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		List<StepReport> siteSteps = new ArrayList<>();
 		StepReport siteErrorStep = new StepReport("Validate Duplicate Monitoring Location Name", 406, false, "{\"error_message\":{\"stationIx\":\"Duplicate normalized station name locations found for 'GILBERTLAKESPRING4NESIDENRWESTBENDWI': USGS-432452088151501, stateFipsCode: 55\",\"duplicate_site\":\"Duplicate Agency Code and Site Number found in MLR.\"}}");
 		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
-		siteSteps.add(siteErrorStep);
-		siteReport.setSteps(siteSteps);
-		sites.add(siteReport);
+		siteReport.setSteps(Arrays.asList(siteErrorStep));
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList());
+		report.setSites(Arrays.asList(siteReport));
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
@@ -252,17 +232,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyParseSiteErrorMessageTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		List<StepReport> siteSteps = new ArrayList<>();
 		StepReport siteErrorStep = new StepReport("Validate Duplicate Monitoring Location Name", 406, false, "{\"error_message\":{\"stationIx\":\"Duplicate normalized station name locations found for site\",{\"badJsonObject\":\"Duplicate Agency Code and Site Number found in MLR.\"}}}");
 		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
-		siteSteps.add(siteErrorStep);
-		siteReport.setSteps(siteSteps);
-		sites.add(siteReport);
+		siteReport.setSteps(Arrays.asList(siteErrorStep));
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList());
+		report.setSites(Arrays.asList(siteReport));
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
@@ -283,17 +258,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyFailedOneValidationWarningTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		List<StepReport> siteSteps = new ArrayList<>();
 		StepReport siteErrorStep = new StepReport("Validate", 400, false, "{\"validator_message\": {\"warning_message\": {\"latitude\": [\"latitude warning 1\", \"Latitude warning 2\"]}}\n}");
 		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
-		siteSteps.add(siteErrorStep);
-		siteReport.setSteps(siteSteps);
-		sites.add(siteReport);
+		siteReport.setSteps(Arrays.asList(siteErrorStep));
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList());
+		report.setSites(Arrays.asList(siteReport));
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
@@ -314,17 +284,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyFailedMultipleValidationWarningTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		List<StepReport> siteSteps = new ArrayList<>();
 		StepReport siteErrorStep = new StepReport("Validate", 400, false, "{\"validator_message\": {\"warning_message\": {\"latitude\": [\"Latitude is out of range for county 067\"], \"longitude\": [\"Longitude is out of range for county 067\"]}}\n}");
 		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
-		siteSteps.add(siteErrorStep);
-		siteReport.setSteps(siteSteps);
-		sites.add(siteReport);
+		siteReport.setSteps(Arrays.asList(siteErrorStep));
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList());
+		report.setSites(Arrays.asList(siteReport));
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
@@ -345,17 +310,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyParseSiteWarningMessageTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		List<StepReport> siteSteps = new ArrayList<>();
 		StepReport siteErrorStep = new StepReport("Validate", 406, false, "{\"warning_message\":{\"stationIx\":\"Some warning stuff\",{\"badJsonObject\":\"Another warning\"}}}");
 		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
-		siteSteps.add(siteErrorStep);
-		siteReport.setSteps(siteSteps);
-		sites.add(siteReport);
+		siteReport.setSteps(Arrays.asList(siteErrorStep));
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList());
+		report.setSites(Arrays.asList(siteReport));
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
@@ -377,17 +337,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyFailedOneErrorTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		List<StepReport> siteSteps = new ArrayList<>();
 		StepReport siteErrorStep = new StepReport("Validate", 400, false, "{\"error_message\": \"this is an error\"}");
 		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
-		siteSteps.add(siteErrorStep);
-		siteReport.setSteps(siteSteps);
-		sites.add(siteReport);
+		siteReport.setSteps(Arrays.asList(siteErrorStep));
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList());
+		report.setSites(Arrays.asList(siteReport));
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
@@ -408,17 +363,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyFailedOneValidationErrorTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		List<StepReport> siteSteps = new ArrayList<>();
 		StepReport siteErrorStep = new StepReport("Validate", 400, false, "{\"validator_message\": {\"fatal_error_message\": {\"latitude\": [\"Invalid Degree/Minute/Second Value\", \"Latitude is out of range for state 55\"]}}\n}");
 		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
-		siteSteps.add(siteErrorStep);
-		siteReport.setSteps(siteSteps);
-		sites.add(siteReport);
+		siteReport.setSteps(Arrays.asList(siteErrorStep));
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList());
+		report.setSites(Arrays.asList(siteReport));
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
@@ -439,17 +389,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyFailedMultipleValidationErrorTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		List<StepReport> siteSteps = new ArrayList<>();
 		StepReport siteErrorStep = new StepReport("Validate", 400, false, "{\"validator_message\": {\"fatal_error_message\": {\"latitude\": [\"Invalid Degree/Minute/Second Value\", \"Latitude is out of range for state 55\"], \"longitude\": [\"Longitude is out of range for state 55\"]}}\n}");
 		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
-		siteSteps.add(siteErrorStep);
-		siteReport.setSteps(siteSteps);
-		sites.add(siteReport);
+		siteReport.setSteps(Arrays.asList(siteErrorStep));
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList());
+		report.setSites(Arrays.asList(siteReport));
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
@@ -471,17 +416,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyFailedValidationErrorWarningTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		List<StepReport> siteSteps = new ArrayList<>();
 		StepReport siteErrorStep = new StepReport("Validate", 400, false, "{\"validator_message\": {\"fatal_error_message\": {\"latitude\": [\"Invalid Degree/Minute/Second Value\", \"Latitude is out of range for state 55\"], \"longitude\": [\"Longitude is out of range for state 55\"]}, \"warning_message\": {\"latitude\": [\"Latitude is out of range for county 067\"], \"longitude\": [\"Longitude is out of range for county 067\"]}}\n}");
 		SiteReport siteReport = new SiteReport("USGS", "12345678    ");
-		siteSteps.add(siteErrorStep);
-		siteReport.setSteps(siteSteps);
-		sites.add(siteReport);
+		siteReport.setSteps(Arrays.asList(siteErrorStep));
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList());
+		report.setSites(Arrays.asList(siteReport));
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
@@ -505,23 +445,15 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyFailedTwoSitesOneValidationWarningErrorTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		List<StepReport> workflowSteps = new ArrayList<>();
-		List<SiteReport> sites = new ArrayList<>();
-		List<StepReport> siteWarningSteps = new ArrayList<>();
-		List<StepReport> siteErrorSteps = new ArrayList<>();
 		StepReport siteWarningStep = new StepReport("Validate", 400, false, "{\"validator_message\": {\"warning_message\": {\"latitude\": [\"latitude warning 1\", \"Latitude warning 2\"]}}\n}");
 		StepReport siteErrorStep = new StepReport("Validate", 400, false, "{\"validator_message\": {\"fatal_error_message\": {\"latitude\": [\"Invalid Degree/Minute/Second Value\", \"Latitude is out of range for state 55\"]}}\n}");
 		SiteReport siteReport1 = new SiteReport("USGS", "12345678    ");
 		SiteReport siteReport2 = new SiteReport("USGS", "12345679    ");
-		siteWarningSteps.add(siteWarningStep);
-		siteReport1.setSteps(siteWarningSteps);
-		siteErrorSteps.add(siteErrorStep);
-		siteReport2.setSteps(siteErrorSteps);
-		sites.add(siteReport1);
-		sites.add(siteReport2);
+		siteReport1.setSteps(Arrays.asList(siteWarningStep));
+		siteReport2.setSteps(Arrays.asList(siteErrorStep));
 		
-		report.setWorkflowSteps(workflowSteps);
-		report.setSites(sites);
+		report.setWorkflowSteps(Arrays.asList());
+		report.setSites(Arrays.asList(siteReport1, siteReport2));
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
