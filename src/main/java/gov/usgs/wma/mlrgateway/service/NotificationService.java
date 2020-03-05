@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 public class NotificationService {
 
 	private NotificationClient notificationClient;
-	private Logger log = LoggerFactory.getLogger(NotificationService.class);
+	private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 	
 	@Value("${environmentTier:}")
 	private String environmentTier;
@@ -86,7 +86,7 @@ public class NotificationService {
 		reportBody += "Input File: " + report.getInputFileName() + "\n";
 		reportBody += "The full, raw report output is attached.\n\n";
 		reportBody += buildErrorReport(report); 
-		
+		log.debug("Report Body:{}", reportBody);
 		return reportBody;
 	}
 
