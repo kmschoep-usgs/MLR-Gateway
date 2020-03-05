@@ -126,7 +126,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void buildMessageBodyTest() throws Exception {
 		UserSummaryReport report = basicReport();
-		
+		report.setName("TEST NOTIFICATION");
 		report.setNumberSiteFailure(0);
 		report.setNumberSiteSuccess(0);
 		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
