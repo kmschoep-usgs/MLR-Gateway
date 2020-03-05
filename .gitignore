@@ -1,3 +1,8 @@
+#Ignore Most Local Maven Caches
+/.m2/settings.xml
+/.m2/repository/*
+!/.m2/repository/.gitkeep
+
 /target/
 /.settings/
 /.classpath
