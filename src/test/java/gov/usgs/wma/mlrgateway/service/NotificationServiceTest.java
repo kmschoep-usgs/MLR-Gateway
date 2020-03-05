@@ -148,9 +148,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		StepReport workflowStep = new StepReport("Complete Export Workflow", 404, false, "{\"error_message\": \"Requested Location Not Found\"}");
 		workflowSteps.add(workflowStep);
 		report.setName("Complete Export Workflow");
-		
-		
-		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
 		
@@ -175,9 +172,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		StepReport workflowStep = new StepReport("Complete Export Workflow", 404, false, "{\"bad error message\"}");
 		workflowSteps.add(workflowStep);
 		report.setName("Complete Export Workflow");
-		
-		
-		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
 		
@@ -203,9 +197,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		List<SiteReport> sites = new ArrayList<>();
 		workflowSteps.add(workflowFailureStep);
 		workflowSteps.add(workflowErrorStep);
-		
-		
-		
 		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
@@ -237,9 +228,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		siteSteps.add(siteErrorStep);
 		siteReport.setSteps(siteSteps);
 		sites.add(siteReport);
-		
-		
-		
 		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
@@ -273,9 +261,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		siteReport.setSteps(siteSteps);
 		sites.add(siteReport);
 		
-		
-		
-		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
 		report.setNumberSiteSuccess(0);
@@ -306,9 +291,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		siteSteps.add(siteErrorStep);
 		siteReport.setSteps(siteSteps);
 		sites.add(siteReport);
-		
-		
-		
 		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
@@ -341,9 +323,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		siteReport.setSteps(siteSteps);
 		sites.add(siteReport);
 		
-		
-		
-		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
 		report.setNumberSiteSuccess(0);
@@ -374,9 +353,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		siteSteps.add(siteErrorStep);
 		siteReport.setSteps(siteSteps);
 		sites.add(siteReport);
-		
-		
-		
 		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
@@ -410,9 +386,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		siteReport.setSteps(siteSteps);
 		sites.add(siteReport);
 		
-		
-		
-		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
 		report.setNumberSiteSuccess(0);
@@ -443,9 +416,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		siteSteps.add(siteErrorStep);
 		siteReport.setSteps(siteSteps);
 		sites.add(siteReport);
-		
-		
-		
 		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
@@ -478,9 +448,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		siteReport.setSteps(siteSteps);
 		sites.add(siteReport);
 		
-		
-		
-		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
 		report.setNumberSiteSuccess(0);
@@ -512,9 +479,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		siteSteps.add(siteErrorStep);
 		siteReport.setSteps(siteSteps);
 		sites.add(siteReport);
-		
-		
-		
 		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
@@ -555,9 +519,6 @@ public class NotificationServiceTest extends BaseSpringTest {
 		siteReport2.setSteps(siteErrorSteps);
 		sites.add(siteReport1);
 		sites.add(siteReport2);
-		
-		
-		
 		
 		report.setWorkflowSteps(workflowSteps);
 		report.setSites(sites);
