@@ -20,6 +20,8 @@ RUN if getent ahosts "sslhelp.doi.net" > /dev/null 2>&1; then \
                 keytool -import -trustcacerts -file DOIRootCA.cer -alias DOIRootCA2.cer -keystore $JAVA_HOME/jre/lib/security/cacerts -noprompt -storepass changeit; \
         fi
 
+#copy the host's maven repository cache into the container
+COPY .m2/repository /root/.m2/repository
 
 COPY pom.xml /build/pom.xml
 WORKDIR /build
