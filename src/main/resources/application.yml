@@ -12,7 +12,6 @@ server:
 
 additionalNotificationRecipients: ${mlrgateway_additionalNotificationRecipients:}
 
-dbInitializerEnabled: true
 
 zuul:
   retryable: true
@@ -102,18 +101,3 @@ security:
       jwt:
         keyUri: ${oauthResourceTokenKeyUri}
   maintenanceRoles: ${maintenanceRoles:}
-
-spring:
-  profiles:
-    active: default, swagger
-  datasource:
-    url: ${dbConnectionUrl}
-    username: ${dbUsername}
-    password: ${dbPassword}
-  session:
-    store-type: jdbc
-    timeout: ${sessionTimeout:43200}
-    jdbc:
-      initializer:
-        enabled: ${dbInitializerEnabled:true}
-
