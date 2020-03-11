@@ -22,13 +22,9 @@ import org.slf4j.LoggerFactory;
 public class PreVerificationService {
 
 	private DdotClient ddotClient;
-	private Logger log = LoggerFactory.getLogger(PreVerificationService.class);
 
-	protected static final String STEP_NAME = "Ingest D dot File";
-	protected static final String SUCCESS_MESSAGE = "D dot file parsed successfully.";
 	protected static final String INTERNAL_ERROR_MESSAGE = "{\"error_message\": \"Unable to read ingestor output.\"}";
-	protected static final String WRONG_FORMAT_MESSAGE = "{\"error_message\":\"Only accepting files with one transaction at this time.\",\"data\":%ddotResponse%}";
-
+	
 	@Autowired
 	public PreVerificationService(DdotClient ddotClient) {
 		this.ddotClient = ddotClient;
@@ -44,7 +40,6 @@ public class PreVerificationService {
 			ddots = mapper.readValue(ddotResponse, mapType);
 		} catch (Exception e) {
 			int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-			log.error(STEP_NAME + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(status, null, INTERNAL_ERROR_MESSAGE);
 		}
 

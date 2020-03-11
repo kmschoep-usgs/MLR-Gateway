@@ -1,8 +1,6 @@
 package gov.usgs.wma.mlrgateway.controller;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
-import gov.usgs.wma.mlrgateway.ParsedDistrictCodes;
-import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.service.PreVerificationService;
 import gov.usgs.wma.mlrgateway.util.ConfigurationValues;
 import io.swagger.annotations.Api;
@@ -11,9 +9,10 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
@@ -64,33 +63,27 @@ public class UtilController extends BaseController {
 			@ApiResponse(code=401, message="Unauthorized"),
 			@ApiResponse(code=403, message="Forbidden")})
 	@PostMapping("/parse")
-	public ParsedDistrictCodes parseWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) throws IOException {
-		List<String> districtCodes = new ArrayList<>();
-		ParsedDistrictCodes parsedDistrictCodes = new ParsedDistrictCodes();
+	public Map<String, Set<String>> parseWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) throws IOException {
+		Map<String, Set<String>> parsedReturn = new HashMap<>();
 		try {
 			List<Map<String, Object>> ddots = preVerificationService.parseDdot(file);
 			
-			List<String> allDistrictCds = ddots.stream()
+			Set<String> districtCodes = ddots.stream()
 					.map(d -> d.get("districtCode").toString())
-					.collect( Collectors.toList() );
+					.collect( Collectors.toSet() );
 			
-			districtCodes = allDistrictCds.stream()
-					.distinct()
-					.collect( Collectors.toList() );
+			Set<String> transactionTypes = ddots.stream()
+					.map(d -> d.get("transactionType").toString())
+					.collect( Collectors.toSet() );
 			
-			parsedDistrictCodes.setDistrictCodes(districtCodes);
+			parsedReturn.put("districtCodes", districtCodes);
+			parsedReturn.put("transactionTypes", transactionTypes);
 			
 		} catch (Exception e) {
-			if (e instanceof FeignBadResponseWrapper) {
-				int status = ((FeignBadResponseWrapper) e).getStatus();
-				response.sendError(status, "DDot Ingester error, Parse Failed");
-				
-			} else {
-				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				response.sendError(status, "DDot Ingester error, Parse Failed");
-			}
+			int status = (e instanceof FeignBadResponseWrapper) ? ((FeignBadResponseWrapper) e).getStatus() : HttpStatus.SC_INTERNAL_SERVER_ERROR;
+			response.sendError(status, "DDot Ingester error, Parse Failed");
 		}
-		return parsedDistrictCodes;
+		return parsedReturn;
 	}
 }
 	

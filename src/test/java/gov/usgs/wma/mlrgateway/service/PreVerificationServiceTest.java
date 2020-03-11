@@ -119,6 +119,7 @@ public class PreVerificationServiceTest extends BaseSpringTest {
 		List<Map<String, Object>> lm = new ArrayList<>();
 		lm.add(getAddMultipleDistrictCodes("1234", "01"));
 		lm.add(getAddMultipleDistrictCodes("52346", "55"));
+		lm.add(getAddMultipleDistrictCodes("36806", "55"));
 		return lm;
 	}
 

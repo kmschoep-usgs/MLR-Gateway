@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
-import gov.usgs.wma.mlrgateway.ParsedDistrictCodes;
 import gov.usgs.wma.mlrgateway.service.PreVerificationService;
 import gov.usgs.wma.mlrgateway.service.PreVerificationServiceTest;
 
@@ -25,6 +24,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 @RunWith(SpringRunner.class)
@@ -48,10 +48,10 @@ public class UtilControllerTest extends BaseSpringTest {
 		List<Map<String, Object>> ddotRtn = PreVerificationServiceTest.multipleDistrictCodes();
 		given(preVerificationService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
 		 
-		ParsedDistrictCodes rtn = controller.parseWorkflow(file, response);
-		assertEquals(2, rtn.getDistrictCodes().size());
-		assertTrue(rtn.getDistrictCodes().contains("01"));
-		assertTrue(rtn.getDistrictCodes().contains("55"));
+		Map<String, Set<String>> rtn = controller.parseWorkflow(file, response);
+		assertEquals(2, rtn.get("districtCodes").size());
+		assertTrue(rtn.get("districtCodes").contains("01"));
+		assertTrue(rtn.get("districtCodes").contains("55"));
 		verify(preVerificationService).parseDdot(any(MultipartFile.class));
 	}
 
@@ -61,7 +61,7 @@ public class UtilControllerTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new FeignBadResponseWrapper(500, null, badText)).given(preVerificationService).parseDdot(any(MultipartFile.class));
 
-		ParsedDistrictCodes rtn = controller.parseWorkflow(file, response);
+		Map<String, Set<String>> rtn = controller.parseWorkflow(file, response);
 		
 		verify(preVerificationService).parseDdot(any(MultipartFile.class));
 	}

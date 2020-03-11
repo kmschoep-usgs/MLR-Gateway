@@ -1,6 +1,6 @@
 var reportUrl = null;
 var uploadRequest = false;
-var action = null;
+var doUpdate = null;
 var multipleDistrictCodeMsg = "Please be aware that you are adding or modifying sites in multiple district codes."
 
 function startLoading(headerText) {
@@ -142,8 +142,8 @@ function postDdot(url, responseHeader, success, error) {
 	}
 }
 
-function parseDdot(buttonAction) {
-	action = buttonAction;
+function parseDdot(doUpdateBoolean) {
+	doUpdate = doUpdateBoolean;
 	postDdot("util/parse", "Ddot Parse Response", preVerification, generalError);
 }
 function validateDdot() {
@@ -157,13 +157,16 @@ function uploadDdot() {
 function preVerification(response) {
 	stopLoading($('.mlr-response-header').text());
 	var districtCodes = response.districtCodes;
+	var confirmProceed;
 	if (districtCodes.length > 1) {
-		alert(multipleDistrictCodeMsg);
+		confirmProceed = confirm(multipleDistrictCodeMsg);
 	}
-	if (action === "validate"){
-		validateDdot();
-	} else if (action === "upload"){
-		uploadDdot();
+	if (confirmProceed) {
+		if (doUpdate){
+			uploadDdot();
+		} else {
+			validateDdot();
+		}
 	}
 }
 
