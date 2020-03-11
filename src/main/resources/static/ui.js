@@ -1,5 +1,7 @@
 var reportUrl = null;
 var uploadRequest = false;
+var doUpdate = null;
+var multipleDistrictCodeMsg = "Please be aware that you are adding or modifying sites in multiple district codes."
 
 function startLoading(headerText) {
 	//document
@@ -53,6 +55,8 @@ function generalError (response) {
 		if(response.hasOwnProperty("responseJSON")){
 			if(response.responseJSON.hasOwnProperty("error_message")) {
 				handleResponseText(response.responseJSON.error_message);
+			} else if(response.responseJSON.hasOwnProperty("error")) {
+				handleResponseText(response.responseJSON.message);
 			} else {
 			handleResponseJson(response.responseJSON);
 			}
@@ -138,12 +142,32 @@ function postDdot(url, responseHeader, success, error) {
 	}
 }
 
+function parseDdot(doUpdateBoolean) {
+	doUpdate = doUpdateBoolean;
+	postDdot("util/parse", "Ddot Parse Response", preVerification, generalError);
+}
 function validateDdot() {
 	postDdot("workflows/ddots/validate", "Ddot Validation Response", generalSuccess, generalError);
 }
 
 function uploadDdot() {
 	postDdot("workflows/ddots", "Ddot Validate and Update Response", generalSuccess, generalError);
+}
+
+function preVerification(response) {
+	stopLoading($('.mlr-response-header').text());
+	var districtCodes = response.districtCodes;
+	var confirmProceed;
+	if (districtCodes.length > 1) {
+		confirmProceed = confirm(multipleDistrictCodeMsg);
+	}
+	if (confirmProceed) {
+		if (doUpdate){
+			uploadDdot();
+		} else {
+			validateDdot();
+		}
+	}
 }
 
 function exportLocation() {

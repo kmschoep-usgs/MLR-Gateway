@@ -34,6 +34,7 @@ public class LegacyWorkflowService {
 	
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";
+	public static final String DISTRICT_CODE = "districtCode";
 	public static final String TRANSACTION_TYPE = "transactionType";
 	public static final String TRANSACTION_TYPE_ADD = "A";
 	public static final String TRANSACTION_TYPE_UPDATE = "M";
