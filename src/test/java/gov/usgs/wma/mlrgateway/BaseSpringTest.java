@@ -49,6 +49,15 @@ public class BaseSpringTest {
 		return m;
 	}
 	
+	public static Map<String, Object> getAddMultipleDistrictCodes(String siteNumber, String districtCode) {
+		Map<String, Object> m = new HashMap<>();
+		m.put(LegacyWorkflowService.TRANSACTION_TYPE, LegacyWorkflowService.TRANSACTION_TYPE_ADD);
+		m.put(LegacyWorkflowService.AGENCY_CODE, "USGS ");
+		m.put(LegacyWorkflowService.SITE_NUMBER, siteNumber);
+		m.put(LegacyWorkflowService.DISTRICT_CODE, districtCode);
+		return m;
+	}
+	
 	public static Map<String,Object> getUpdateValid() {
 		Map<String, Object> m = getUpdate();
 		Map<String, Object> validationMap = new HashMap<>();
