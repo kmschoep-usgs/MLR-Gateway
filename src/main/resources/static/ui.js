@@ -160,6 +160,8 @@ function preVerification(response) {
 	var confirmProceed;
 	if (districtCodes.length > 1) {
 		confirmProceed = confirm(multipleDistrictCodeMsg);
+	} else {
+		confirmProceed = true;
 	}
 	if (confirmProceed) {
 		if (doUpdate){
