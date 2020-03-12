@@ -1,7 +1,8 @@
 var reportUrl = null;
 var uploadRequest = false;
 var doUpdate = null;
-var multipleDistrictCodeMsg = "Please be aware that you are adding or modifying sites in multiple district codes."
+var multipleDistrictCodeMsg = "Please be aware that you are adding or modifying sites in multiple district codes.";
+var addSiteMsg = "Please coordinate with other LDMs if you are creating a site in another district code."
 
 function startLoading(headerText) {
 	//document
@@ -157,12 +158,14 @@ function uploadDdot() {
 function preVerification(response) {
 	stopLoading($('.mlr-response-header').text());
 	var districtCodes = response.districtCodes;
-	var confirmProceed;
+	var transactionTypes = response.transactionTypes;
+	var confirmProceed = true;
 	if (districtCodes.length > 1) {
 		confirmProceed = confirm(multipleDistrictCodeMsg);
-	} else {
-		confirmProceed = true;
-	}
+	} 
+	if (transactionTypes.includes("A")) {
+		confirmProceed = confirm(addSiteMsg);
+	} 
 	if (confirmProceed) {
 		if (doUpdate){
 			uploadDdot();
