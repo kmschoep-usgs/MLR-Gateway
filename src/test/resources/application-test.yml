@@ -1,75 +1,32 @@
-server:
-  port: ${serverPort:8443}
-  use-forward-headers: true
-  session:
-    timeout: ${sessionTimeout:43200}
-  ssl:
-    key-store: ${keystoreLocation}
-    key-store-password: ${keystorePassword}
-    key-password: ${keystorePassword}
-    key-alias: ${keystoreSSLKey:tomcat}
-    enabled-protocols: TLSv1.2
-
-additionalNotificationRecipients: ${mlrgateway_additionalNotificationRecipients:}
-
-
-zuul:
-  retryable: true
-  ribbonIsolationStrategy: SEMAPHORE
-  routes:
-    legacyCruBase:
-      path: /monitoringLocations**
-      serviceId: legacyCru
-      stripPrefix: false
-    legacyCruPlus:
-      path: /monitoringLocations/**
-      serviceId: legacyCru
-      stripPrefix: false
-
 ddot:
   ribbon:
-    listOfServers: ${mlrgateway_ddotServers:https://test.gov/test}
-    IsSecure: ${mlrgateway_ddotIsSecure:true}
+    listOfServers: https://test.gov/test
 
 legacyTransformer:
   ribbon:
-    listOfServers: ${mlrgateway_legacyTransformerServers:https://test.gov/test}
-    IsSecure: ${mlrgateway_legacyTransformerIsSecure:true}
+    listOfServers: https://test.gov/test
 
 legacyValidator:
   ribbon:
-    listOfServers: ${mlrgateway_legacyValidatorServers:https://test.gov/test}
-    IsSecure: ${mlrgateway_legacyValidatorIsSecure:true}
+    listOfServers: https://test.gov/test
 
 legacyCru:
   ribbon:
-    listOfServers: ${mlrgateway_legacyCruServers:https://test.gov/test}
-    IsSecure: ${mlrgateway_legacyCruIsSecure:true}
+    listOfServers: https://test.gov/test
 
 fileExport:
   ribbon:
-    listOfServers: ${mlrgateway_fileExportServers:https://test.gov/test}
-    IsSecure: ${mlrgateway_fileExportIsSecure:true}
+    listOfServers: https://test.gov/test
 
 notification:
   ribbon:
-    listOfServers: ${mlrgateway_notificationServers:https://test.gov/test}
-    IsSecure: ${mlrgateway_notificationIsSecure:true}
-
-eureka:
-  client:
-    enabled: false
-
-feign:
-  hystrix:
-    enabled: true
+    listOfServers: https://test.gov/test
 
 ribbon:
   MaxAutoRetries: 1
   MaxAutoRetriesNextServer: 0
   ConnectTimeout: 99999
   ReadTimeout: 99999
-  OkToRetryOnAllOperations: true
 
 hystrix:
   shareSecurityContext: true
@@ -81,15 +38,7 @@ hystrix:
           thread:
             timeoutInMilliseconds: 99999
 
-logging:
-  level:
-    org:
-      springframework: ${mlrgateway_springFrameworkLogLevel:DEBUG}
-
 security:
-  require-ssl: true
-  basic:
-    enabled: false
   maintenanceRoles: test_allowed
   oauth2:
     client:
@@ -102,3 +51,4 @@ security:
       jwt:
         keyValue: secret
 oauthResourceTokenKeyUri: 
+additionalNotificationRecipients: 

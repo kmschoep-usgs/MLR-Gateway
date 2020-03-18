@@ -84,7 +84,7 @@ hystrix:
 logging:
   level:
     org:
-      springframework: ${mlrgateway_springFrameworkLogLevel:DEBUG}
+      springframework: ${mlrgateway_springFrameworkLogLevel:INFO}
 
 security:
   require-ssl: true
