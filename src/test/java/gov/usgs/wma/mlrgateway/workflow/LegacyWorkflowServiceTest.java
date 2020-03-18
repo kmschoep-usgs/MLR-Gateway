@@ -1,6 +1,5 @@
 package gov.usgs.wma.mlrgateway.workflow;
 
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -8,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -67,7 +65,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		WorkflowController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void noTransactionType_completeWorkflow_thenReturnBadRequest() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
@@ -79,13 +76,13 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		GatewayReport rtn = WorkflowController.getReport();
 		
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService, never()).transformStationIx(anyMap(), anyObject());
-		verify(legacyValidatorService, never()).doValidation(anyMap(), anyBoolean(), anyObject());
-		verify(transformService, never()).transformGeo(anyMap(), anyObject());
-		verify(legacyCruService, never()).addTransaction(anyString(), anyString(), anyString(), anyObject());
-		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), anyObject());
-		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), anyObject());
-		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), anyString(), anyObject());
+		verify(transformService, never()).transformStationIx(anyMap(), any());
+		verify(legacyValidatorService, never()).doValidation(anyMap(), anyBoolean(), any());
+		verify(transformService, never()).transformGeo(anyMap(), any());
+		verify(legacyCruService, never()).addTransaction(anyString(), anyString(), anyString(), any());
+		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), any());
+		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), any());
+		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), anyString(), any());
 		assertEquals(rtn.getSites().get(0).isSuccess(), false);
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).isSuccess(), false);
 		assertNull(rtn.getSites().get(0).getTransactionType());
@@ -93,7 +90,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\": \"Validation failed due to a missing transaction type.\"}");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void noTransactionType_completeWorkflow_noStopOnError() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
@@ -101,28 +97,27 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getAdd();
 
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
-		given(transformService.transformStationIx(anyMap(), anyObject())).willReturn(ml);
-		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), anyObject())).willReturn(getAddValid());
-		given(transformService.transformGeo(anyMap(), anyObject())).willReturn(getAddValid());
+		given(transformService.transformStationIx(anyMap(), any())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willReturn(getAddValid());
+		given(transformService.transformGeo(anyMap(), any())).willReturn(getAddValid());
 
 		service.completeWorkflow(file);
 		
 		GatewayReport rtn = WorkflowController.getReport();
 
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService).transformStationIx(anyMap(), anyObject());
-		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), anyObject());
-		verify(transformService).transformGeo(anyMap(), anyObject());
-		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString(), anyObject());
-		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), anyObject());
-		verify(fileExportService).exportAdd(anyString(), anyString(), anyString(), anyObject());
-		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), anyString(), anyObject());
+		verify(transformService).transformStationIx(anyMap(), any());
+		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
+		verify(transformService).transformGeo(anyMap(), any());
+		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString(), any());
+		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), any());
+		verify(fileExportService).exportAdd(anyString(), anyString(), eq(null), any());
+		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), anyString(), any());
 		assertFalse(rtn.getSites().get(0).isSuccess());
 		assertFalse(rtn.getSites().get(0).getSteps().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "400");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void oneAddTransaction_completeWorkflow_thenReturnCreated() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
@@ -133,25 +128,24 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 
 		
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
-		given(transformService.transformStationIx(anyMap(), anyObject())).willReturn(ml);
-		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), anyObject())).willReturn(mlValid);
-		given(transformService.transformGeo(anyMap(), anyObject())).willReturn(mlValid);
+		given(transformService.transformStationIx(anyMap(), any())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willReturn(mlValid);
+		given(transformService.transformGeo(anyMap(), any())).willReturn(mlValid);
 		
 		service.completeWorkflow(file);
 		
 		GatewayReport rtn = WorkflowController.getReport();
 		
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService).transformStationIx(anyMap(), anyObject());
-		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), anyObject());
-		verify(transformService).transformGeo(anyMap(), anyObject());
-		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString(), anyObject());
-		verify(fileExportService).exportAdd(anyString(), anyString(), anyString(), anyObject());
+		verify(transformService).transformStationIx(anyMap(), any());
+		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
+		verify(transformService).transformGeo(anyMap(), any());
+		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString(), any());
+		verify(fileExportService).exportAdd(anyString(), anyString(), eq(null), any());
 		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_ADD);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void oneUpdateTransaction_completeWorkflow_thenReturnUpdated() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
@@ -162,24 +156,23 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 
 		
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(ddotRtn);
-		given(transformService.transformStationIx(anyMap(), anyObject())).willReturn(ml);
-		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), anyObject())).willReturn(mlValid);
-		given(transformService.transformGeo(anyMap(), anyObject())).willReturn(mlValid);
+		given(transformService.transformStationIx(anyMap(), any())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willReturn(mlValid);
+		given(transformService.transformGeo(anyMap(), any())).willReturn(mlValid);
 
 		service.completeWorkflow(file);
 		GatewayReport rtn = WorkflowController.getReport();
 		
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService).transformStationIx(anyMap(), anyObject());
-		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), anyObject());
-		verify(transformService).transformGeo(anyMap(), anyObject());
-		verify(legacyCruService).updateTransaction(anyString(), anyString(), anyString(), anyObject());
-		verify(fileExportService).exportUpdate(anyString(), anyString(), anyString(), anyObject());
+		verify(transformService).transformStationIx(anyMap(), any());
+		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
+		verify(transformService).transformGeo(anyMap(), any());
+		verify(legacyCruService).updateTransaction(anyString(), anyString(), anyString(), any());
+		verify(fileExportService).exportUpdate(anyString(), anyString(), eq(null), any());
 		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Test
 	public void ddotAddValidation_callsCorrectBackingServices() throws Exception {
 		
@@ -188,21 +181,20 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(DdotServiceTest.singleAdd());
-		given(transformService.transformStationIx(anyMap(), anyObject())).willReturn(ml);
-		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), anyObject())).willReturn(mlValid);
+		given(transformService.transformStationIx(anyMap(), any())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willReturn(mlValid);
 		
 		service.ddotValidation(file);
 		
 		GatewayReport rtn = WorkflowController.getReport();
 		
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService).transformStationIx(anyMap(), anyObject());
-		verify(legacyValidatorService).doValidation(anyMap(), eq(true), anyObject());
-		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(false), anyObject());
+		verify(transformService).transformStationIx(anyMap(), any());
+		verify(legacyValidatorService).doValidation(anyMap(), eq(true), any());
+		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(false), any());
 		assertTrue(rtn.getSites().get(0).isSuccess());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void ddotUpdateValidation_callsCorrectBackingServices() throws Exception {
 		Map<String, Object> ml = getUpdate();
@@ -210,27 +202,26 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(DdotServiceTest.singleUpdate());
-		given(transformService.transformStationIx(anyMap(), anyObject())).willReturn(ml);
-		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), anyObject())).willReturn(mlValid);
+		given(transformService.transformStationIx(anyMap(), any())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willReturn(mlValid);
 		
 		service.ddotValidation(file);
 		GatewayReport rtn = WorkflowController.getReport();
 
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(transformService).transformStationIx(anyMap(), anyObject());
-		verify(legacyValidatorService).doValidation(anyMap(), eq(false), anyObject());
-		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(true), anyObject());
+		verify(transformService).transformStationIx(anyMap(), any());
+		verify(legacyValidatorService).doValidation(anyMap(), eq(false), any());
+		verify(legacyValidatorService, never()).doValidation(anyMap(), eq(true), any());
 		assertTrue(rtn.getSites().get(0).isSuccess());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void ddotValidation_throwsException() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
 		given(ddotService.parseDdot(any(MultipartFile.class))).willReturn(DdotServiceTest.singleAdd());
-		given(transformService.transformStationIx(anyMap(), anyObject())).willReturn(getAdd());
-		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), anyObject())).willThrow(new RuntimeException());
+		given(transformService.transformStationIx(anyMap(), any())).willReturn(getAdd());
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willThrow(new RuntimeException());
 
 		service.ddotValidation(file);
 
@@ -243,6 +234,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\": \"null\"}");
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
-		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), anyObject());
+		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
 	}
 }

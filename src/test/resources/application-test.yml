@@ -28,32 +28,32 @@ zuul:
 
 ddot:
   ribbon:
-    listOfServers: ${mlrgateway_ddotServers}
+    listOfServers: ${mlrgateway_ddotServers:https://test.gov/test}
     IsSecure: ${mlrgateway_ddotIsSecure:true}
 
 legacyTransformer:
   ribbon:
-    listOfServers: ${mlrgateway_legacyTransformerServers}
+    listOfServers: ${mlrgateway_legacyTransformerServers:https://test.gov/test}
     IsSecure: ${mlrgateway_legacyTransformerIsSecure:true}
 
 legacyValidator:
   ribbon:
-    listOfServers: ${mlrgateway_legacyValidatorServers}
+    listOfServers: ${mlrgateway_legacyValidatorServers:https://test.gov/test}
     IsSecure: ${mlrgateway_legacyValidatorIsSecure:true}
 
 legacyCru:
   ribbon:
-    listOfServers: ${mlrgateway_legacyCruServers}
+    listOfServers: ${mlrgateway_legacyCruServers:https://test.gov/test}
     IsSecure: ${mlrgateway_legacyCruIsSecure:true}
 
 fileExport:
   ribbon:
-    listOfServers: ${mlrgateway_fileExportServers}
+    listOfServers: ${mlrgateway_fileExportServers:https://test.gov/test}
     IsSecure: ${mlrgateway_fileExportIsSecure:true}
 
 notification:
   ribbon:
-    listOfServers: ${mlrgateway_notificationServers}
+    listOfServers: ${mlrgateway_notificationServers:https://test.gov/test}
     IsSecure: ${mlrgateway_notificationIsSecure:true}
 
 eureka:
@@ -65,10 +65,10 @@ feign:
     enabled: true
 
 ribbon:
-  MaxAutoRetries: ${mlrgateway_ribbonMaxAutoRetries}
+  MaxAutoRetries: 1
   MaxAutoRetriesNextServer: 0
-  ConnectTimeout: ${mlrgateway_ribbonConnectTimeout}
-  ReadTimeout: ${mlrgateway_ribbonReadTimeout}
+  ConnectTimeout: 99999
+  ReadTimeout: 99999
   OkToRetryOnAllOperations: true
 
 hystrix:
@@ -79,7 +79,7 @@ hystrix:
         isolation:
           strategy: SEMAPHORE
           thread:
-            timeoutInMilliseconds: ${mlrgateway_hystrixThreadTimeout}
+            timeoutInMilliseconds: 99999
 
 logging:
   level:
@@ -90,14 +90,15 @@ security:
   require-ssl: true
   basic:
     enabled: false
+  maintenanceRoles: test_allowed
   oauth2:
     client:
-      clientId: ${oauthClientId}
-      clientSecret: ${oauthClientSecret}
-      accessTokenUri: ${oauthClientAccessTokenUri}
-      userAuthorizationUri: ${oauthClientAuthorizationUri}
+      clientId: test-client
+      clientSecret: test-secret
+      accessTokenUri: localhost
+      userAuthorizationUri: localhost
     resource:
-      id: ${oauthResourceId}
+      id: test-app
       jwt:
-        keyUri: ${oauthResourceTokenKeyUri}
-  maintenanceRoles: ${maintenanceRoles:}
+        keyValue: secret
+oauthResourceTokenKeyUri: 
