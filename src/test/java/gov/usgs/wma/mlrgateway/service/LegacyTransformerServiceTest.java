@@ -95,7 +95,7 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 
 		try {
-			Map<String, Object> rtn = service.transformGeo(addGeo(getAdd()), siteReport);
+			service.transformGeo(addGeo(getAdd()), siteReport);
 			fail("transformGeo did not throw an error");
 		} catch(FeignBadResponseWrapper e) {}
 		
@@ -137,7 +137,7 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
 		
 		try {
-			Map<String, Object> rtn = service.transformStationIx(addIX(getAdd()), siteReport);
+			service.transformStationIx(addIX(getAdd()), siteReport);
 			fail("transformStationIx did not throw an error");
 		} catch(FeignBadResponseWrapper e) {}
 		

@@ -2,9 +2,10 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -70,7 +71,6 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		ExportWorkflowController.setReport(new GatewayReport(ExportWorkflowController.COMPLETE_WORKFLOW, null, userName, reportDate));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void happyPath_ExportWorkflow() throws Exception {
 		when(authentication.getOAuth2Request()).thenReturn(mockOAuth2Request);
@@ -84,7 +84,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		assertEquals(rtn.getName(), ExportWorkflowController.COMPLETE_WORKFLOW);
 		
 		verify(export).exportWorkflow(anyString(), anyString());
-		verify(notificationService).sendNotification(anyList(), anyString(), anyString(), anyString(), anyObject());
+		verify(notificationService).sendNotification(anyList(), anyString(), eq(null), anyString(), any());
 	}
 
 	@Test
