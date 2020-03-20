@@ -1,5 +1,7 @@
 package gov.usgs.wma.mlrgateway.config;
 
+import java.nio.charset.StandardCharsets;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +20,7 @@ public class PropagateBadRequest {
 			int status = response.status();
 			StringBuilder body = new StringBuilder("{\"").append(methodKey).append("\": [");
 			try {
-				body.append(IOUtils.toString(response.body().asReader()));
+				body.append(IOUtils.toString(response.body().asReader(StandardCharsets.UTF_8)));
 			} catch (Exception ignored) {}
 			body.append("]}");
 			HttpHeaders httpHeaders = new HttpHeaders();
