@@ -12,6 +12,7 @@
         <additionalparam>-Xdoclint:none</additionalparam>
         <springfox.version>2.8.0</springfox.version>
         <wma.artifactory.url>https://cida.usgs.gov/artifactory</wma.artifactory.url>
+        <owasp.dependency.check.version>5.2.4</owasp.dependency.check.version>
     </properties>
 
     <parent>
@@ -40,7 +41,7 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Greenwich.SR5</version>
+                <version>Hoxton.SR3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -60,7 +61,7 @@
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-websocket</artifactId>
-                <version>9.0.30</version>
+                <version>9.0.31</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -104,12 +105,13 @@
         </dependency>
         <dependency>
             <groupId>io.github.openfeign.form</groupId>
-            <artifactId>feign-form-spring</artifactId>
-            <version>2.2.1</version>
+            <artifactId>feign-form</artifactId>
+            <version>3.8.0</version>
         </dependency>
         <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-httpclient</artifactId>
+            <groupId>io.github.openfeign.form</groupId>
+            <artifactId>feign-form-spring</artifactId>
+            <version>3.8.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.retry</groupId>
@@ -189,6 +191,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.2.5.RELEASE</version>
                 <executions>
                     <execution>
                         <goals>
@@ -221,6 +224,19 @@
                         <version>2.2.3</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>${owasp.dependency.check.version}</version>
+                <executions>
+                    <execution>
+                        <id>dependency-security-check</id>
+                        <configuration>
+                            <suppressionFile>dependency-check-suppression.xml</suppressionFile>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
