@@ -57,14 +57,17 @@ public class UpdatePrimaryKeyWorkflowService {
 		Map<String, Object> oldMonitoringLocation = new HashMap<>();
 		Map<String, Object> newMonitoringLocation = new HashMap<>();
 		Map<String, Object> transformedOldMonitoringLocation = new HashMap<>();
-		SiteReport siteReport = new SiteReport(oldAgencyCode, oldSiteNumber);
+		SiteReport oldSiteReport = new SiteReport(oldAgencyCode, oldSiteNumber);
+		SiteReport newSiteReport = new SiteReport(newAgencyCode, newSiteNumber);
+		oldSiteReport.setTransactionType("M");
+		newSiteReport.setTransactionType("A");
 	
 		LOG.trace("Start processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ");
 
 		try {
 			//1. Get old monitoring location
 			LOG.trace("Get old monitoring location");
-			oldMonitoringLocation = legacyCruService.getMonitoringLocation(oldAgencyCode, oldSiteNumber, false, siteReport);
+			oldMonitoringLocation = legacyCruService.getMonitoringLocation(oldAgencyCode, oldSiteNumber, false, oldSiteReport);
 
 			//2. Set new monitoring location
 			LOG.trace("Set new monitoring location");
@@ -76,37 +79,44 @@ public class UpdatePrimaryKeyWorkflowService {
 			
 			//4.replace station name and site web ready code for old site
 			oldMonitoringLocation.replace(SITE_WEB_READY_CODE, "L");
-			oldMonitoringLocation.replace(STATION_NAME, "DEPRECATED SITE: superceded by " + newAgencyCode + " and " + newSiteNumber + ".");
+			oldMonitoringLocation.replace(STATION_NAME, "DEPRECATED SITE: superceded by " + newAgencyCode.trim() + "-" + newSiteNumber.trim() + ".");
 			
 			//5. transform old site so STATIONIX gets generated.
 			LOG.trace("Transform old monitoring location");
-			transformedOldMonitoringLocation = transformService.transformStationIx(oldMonitoringLocation, siteReport);
+			transformedOldMonitoringLocation = transformService.transformStationIx(oldMonitoringLocation, oldSiteReport);
 			
 			//6. update old monitoring location
 			LOG.trace("update old monitoring location");
 			oldJson = mlToJson(transformedOldMonitoringLocation);
-			oldJson = legacyCruService.updateTransaction(transformedOldMonitoringLocation.get(AGENCY_CODE), transformedOldMonitoringLocation.get(SITE_NUMBER), oldJson, siteReport);
+			oldJson = legacyCruService.updateTransaction(transformedOldMonitoringLocation.get(AGENCY_CODE), transformedOldMonitoringLocation.get(SITE_NUMBER), oldJson, oldSiteReport);
 			
 			//7. add new monitoring location
 			LOG.trace("Add new monitoring location");
 			newJson = mlToJson(newMonitoringLocation);
-			newJson = legacyCruService.addTransaction(newMonitoringLocation.get(AGENCY_CODE), newMonitoringLocation.get(SITE_NUMBER), newJson, siteReport);
+			newJson = legacyCruService.addTransaction(newMonitoringLocation.get(AGENCY_CODE), newMonitoringLocation.get(SITE_NUMBER), newJson, newSiteReport);
 			
 			//8. export old and new sites.
 			LOG.trace("Export old and new monitoring locations");
-			fileExportService.exportUpdate(transformedOldMonitoringLocation.get(AGENCY_CODE).toString(), transformedOldMonitoringLocation.get(SITE_NUMBER).toString(), oldJson, siteReport);
-			fileExportService.exportAdd(newMonitoringLocation.get(AGENCY_CODE).toString(), newMonitoringLocation.get(SITE_NUMBER).toString(), newJson, siteReport);
+			fileExportService.exportUpdate(transformedOldMonitoringLocation.get(AGENCY_CODE).toString(), transformedOldMonitoringLocation.get(SITE_NUMBER).toString(), oldJson, oldSiteReport);
+			fileExportService.exportAdd(newMonitoringLocation.get(AGENCY_CODE).toString(), newMonitoringLocation.get(SITE_NUMBER).toString(), newJson, newSiteReport);
 
-			WorkflowController.addSiteReport(siteReport);
+			WorkflowController.addSiteReport(oldSiteReport);
+			WorkflowController.addSiteReport(newSiteReport);
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper){
 				LOG.debug("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);
-				siteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
-				WorkflowController.addSiteReport(siteReport);
+				oldSiteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
+				newSiteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
+
+				WorkflowController.addSiteReport(oldSiteReport);
+				WorkflowController.addSiteReport(newSiteReport);
 			} else {
 				LOG.error("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);
-				siteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
-				WorkflowController.addSiteReport(siteReport);
+				oldSiteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
+				newSiteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
+
+				WorkflowController.addSiteReport(oldSiteReport);
+				WorkflowController.addSiteReport(newSiteReport);
 			}
 		}
 		LOG.trace("End processing transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ");
