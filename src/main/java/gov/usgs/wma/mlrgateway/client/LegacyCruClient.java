@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name="legacyCru", decode404=true)
+import gov.usgs.wma.mlrgateway.config.PropagateBadRequest;
+
+@FeignClient(name="legacyCru", decode404=true, configuration = PropagateBadRequest.class)
 public interface LegacyCruClient {
 
 	@RequestMapping(method=RequestMethod.POST, value="monitoringLocations", consumes="application/json")
