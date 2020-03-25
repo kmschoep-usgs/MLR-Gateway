@@ -11,7 +11,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <additionalparam>-Xdoclint:none</additionalparam>
         <springfox.version>2.8.0</springfox.version>
-        <wma.artifactory.url>https://cida.usgs.gov/artifactory</wma.artifactory.url>
+        <wma.artifactory.url>https://artifactory.wma.usgs.gov/artifactory</wma.artifactory.url>
         <owasp.dependency.check.version>5.2.4</owasp.dependency.check.version>
     </properties>
 
@@ -25,7 +25,7 @@
         <repository>
             <id>wma-maven-centralized</id>
             <name>Water Mission Area Snapshots and Releases</name>
-            <url>https://cida.usgs.gov/artifactory/wma-maven-centralized</url>
+            <url>https://artifactory.wma.usgs.gov/artifactory/maven-central</url>
         </repository>
     </repositories>
 

@@ -3,9 +3,11 @@ package gov.usgs.wma.mlrgateway.workflow;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -24,7 +26,6 @@ import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import gov.usgs.wma.mlrgateway.service.LegacyTransformerService;
-import static org.mockito.Matchers.anyBoolean;
 
 @RunWith(SpringRunner.class)
 public class UpdatePrimaryKeyWorkflowServiceTest extends BaseSpringTest {
@@ -52,23 +53,22 @@ public class UpdatePrimaryKeyWorkflowServiceTest extends BaseSpringTest {
 		WorkflowController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void updatePrimaryKeyTransaction_completeWorkflow_thenReturnUpdated() throws Exception {
 		Map<String, Object> ml = getAdd();
 
-		given(transformService.transformStationIx(anyMap(), anyObject())).willReturn(ml);
-		given(legacyCruService.getMonitoringLocation(anyObject(), anyObject(), anyBoolean(), anyObject())).willReturn(ml);
+		given(transformService.transformStationIx(anyMap(), any())).willReturn(ml);
+		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(ml);
 		
 		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
 		
 		GatewayReport rtn = WorkflowController.getReport();
 		
-		verify(transformService).transformStationIx(anyMap(), anyObject());
-		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString(), anyObject());
-		verify(legacyCruService).updateTransaction(anyString(), anyString(), anyString(), anyObject());
-		verify(fileExportService).exportAdd(anyString(), anyString(), anyString(), anyObject());
-		verify(fileExportService).exportUpdate(anyString(), anyString(), anyString(), anyObject());
+		verify(transformService).transformStationIx(anyMap(), any());
+		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString(), any());
+		verify(legacyCruService).updateTransaction(anyString(), anyString(), anyString(), any());
+		verify(fileExportService).exportAdd(anyString(), anyString(), eq(null), any());
+		verify(fileExportService).exportUpdate(anyString(), anyString(), eq(null), any());
 		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(UpdatePrimaryKeyWorkflowService.TRANSACTION_TYPE_UPDATE, rtn.getSites().get(0).getTransactionType());
 		assertEquals(oldSiteNumber, rtn.getSites().get(0).getSiteNumber());
@@ -79,20 +79,19 @@ public class UpdatePrimaryKeyWorkflowServiceTest extends BaseSpringTest {
 		assertEquals(newAgencyCode, rtn.getSites().get(1).getAgencyCode());
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Test
 	public void updatePrimaryKeyWorkflow_siteDoesNotExist() throws Exception {
-		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(new HashMap<>());
-		given(transformService.transformStationIx(anyMap(), anyObject())).willReturn(new HashMap<>());
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), any())).willReturn(new HashMap<>());
+		given(transformService.transformStationIx(anyMap(), any())).willReturn(new HashMap<>());
 		
 		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
 		
-		verify(legacyCruService).getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject());
-		verify(transformService, never()).transformStationIx(anyMap(), anyObject());
-		verify(legacyCruService, never()).addTransaction(anyString(), anyString(), anyString(), anyObject());
-		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), anyObject());
-		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), anyObject());
-		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), anyObject());
+		verify(legacyCruService).getMonitoringLocation(anyString(), anyString(), anyBoolean(), any());
+		verify(transformService, never()).transformStationIx(anyMap(), any());
+		verify(legacyCruService, never()).addTransaction(anyString(), anyString(), anyString(), any());
+		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), any());
+		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), any());
+		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), any());
 	}
 
 }

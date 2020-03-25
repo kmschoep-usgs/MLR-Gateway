@@ -1,8 +1,8 @@
 package gov.usgs.wma.mlrgateway.controller;
 
 import static org.mockito.BDDMockito.willThrow;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -194,11 +194,10 @@ public class WorkflowControllerMVCTest {
 		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
 
-<<<<<<< HEAD
 	@Test
 	public void happyPathUpdatePrimaryKeyWorkflow() throws Exception {
 		String legacyJson = "{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
-				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"Unknown\","
+				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.set("oldAgencyCode", "USGS");
@@ -206,9 +205,10 @@ public class WorkflowControllerMVCTest {
 		params.set("oldSiteNumber", "123345");
 		params.set("newSiteNumber", "9999090");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
+				.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
 				.params(params))
 				.andExpect(status().isOk())
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(legacyJson));
 
 		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
@@ -217,7 +217,7 @@ public class WorkflowControllerMVCTest {
 	@Test
 	public void badResponse_UpdatePrimaryKeyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
-				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"Unknown\",\"workflowSteps\":[{\"name\":\"" 
+				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\",\"workflowSteps\":[{\"name\":\"" 
 				+ UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED + "\",\"httpStatus\":400,\"success\":false,\"details\":\"{\\\"error\\\": 123}\"}],"
 				+ "\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
@@ -228,9 +228,10 @@ public class WorkflowControllerMVCTest {
 		params.set("oldSiteNumber", "123345");
 		params.set("newSiteNumber", "9999090");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
+				.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
 				.params(params))
 				.andExpect(status().isBadRequest())
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
 		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
@@ -239,7 +240,7 @@ public class WorkflowControllerMVCTest {
 	@Test
 	public void serverError_UpdatePrimaryKeyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
-				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"Unknown\","
+				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED + "\",\"httpStatus\":500,"
 				+  "\"success\":false,\"details\":\"wow 456\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new RuntimeException("wow 456")).given(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
@@ -250,13 +251,15 @@ public class WorkflowControllerMVCTest {
 		params.set("oldSiteNumber", "123345");
 		params.set("newSiteNumber", "9999090");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
+				.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
 				.params(params))
 				.andExpect(status().isInternalServerError())
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
 		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
-=======
+	}
+	
 	public HttpHeaders getAuthHeaders(String username, String email, String ... roles) throws UnsupportedEncodingException {
 		HttpHeaders headers = new HttpHeaders();
 		String jwtToken = JWT.create()
@@ -266,6 +269,5 @@ public class WorkflowControllerMVCTest {
 			.sign(Algorithm.HMAC256("secret"));
 		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
 		return headers;
->>>>>>> 6aa81298e93f23083ac33210d7562dd5dd335f91
 	}
 }
