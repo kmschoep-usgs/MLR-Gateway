@@ -60,9 +60,7 @@ public class UtilControllerTest extends BaseSpringTest {
 		String badText = "This is really bad.";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new FeignBadResponseWrapper(500, null, badText)).given(preVerificationService).parseDdot(any(MultipartFile.class));
-
-		Map<String, Set<String>> rtn = controller.parseWorkflow(file, response);
-		
+		controller.parseWorkflow(file, response);
 		verify(preVerificationService).parseDdot(any(MultipartFile.class));
 	}
 

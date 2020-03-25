@@ -1,0 +1,54 @@
+ddot:
+  ribbon:
+    listOfServers: https://test.gov/test
+
+legacyTransformer:
+  ribbon:
+    listOfServers: https://test.gov/test
+
+legacyValidator:
+  ribbon:
+    listOfServers: https://test.gov/test
+
+legacyCru:
+  ribbon:
+    listOfServers: https://test.gov/test
+
+fileExport:
+  ribbon:
+    listOfServers: https://test.gov/test
+
+notification:
+  ribbon:
+    listOfServers: https://test.gov/test
+
+ribbon:
+  MaxAutoRetries: 1
+  MaxAutoRetriesNextServer: 0
+  ConnectTimeout: 99999
+  ReadTimeout: 99999
+
+hystrix:
+  shareSecurityContext: true
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: SEMAPHORE
+          thread:
+            timeoutInMilliseconds: 99999
+
+security:
+  maintenanceRoles: test_allowed
+  oauth2:
+    client:
+      clientId: test-client
+      clientSecret: test-secret
+      accessTokenUri: localhost
+      userAuthorizationUri: localhost
+    resource:
+      id: test-app
+      jwt:
+        keyValue: secret
+oauthResourceTokenKeyUri: 
+additionalNotificationRecipients: 

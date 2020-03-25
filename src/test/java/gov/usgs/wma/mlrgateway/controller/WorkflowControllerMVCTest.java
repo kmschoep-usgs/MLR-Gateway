@@ -8,9 +8,13 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.UnsupportedEncodingException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -18,12 +22,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -40,8 +46,9 @@ import gov.usgs.wma.mlrgateway.workflow.UpdatePrimaryKeyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(WorkflowController.class)
-@AutoConfigureMockMvc(secure=false)
+@SpringBootTest
+@AutoConfigureMockMvc()
+@ActiveProfiles("test")
 public class WorkflowControllerMVCTest {
 
 	@Autowired
@@ -88,12 +95,13 @@ public class WorkflowControllerMVCTest {
 	@Test
 	public void happyPathLegacyWorkflow() throws Exception {
 		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
-				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"Unknown\","
+				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
-		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots")
-				.file(file))
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file)
+					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
+				)
 				.andExpect(status().isOk())
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(legacyJson));
 
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
@@ -102,15 +110,16 @@ public class WorkflowControllerMVCTest {
 	@Test
 	public void badResponse_LegacyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
-				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"Unknown\",\"workflowSteps\":[{\"name\":\"" 
+				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\",\"workflowSteps\":[{\"name\":\"" 
 				+ LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED + "\",\"httpStatus\":400,\"success\":false,\"details\":\"{\\\"error\\\": 123}\"}],"
 				+ "\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).completeWorkflow(any(MultipartFile.class));
 
-		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots")
-				.file(file))
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file)
+					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
+				)
 				.andExpect(status().isBadRequest())
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
@@ -119,15 +128,16 @@ public class WorkflowControllerMVCTest {
 	@Test
 	public void serverError_LegacyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
-				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"Unknown\","
+				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED + "\",\"httpStatus\":500,"
 				+  "\"success\":false,\"details\":\"wow 456\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new RuntimeException("wow 456")).given(legacy).completeWorkflow(any(MultipartFile.class));
 
-		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots")
-				.file(file))
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file)
+					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
+				)
 				.andExpect(status().isInternalServerError())
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
@@ -136,12 +146,13 @@ public class WorkflowControllerMVCTest {
 	@Test
 	public void happyPathLegacyValidationWorkflow() throws Exception {
 		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
-				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"Unknown\","
+				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
-		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots/validate")
-				.file(file))
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file)
+					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
+				)
 				.andExpect(status().isOk())
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(legacyJson));
 
 		verify(legacy).ddotValidation(any(MultipartFile.class));
@@ -150,15 +161,16 @@ public class WorkflowControllerMVCTest {
 	@Test
 	public void badDdot_LegacyValidationWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
-				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"Unknown\","
+				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED + "\",\"httpStatus\":400,"
 				+ "\"success\":false,\"details\":\"{\\\"error\\\": 123}\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).ddotValidation(any(MultipartFile.class));
 
-		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots/validate")
-				.file(file))
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file)
+					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
+				)
 				.andExpect(status().isBadRequest())
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
 		verify(legacy).ddotValidation(any(MultipartFile.class));
@@ -167,20 +179,22 @@ public class WorkflowControllerMVCTest {
 	@Test
 	public void serverError_LegacyValidationWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
-				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"Unknown\","
+				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED + "\",\"httpStatus\":500,"
 				+ "\"success\":false,\"details\":\"wow 456\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new RuntimeException("wow 456")).given(legacy).ddotValidation(any(MultipartFile.class));
 
-		mvc.perform(MockMvcRequestBuilders.fileUpload("/workflows/ddots/validate")
-				.file(file))
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file)
+					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
+				)
 				.andExpect(status().isInternalServerError())
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
 		verify(legacy).ddotValidation(any(MultipartFile.class));
 	}
 
+<<<<<<< HEAD
 	@Test
 	public void happyPathUpdatePrimaryKeyWorkflow() throws Exception {
 		String legacyJson = "{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
@@ -242,5 +256,16 @@ public class WorkflowControllerMVCTest {
 				.andExpect(content().string(badJson));
 
 		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+=======
+	public HttpHeaders getAuthHeaders(String username, String email, String ... roles) throws UnsupportedEncodingException {
+		HttpHeaders headers = new HttpHeaders();
+		String jwtToken = JWT.create()
+			.withClaim("user_name", username)
+			.withClaim("email", email)
+			.withArrayClaim("authorities", roles)
+			.sign(Algorithm.HMAC256("secret"));
+		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
+		return headers;
+>>>>>>> 6aa81298e93f23083ac33210d7562dd5dd335f91
 	}
 }

@@ -1,9 +1,4 @@
-FROM maven@sha256:b37da91062d450f3c11c619187f0207bbb497fc89d265a46bbc6dc5f17c02a2b AS build
-# The above is a temporary fix
-# See:
-# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=911925
-# https://github.com/carlossg/docker-maven/issues/92
-# FROM maven:3-jdk-8-slim AS build
+FROM maven:3.6.0-jdk-8-alpine AS build
 
 #Pass build args into env vars
 ARG CI
@@ -31,7 +26,7 @@ RUN mvn -B dependency:go-offline
 
 # copy git history into build image so that sonar can report trends over time
 COPY .git /build
-
+COPY dependency-check-suppression.xml /build/dependency-check-suppression.xml
 COPY src /build/src
 
 # the -D option supresses INFO-level logs about dependency downloads. This enables the build to finish within Travis' log length limit.
@@ -62,8 +57,6 @@ ENV oauthClientAuthorizationUri=https://example.gov/oauth/authorize
 ENV oauthResourceTokenKeyUri=https://example.gov/oauth/token_key
 ENV oauthResourceId=resource-id
 ENV HEALTHY_RESPONSE_CONTAINS='{"status":"UP"}'
+ENV HEALTH_CHECK_ENDPOINT=actuator/health
 
 COPY --chown=1000:1000 --from=build /build/target/*.jar app.jar
-
-HEALTHCHECK --interval=30s --timeout=3s \
-  CMD curl -k "https://127.0.0.1:${serverPort}${serverContextPath}${HEALTH_CHECK_ENDPOINT}" | grep -q ${HEALTHY_RESPONSE_CONTAINS} || exit 1

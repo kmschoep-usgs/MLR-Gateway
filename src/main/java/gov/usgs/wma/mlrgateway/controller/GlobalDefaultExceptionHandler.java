@@ -7,8 +7,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.tomcat.util.http.fileupload.FileUploadBase.FileSizeLimitExceededException;
-import org.apache.tomcat.util.http.fileupload.FileUploadBase.SizeLimitExceededException;
+import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
+import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,7 +55,8 @@ public class GlobalDefaultExceptionHandler {
 			}
 		} else if (ex instanceof MultipartException && 
 			(
-				((MultipartException)ex).getRootCause() instanceof FileSizeLimitExceededException || 
+				((MultipartException)ex).getRootCause() instanceof FileSizeLimitExceededException
+						|| 
 				((MultipartException)ex).getRootCause() instanceof SizeLimitExceededException
 			)
 		) {
