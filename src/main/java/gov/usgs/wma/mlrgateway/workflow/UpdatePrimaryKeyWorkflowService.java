@@ -68,40 +68,42 @@ public class UpdatePrimaryKeyWorkflowService {
 			//1. Get old monitoring location
 			LOG.trace("Get old monitoring location");
 			oldMonitoringLocation = legacyCruService.getMonitoringLocation(oldAgencyCode, oldSiteNumber, false, oldSiteReport);
-
-			//2. Set new monitoring location
-			LOG.trace("Set new monitoring location");
-			newMonitoringLocation = oldMonitoringLocation;
 			
-			//3.update new monitoring location with new AgencyCode and/or SiteNumber
-			newMonitoringLocation.replace(AGENCY_CODE, oldMonitoringLocation.get(AGENCY_CODE));
-			newMonitoringLocation.replace(SITE_NUMBER, oldMonitoringLocation.get(SITE_NUMBER));
-			
-			//4.replace station name and site web ready code for old site
-			oldMonitoringLocation.replace(SITE_WEB_READY_CODE, "L");
-			oldMonitoringLocation.replace(STATION_NAME, "DEPRECATED SITE: superceded by " + newAgencyCode.trim() + "-" + newSiteNumber.trim() + ".");
-			
-			//5. transform old site so STATIONIX gets generated.
-			LOG.trace("Transform old monitoring location");
-			transformedOldMonitoringLocation = transformService.transformStationIx(oldMonitoringLocation, oldSiteReport);
-			
-			//6. update old monitoring location
-			LOG.trace("update old monitoring location");
-			oldJson = mlToJson(transformedOldMonitoringLocation);
-			oldJson = legacyCruService.updateTransaction(transformedOldMonitoringLocation.get(AGENCY_CODE), transformedOldMonitoringLocation.get(SITE_NUMBER), oldJson, oldSiteReport);
-			
-			//7. add new monitoring location
-			LOG.trace("Add new monitoring location");
-			newJson = mlToJson(newMonitoringLocation);
-			newJson = legacyCruService.addTransaction(newMonitoringLocation.get(AGENCY_CODE), newMonitoringLocation.get(SITE_NUMBER), newJson, newSiteReport);
-			
-			//8. export old and new sites.
-			LOG.trace("Export old and new monitoring locations");
-			fileExportService.exportUpdate(transformedOldMonitoringLocation.get(AGENCY_CODE).toString(), transformedOldMonitoringLocation.get(SITE_NUMBER).toString(), oldJson, oldSiteReport);
-			fileExportService.exportAdd(newMonitoringLocation.get(AGENCY_CODE).toString(), newMonitoringLocation.get(SITE_NUMBER).toString(), newJson, newSiteReport);
-
-			WorkflowController.addSiteReport(oldSiteReport);
-			WorkflowController.addSiteReport(newSiteReport);
+			if (!oldMonitoringLocation.isEmpty()) {
+				//2. Set new monitoring location
+				LOG.trace("Set new monitoring location");
+				newMonitoringLocation = oldMonitoringLocation;
+				
+				//3.update new monitoring location with new AgencyCode and/or SiteNumber
+				newMonitoringLocation.replace(AGENCY_CODE, oldMonitoringLocation.get(AGENCY_CODE));
+				newMonitoringLocation.replace(SITE_NUMBER, oldMonitoringLocation.get(SITE_NUMBER));
+				
+				//4.replace station name and site web ready code for old site
+				oldMonitoringLocation.replace(SITE_WEB_READY_CODE, "L");
+				oldMonitoringLocation.replace(STATION_NAME, "DEPRECATED SITE: superceded by " + newAgencyCode.trim() + "-" + newSiteNumber.trim() + ".");
+				
+				//5. transform old site so STATIONIX gets generated.
+				LOG.trace("Transform old monitoring location");
+				transformedOldMonitoringLocation = transformService.transformStationIx(oldMonitoringLocation, oldSiteReport);
+				
+				//6. update old monitoring location
+				LOG.trace("update old monitoring location");
+				oldJson = mlToJson(transformedOldMonitoringLocation);
+				oldJson = legacyCruService.updateTransaction(transformedOldMonitoringLocation.get(AGENCY_CODE), transformedOldMonitoringLocation.get(SITE_NUMBER), oldJson, oldSiteReport);
+				
+				//7. add new monitoring location
+				LOG.trace("Add new monitoring location");
+				newJson = mlToJson(newMonitoringLocation);
+				newJson = legacyCruService.addTransaction(newMonitoringLocation.get(AGENCY_CODE), newMonitoringLocation.get(SITE_NUMBER), newJson, newSiteReport);
+				
+				//8. export old and new sites.
+				LOG.trace("Export old and new monitoring locations");
+				fileExportService.exportUpdate(transformedOldMonitoringLocation.get(AGENCY_CODE).toString(), transformedOldMonitoringLocation.get(SITE_NUMBER).toString(), oldJson, oldSiteReport);
+				fileExportService.exportAdd(newMonitoringLocation.get(AGENCY_CODE).toString(), newMonitoringLocation.get(SITE_NUMBER).toString(), newJson, newSiteReport);
+	
+				WorkflowController.addSiteReport(oldSiteReport);
+				WorkflowController.addSiteReport(newSiteReport);
+			}
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper){
 				LOG.debug("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);

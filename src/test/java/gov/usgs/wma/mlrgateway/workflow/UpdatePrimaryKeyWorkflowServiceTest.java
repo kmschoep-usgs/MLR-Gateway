@@ -6,8 +6,10 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Before;
@@ -75,6 +77,22 @@ public class UpdatePrimaryKeyWorkflowServiceTest extends BaseSpringTest {
 		assertEquals(UpdatePrimaryKeyWorkflowService.TRANSACTION_TYPE_ADD, rtn.getSites().get(1).getTransactionType());
 		assertEquals(newSiteNumber, rtn.getSites().get(1).getSiteNumber());
 		assertEquals(newAgencyCode, rtn.getSites().get(1).getAgencyCode());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void updatePrimaryKeyWorkflow_siteDoesNotExist() throws Exception {
+		given(legacyCruService.getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject())).willReturn(new HashMap<>());
+		given(transformService.transformStationIx(anyMap(), anyObject())).willReturn(new HashMap<>());
+		
+		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+		
+		verify(legacyCruService).getMonitoringLocation(anyString(), anyString(), anyBoolean(), anyObject());
+		verify(transformService, never()).transformStationIx(anyMap(), anyObject());
+		verify(legacyCruService, never()).addTransaction(anyString(), anyString(), anyString(), anyObject());
+		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), anyObject());
+		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), anyObject());
+		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), anyObject());
 	}
 
 }
