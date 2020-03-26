@@ -19,11 +19,13 @@ import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import gov.usgs.wma.mlrgateway.service.LegacyTransformerService;
+import gov.usgs.wma.mlrgateway.service.LegacyValidatorService;
 
 @Service
 public class UpdatePrimaryKeyWorkflowService {
 	private static final Logger LOG = LoggerFactory.getLogger(UpdatePrimaryKeyWorkflowService.class);
 	private LegacyCruService legacyCruService;
+	private LegacyValidatorService legacyValidatorService;
 	private LegacyTransformerService transformService;
 	private FileExportService fileExportService;
 	
@@ -45,8 +47,9 @@ public class UpdatePrimaryKeyWorkflowService {
 	public static final String PRIMARY_KEY_UPDATE_TRANSACTION_STEP = "Update Agency Code and/or Site Number";
 
 	@Autowired
-	public UpdatePrimaryKeyWorkflowService(LegacyCruService legacyCruService, LegacyTransformerService transformService, FileExportService fileExportService) {
+	public UpdatePrimaryKeyWorkflowService(LegacyCruService legacyCruService, LegacyValidatorService legacyValidatorService, LegacyTransformerService transformService, FileExportService fileExportService) {
 		this.legacyCruService = legacyCruService;
+		this.legacyValidatorService = legacyValidatorService;
 		this.transformService = transformService;
 		this.fileExportService = fileExportService;
 	}
@@ -74,17 +77,19 @@ public class UpdatePrimaryKeyWorkflowService {
 				LOG.trace("Set new monitoring location");
 				newMonitoringLocation = oldMonitoringLocation;
 				
-				//3.update new monitoring location with new AgencyCode and/or SiteNumber
+				//3.update new monitoring location with new AgencyCode and/or SiteNumber and validate
 				newMonitoringLocation.replace(AGENCY_CODE, oldMonitoringLocation.get(AGENCY_CODE));
 				newMonitoringLocation.replace(SITE_NUMBER, oldMonitoringLocation.get(SITE_NUMBER));
+				newMonitoringLocation = legacyValidatorService.doValidation(newMonitoringLocation, true, newSiteReport);
 				
 				//4.replace station name and site web ready code for old site
 				oldMonitoringLocation.replace(SITE_WEB_READY_CODE, "L");
 				oldMonitoringLocation.replace(STATION_NAME, "DEPRECATED SITE: superceded by " + newAgencyCode.trim() + "-" + newSiteNumber.trim() + ".");
 				
-				//5. transform old site so STATIONIX gets generated.
+				//5. transform old site so STATIONIX gets generated, then validate.
 				LOG.trace("Transform old monitoring location");
 				transformedOldMonitoringLocation = transformService.transformStationIx(oldMonitoringLocation, oldSiteReport);
+				transformedOldMonitoringLocation = legacyValidatorService.doValidation(transformedOldMonitoringLocation, false, oldSiteReport);
 				
 				//6. update old monitoring location
 				LOG.trace("update old monitoring location");
