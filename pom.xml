@@ -23,11 +23,14 @@
     
     <repositories>
         <repository>
+<<<<<<< HEAD
             <id>wma-maven-centralized</id>
             <name>Water Mission Area Snapshots and Releases</name>
             <url>https://artifactory.wma.usgs.gov/artifactory/wma-maven</url>
         </repository>
         <repository>
+=======
+>>>>>>> df9132c39ee02d79faed49c29259d282c8dadc21
             <id>eros-artifactory-wma-maven-releases</id>
             <name>EROS Artifactory CHS Mirror</name>
             <url>https://artifactory.wma.usgs.gov/artifactory/eros-artifactory-wma-maven-releases</url>
@@ -107,6 +110,11 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-oauth2</artifactId>
+        </dependency>
+        <dependency>
+            <!-- Required to use PATCH -->
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-httpclient</artifactId>
         </dependency>
         <dependency>
             <groupId>io.github.openfeign.form</groupId>

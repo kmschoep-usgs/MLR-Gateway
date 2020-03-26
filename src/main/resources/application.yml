@@ -16,6 +16,7 @@ additionalNotificationRecipients: ${mlrgateway_additionalNotificationRecipients:
 zuul:
   retryable: true
   ribbonIsolationStrategy: SEMAPHORE
+  sensitiveHeaders: 
   routes:
     legacyCruBase:
       path: /monitoringLocations**
