@@ -56,6 +56,26 @@ public class UtilController extends BaseController {
 		
 		return null;
 	}
+
+	@ApiOperation(value="Return the user to the new UI, logged in.")
+	@ApiResponses(value={@ApiResponse(code=200, message="OK"),
+			@ApiResponse(code=400, message="Bad Request"),
+			@ApiResponse(code=401, message="Unauthorized"),
+			@ApiResponse(code=403, message="Forbidden"),
+			@ApiResponse(code=404, message="Not Found")})
+	@GetMapping("/login")
+	public void login(HttpServletResponse response) {
+		if(environmentTier != null && !environmentTier.equals(ConfigurationValues.ENVIRONMENT_PRODUCTION)) {
+			if(SecurityContextHolder.getContext().getAuthentication() != null){
+				try {
+					response.sendRedirect(uiDomainName + "?mlrAccessToken=" + ((OAuth2AuthenticationDetails) ((OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication()).getDetails()).getTokenValue());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
 	
 	@ApiOperation(value="Parse ddot file and return the list of district codes")
 	@ApiResponses(value={@ApiResponse(code=200, message="OK"),
