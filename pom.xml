@@ -10,8 +10,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <additionalparam>-Xdoclint:none</additionalparam>
-        <springfox.version>2.8.0</springfox.version>
-        <wma.artifactory.url>https://artifactory.wma.usgs.gov/artifactory</wma.artifactory.url>
+        <springdoc.version>1.2.32</springdoc.version>
+        <wma.artifactory.url>https://artifactory.wma.chs.usgs.gov/artifactory</wma.artifactory.url>
         <owasp.dependency.check.version>5.2.4</owasp.dependency.check.version>
     </properties>
 
@@ -22,15 +22,20 @@
     </parent>
     
     <repositories>
-        <repository>
+         <repository>
             <id>wma-maven-centralized</id>
             <name>Water Mission Area Snapshots and Releases</name>
-            <url>https://artifactory.wma.usgs.gov/artifactory/wma-maven</url>
+            <url>https://artifactory.wma.chs.usgs.gov/artifactory/wma-maven</url>
         </repository>
         <repository>
             <id>eros-artifactory-wma-maven-releases</id>
             <name>EROS Artifactory CHS Mirror</name>
-            <url>https://artifactory.wma.usgs.gov/artifactory/eros-artifactory-wma-maven-releases</url>
+            <url>https://artifactory.wma.chs.usgs.gov/artifactory/eros-artifactory-wma-maven-releases</url>
+        </repository>
+        <repository>
+            <id>maven-centralized</id>
+            <name>Maven Snapshots and Releases</name>
+            <url>https://artifactory.wma.chs.usgs.gov/artifactory/maven-central</url>
         </repository>
     </repositories>
 
@@ -127,14 +132,9 @@
             <artifactId>spring-retry</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox.version}</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

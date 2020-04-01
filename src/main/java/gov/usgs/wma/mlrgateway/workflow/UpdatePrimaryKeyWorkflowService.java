@@ -75,16 +75,16 @@ public class UpdatePrimaryKeyWorkflowService {
 			if (!oldMonitoringLocation.isEmpty()) {
 				//2. Set new monitoring location
 				LOG.trace("Set new monitoring location");
-				newMonitoringLocation = oldMonitoringLocation;
+				newMonitoringLocation.putAll(oldMonitoringLocation);
 				
 				//3.update new monitoring location with new AgencyCode and/or SiteNumber and validate
-				newMonitoringLocation.replace(AGENCY_CODE, oldMonitoringLocation.get(AGENCY_CODE));
-				newMonitoringLocation.replace(SITE_NUMBER, oldMonitoringLocation.get(SITE_NUMBER));
+				newMonitoringLocation = createNewMonitoringLocation(newMonitoringLocation, newAgencyCode, newSiteNumber);
 				newMonitoringLocation = legacyValidatorService.doValidation(newMonitoringLocation, true, newSiteReport);
 				
 				//4.replace station name and site web ready code for old site
+				oldMonitoringLocation.put(TRANSACTION_TYPE, "M");
 				oldMonitoringLocation.replace(SITE_WEB_READY_CODE, "L");
-				oldMonitoringLocation.replace(STATION_NAME, "DEPRECATED SITE: superceded by " + newAgencyCode.trim() + "-" + newSiteNumber.trim() + ".");
+				oldMonitoringLocation.replace(STATION_NAME, "DEPRECATED SITE: superceded by " + newAgencyCode.trim() + "-" + newSiteNumber.trim());
 				
 				//5. transform old site so STATIONIX gets generated, then validate.
 				LOG.trace("Transform old monitoring location");
@@ -127,6 +127,14 @@ public class UpdatePrimaryKeyWorkflowService {
 			}
 		}
 		LOG.trace("End processing transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ");
+	}
+	
+	protected Map<String, Object> createNewMonitoringLocation(Map<String, Object> newMl, String newAgencyCode, String newSiteNumber) {
+		newMl.put(TRANSACTION_TYPE, "PK");
+		newMl.replace(AGENCY_CODE, newAgencyCode);
+		newMl.replace(SITE_NUMBER, newSiteNumber);
+		
+		return newMl;
 	}
 	
 	protected String mlToJson(Map<String, Object> ml) {

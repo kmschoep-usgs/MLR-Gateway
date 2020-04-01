@@ -3,10 +3,10 @@ package gov.usgs.wma.mlrgateway.controller;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.service.PreVerificationService;
 import gov.usgs.wma.mlrgateway.util.ConfigurationValues;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@Api(tags={"Util Controller"})
+@Tag(name="Util Controller", description="Display")
 @RestController
 @RequestMapping("/util")
 public class UtilController extends BaseController {
@@ -40,11 +40,12 @@ public class UtilController extends BaseController {
 		this.preVerificationService = preVerificationService;
 	}
 
-	@ApiOperation(value="Return the logged-in user's JWT token")
-	@ApiResponses(value={@ApiResponse(code=200, message="OK"),
-			@ApiResponse(code=400, message="Bad Request"),
-			@ApiResponse(code=401, message="Unauthorized"),
-			@ApiResponse(code=403, message="Forbidden")})
+	@Operation(description="Return the logged-in user's JWT token")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@GetMapping("/token")
 	public String getToken() {
 		if(environmentTier != null && !environmentTier.equals(ConfigurationValues.ENVIRONMENT_PRODUCTION)) {
@@ -57,11 +58,12 @@ public class UtilController extends BaseController {
 		return null;
 	}
 	
-	@ApiOperation(value="Parse ddot file and return the list of district codes")
-	@ApiResponses(value={@ApiResponse(code=200, message="OK"),
-			@ApiResponse(code=400, message="Bad Request"),
-			@ApiResponse(code=401, message="Unauthorized"),
-			@ApiResponse(code=403, message="Forbidden")})
+	@Operation(description="Parse ddot file and return the list of district codes")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "OK"),
+			@ApiResponse(responseCode = "400", description = "Bad Request"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PostMapping("/parse")
 	public Map<String, Set<String>> parseWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) throws IOException {
 		Map<String, Set<String>> parsedReturn = new HashMap<>();

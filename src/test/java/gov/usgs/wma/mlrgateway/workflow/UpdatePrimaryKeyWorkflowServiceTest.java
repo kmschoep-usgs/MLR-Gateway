@@ -65,6 +65,10 @@ public class UpdatePrimaryKeyWorkflowServiceTest extends BaseSpringTest {
 	@Test
 	public void updatePrimaryKeyTransaction_completeWorkflow_thenReturnUpdated() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> newMl = ml;
+		newMl.put(service.TRANSACTION_TYPE, "PK");
+		newMl.replace(service.AGENCY_CODE, newAgencyCode);
+		newMl.replace(service.SITE_NUMBER, newSiteNumber);
 		Map<String, Object> mlValid = new HashMap<>(ml);
 		mlValid.put("validation",legacyValidation);
 
@@ -90,6 +94,7 @@ public class UpdatePrimaryKeyWorkflowServiceTest extends BaseSpringTest {
 		assertEquals(UpdatePrimaryKeyWorkflowService.TRANSACTION_TYPE_ADD, rtn.getSites().get(1).getTransactionType());
 		assertEquals(newSiteNumber, rtn.getSites().get(1).getSiteNumber());
 		assertEquals(newAgencyCode, rtn.getSites().get(1).getAgencyCode());
+		assertEquals(newMl, service.createNewMonitoringLocation(newMl, newAgencyCode, newSiteNumber));
 	}
 	
 	@Test
