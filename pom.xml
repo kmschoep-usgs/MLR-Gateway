@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>gov.usgs.wma</groupId>
     <artifactId>mlrgateway</artifactId>
@@ -11,7 +12,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <additionalparam>-Xdoclint:none</additionalparam>
         <springfox.version>2.8.0</springfox.version>
-        <wma.artifactory.url>https://cida.usgs.gov/artifactory</wma.artifactory.url>
+        <wma.artifactory.url>https://artifactory.wma.usgs.gov/artifactory</wma.artifactory.url>
         <owasp.dependency.check.version>5.2.4</owasp.dependency.check.version>
     </properties>
 
@@ -20,12 +21,12 @@
         <artifactId>code-quality</artifactId>
         <version>1.1.0</version>
     </parent>
-    
+
     <repositories>
         <repository>
-            <id>eros-artifactory-wma-maven-releases</id>
-            <name>EROS Artifactory CHS Mirror</name>
-            <url>https://artifactory.wma.usgs.gov/artifactory/eros-artifactory-wma-maven-releases</url>
+            <id>wma-maven-centralized</id>
+            <name>Water Mission Area Snapshots and Releases</name>
+            <url>https://artifactory.wma.usgs.gov/artifactory/wma-maven</url>
         </repository>
     </repositories>
 
@@ -104,6 +105,11 @@
             <artifactId>spring-cloud-starter-oauth2</artifactId>
         </dependency>
         <dependency>
+            <!-- Required to use PATCH -->
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-httpclient</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.github.openfeign.form</groupId>
             <artifactId>feign-form</artifactId>
             <version>3.8.0</version>
@@ -111,7 +117,6 @@
         <dependency>
             <groupId>io.github.openfeign.form</groupId>
             <artifactId>feign-form-spring</artifactId>
-            <version>3.8.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.retry</groupId>
@@ -184,9 +189,9 @@
                     <include>**/application*.yaml</include>
                     <include>**/application*.properties</include>
                     <include>static/*</include>
-                 </includes>
+                </includes>
             </resource>
-        </resources> 
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -240,7 +245,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <scm>
         <connection>scm:git:https://github.com/USGS-CIDA/MLR-Gateway.git</connection>
         <developerConnection>scm:git:https://${env.GITHUB_USER}:${env.GITHUB_PASS}@github.com/USGS-CIDA/MLR-Gateway.git</developerConnection>

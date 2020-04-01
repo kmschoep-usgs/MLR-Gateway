@@ -89,11 +89,11 @@ public class UtilController extends BaseController {
 			List<Map<String, Object>> ddots = preVerificationService.parseDdot(file);
 			
 			Set<String> districtCodes = ddots.stream()
-					.map(d -> d.get("districtCode").toString())
+					.map(d -> d.get("districtCode") != null ? d.get("districtCode").toString() : null)
 					.collect( Collectors.toSet() );
 			
 			Set<String> transactionTypes = ddots.stream()
-					.map(d -> d.get("transactionType").toString())
+					.map(d -> d.get("transactionType") != null ? d.get("transactionType").toString() : null)
 					.collect( Collectors.toSet() );
 			
 			parsedReturn.put("districtCodes", districtCodes);
