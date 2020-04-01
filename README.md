@@ -27,9 +27,9 @@ Open a terminal window and navigate to the project's root directory.
 
 Use the maven command ```mvn spring-boot:run``` to run the application.
 
-It will be available at <https://localhost:8443> in your browser.
+It will be available at <https://localhost:6026> in your browser.
 
-Swagger API Documentation is available at <https://localhost:8443/swagger-ui.html>
+Swagger API Documentation is available at <https://localhost:6026/swagger-ui/api-docs.html>
 
 ctrl-c will stop the application.
 
@@ -105,7 +105,7 @@ The related environment variables are listed below:
 This application can be run locally using the docker container built during the build process or by directly building and running the application JAR. The included `docker-compose` file has 3 profiles to choose from when running the application locally:
 
 1. mlr-gateway: This is the default profile which runs the application as it would be in our cloud environment. This is not recommended for local development as it makes configuring connections to other services running locally on your machine more difficult.
-2. mlr-gateway-local-dev: This is the profile which runs the application as it would be in the aqcu-local-dev project, and is configured to make it easy to replace the mlr-gateway-service instance in the local-dev project with this instance. It is run the same as the `mlr-gateway` profile, except it uses the docker host network driver.
+2. mlr-gateway-local-dev: This is the profile which runs the application as it would be in the aqcu-local-dev project, and is configured to make it easy to replace the mlr-gateway instance in the local-dev project with this instance. It is run the same as the `mlr-gateway` profile, except it uses the docker host network driver.
 3. mlr-gateway-debug: This is the profile which runs the application exactly the same as `mlr-gateway-local-dev` but also enables remote debugging for the application and opens up port 8000 into the container for that purpose.
 
 ### Setting up SSL
@@ -130,4 +130,4 @@ and adding the Key files (a file ending in .key currently named wildcard.key) to
 
 To build and run the application after completing the above steps you can run: `docker-compose up --build {profile}`, replacing `{profile}` with one of the options listed above.
 
-The swagger documentation can then be accessed at <https://localhost:6026/swagger-ui.html>
+The swagger documentation can then be accessed at <https://localhost:6026/swagger-ui/api-docs.html>

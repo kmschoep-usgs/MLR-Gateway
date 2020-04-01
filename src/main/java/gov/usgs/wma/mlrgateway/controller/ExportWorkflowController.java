@@ -20,12 +20,12 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Api(tags={"Export Workflow"})
+@Tag(name="Export Workflow", description="Display")
 @RestController
 public class ExportWorkflowController extends BaseController {
 	private ExportWorkflowService export;
@@ -40,11 +40,12 @@ public class ExportWorkflowController extends BaseController {
 		this.clock = clock;
 	}
 
-	@ApiOperation(value="Perform the entire workflow, including retrieving record from Legacy CRU and returning the Transaction file.")
-	@ApiResponses(value={@ApiResponse(code=200, message="OK"),
-			@ApiResponse(code=400, message="Bad Request"),
-			@ApiResponse(code=401, message="Unauthorized"),
-			@ApiResponse(code=403, message="Forbidden")})
+	@Operation(description="Perform the entire workflow, including retrieving record from Legacy CRU and returning the Transaction file.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/legacy/location/{agencyCode}/{siteNumber}")
 	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response, OAuth2Authentication authentication) {

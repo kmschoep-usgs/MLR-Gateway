@@ -102,3 +102,7 @@ security:
       jwt:
         keyUri: ${oauthResourceTokenKeyUri}
   maintenanceRoles: ${maintenanceRoles:}
+  
+springdoc:
+  swagger-ui:
+    path: /swagger-ui/api-docs.html
