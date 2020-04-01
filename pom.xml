@@ -28,6 +28,11 @@
             <name>Water Mission Area Snapshots and Releases</name>
             <url>https://artifactory.wma.usgs.gov/artifactory/wma-maven</url>
         </repository>
+        <repository>
+            <id>eros-artifactory-wma-maven-releases</id>
+            <name>EROS Artifactory CHS Mirror</name>
+            <url>https://artifactory.wma.usgs.gov/artifactory/eros-artifactory-wma-maven-releases</url>
+        </repository>
     </repositories>
 
     <dependencyManagement>
