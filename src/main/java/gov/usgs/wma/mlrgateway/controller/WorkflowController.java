@@ -25,12 +25,12 @@ import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.workflow.UpdatePrimaryKeyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Api(tags={"Workflow"})
+@Tag(name="Workflow", description="Display")
 @RestController
 @RequestMapping("/workflows")
 public class WorkflowController extends BaseController {
@@ -50,11 +50,12 @@ public class WorkflowController extends BaseController {
 		this.clock = clock;
 	}
 
-	@ApiOperation(value="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")
-	@ApiResponses(value={@ApiResponse(code=200, message="OK"),
-			@ApiResponse(code=400, message="Bad Request"),
-			@ApiResponse(code=401, message="Unauthorized"),
-			@ApiResponse(code=403, message="Forbidden")})
+	@Operation(description="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/ddots")
 	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, OAuth2Authentication authentication) {
@@ -89,11 +90,12 @@ public class WorkflowController extends BaseController {
 		return userSummaryReport;
 	}
 
-	@ApiOperation(value="Validate a D dot file, DOES NOT update the repository or send transaction file(s) to WSC.")
-	@ApiResponses(value={@ApiResponse(code=200, message="OK"),
-	@ApiResponse(code=400, message="Bad Request"),
-	@ApiResponse(code=401, message="Unauthorized"),
-	@ApiResponse(code=403, message="Forbidden")})
+	@Operation(description="Validate a D dot file, DOES NOT update the repository or send transaction file(s) to WSC.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PostMapping("/ddots/validate")
 	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, OAuth2Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
@@ -128,10 +130,11 @@ public class WorkflowController extends BaseController {
 		return userSummaryReport;
 	}
 	
-	@ApiOperation(value="Update Primary Key (Agency Code and/or Site Number).")
-	@ApiResponses(value={@ApiResponse(code=200, message="OK"),
-	@ApiResponse(code=400, message="Bad Request"),
-	@ApiResponse(code=401, message="Unauthorized")})
+	@Operation(description="Updates primary key by creating a new location as a copy of the old location with the new site number and sends an A and M transaction file(s) to WSC.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized") })
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/primaryKey/update")
 	public UserSummaryReport updatePrimaryKeyWorkflow(
