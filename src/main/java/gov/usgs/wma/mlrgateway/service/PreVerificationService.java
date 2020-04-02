@@ -27,13 +27,13 @@ public class PreVerificationService {
 		this.ddotClient = ddotClient;
 	}
 
-	public List<Map<String, Object>> parseDdot(MultipartFile file) throws HystrixBadRequestException {
+	public List<Map<String, Object>> parseDdot(MultipartFile file, String jwtToken) throws HystrixBadRequestException {
 		List<Map<String, Object>> ddots = null;
 		ObjectMapper mapper = new ObjectMapper();
 		TypeReference<List<Map<String, Object>>> mapType = new TypeReference<List<Map<String, Object>>>() {};
 		
 		try {
-			String ddotResponse = ddotClient.ingestDdot(file).getBody();
+			String ddotResponse = ddotClient.ingestDdot(file, jwtToken).getBody();
 			ddots = mapper.readValue(ddotResponse, mapType);
 		} catch (Exception e) {
 			int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;

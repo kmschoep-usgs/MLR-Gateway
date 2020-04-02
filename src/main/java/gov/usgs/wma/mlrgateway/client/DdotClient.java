@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.multipart.MultipartFile;
 
 import feign.form.spring.SpringFormEncoder;
@@ -20,6 +21,9 @@ import gov.usgs.wma.mlrgateway.config.PropagateBadRequest;
 public interface DdotClient {
 
 	@PostMapping(value="ddots", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	ResponseEntity<String> ingestDdot(@PathVariable(name = "file") MultipartFile file, @RequestHeader(value = "Authorization") String token);
+
+	@PostMapping(value="ddotsOLD", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	ResponseEntity<String> ingestDdot(@PathVariable(name = "file") MultipartFile file);
 
 	public class MultipartSupportConfig {

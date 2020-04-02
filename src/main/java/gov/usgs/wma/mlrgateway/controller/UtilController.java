@@ -85,7 +85,8 @@ public class UtilController extends BaseController {
 	public Map<String, Set<String>> parseWorkflow(@RequestPart MultipartFile file, HttpServletResponse response) throws IOException {
 		Map<String, Set<String>> parsedReturn = new HashMap<>();
 		try {
-			List<Map<String, Object>> ddots = preVerificationService.parseDdot(file);
+			String jwtToken = getToken();
+			List<Map<String, Object>> ddots = preVerificationService.parseDdot(file, jwtToken);
 			
 			Set<String> districtCodes = ddots.stream()
 					.map(d -> d.get("districtCode") != null ? d.get("districtCode").toString() : null)
