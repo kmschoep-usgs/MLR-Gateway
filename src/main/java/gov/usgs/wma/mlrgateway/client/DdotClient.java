@@ -21,9 +21,6 @@ import gov.usgs.wma.mlrgateway.config.PropagateBadRequest;
 public interface DdotClient {
 
 	@PostMapping(value="ddots", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	ResponseEntity<String> ingestDdot(@PathVariable(name = "file") MultipartFile file, @RequestHeader(value = "Authorization") String token);
-
-	@PostMapping(value="ddotsOLD", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	ResponseEntity<String> ingestDdot(@PathVariable(name = "file") MultipartFile file);
 
 	public class MultipartSupportConfig {
