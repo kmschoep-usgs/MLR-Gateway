@@ -2,7 +2,6 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.service.PreVerificationService;
-import gov.usgs.wma.mlrgateway.util.ConfigurationValues;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
