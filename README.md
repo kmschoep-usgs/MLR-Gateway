@@ -105,8 +105,8 @@ The related environment variables are listed below:
 This application can be run locally using the docker container built during the build process or by directly building and running the application JAR. The included `docker-compose` file has 3 profiles to choose from when running the application locally:
 
 1. mlr-gateway: This is the default profile which runs the application as it would be in our cloud environment. This is not recommended for local development as it makes configuring connections to other services running locally on your machine more difficult.
-2. mlr-gateway-local-dev: This is the profile which runs the application as it would be in the aqcu-local-dev project, and is configured to make it easy to replace the mlr-gateway-service instance in the local-dev project with this instance. It is run the same as the `mlr-gateway-service` profile, except it uses the docker host network driver.
-3. mlr-gateway-debug: This is the profile which runs the application exactly the same as `mlr-gateway-service-local-dev` but also enables remote debugging for the application and opens up port 8000 into the container for that purpose.
+2. mlr-gateway-local-dev: This is the profile which runs the application as it would be in the aqcu-local-dev project, and is configured to make it easy to replace the mlr-gateway instance in the local-dev project with this instance. It is run the same as the `mlr-gateway` profile, except it uses the docker host network driver.
+3. mlr-gateway-debug: This is the profile which runs the application exactly the same as `mlr-gateway-local-dev` but also enables remote debugging for the application and opens up port 8000 into the container for that purpose.
 
 ### Setting up SSL
 
@@ -116,11 +116,15 @@ When intending to run this application alongside other MLR service running from 
 
 In addition to its own SSL certs, this service must also be able to connect to a running Water Auth server locally, and thus must trust the SSL certificate being served by Water Auth. This can be accomplished by copy-pasting the .crt file that Water Auth is serving into the `docker/certificates/import_certs` folder of this project. Any .crt file put into the `import_certs` directory will be loaded into the certificate store used by Python within the container and trusted by the application.
 
-When using MLR Local Dev this means copying the certificates that MLR Local Dev generates into 2 places in this project:
+When using MLR Local Dev this means copying the certificates (*.crt currently named wildcard.crt) that MLR Local Dev generates into 2 places in this project:
 
 1. `docker/certificates` to be used as the SSL certs served by this service
 
 2. `docker/certificates/import_certs` to have this service trust other services serving the MLR Local Dev SSL certs
+
+and adding the Key files (a file ending in .key currently named wildcard.key) to:
+
+1.  `docker/certificates`
 
 ### Building Changes
 

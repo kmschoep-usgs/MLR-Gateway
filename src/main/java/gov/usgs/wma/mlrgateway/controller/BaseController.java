@@ -31,6 +31,10 @@ public abstract class BaseController {
 	
 	@Value("${environmentTier:}")
 	protected String environmentTier;
+
+	@Value("${uiHost:}")
+	protected String uiDomainName;
+	
 	protected String SUBJECT_PREFIX = "[%environment%] MLR Report for ";
 		
 	private Logger log = LoggerFactory.getLogger(BaseController.class);
