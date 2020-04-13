@@ -1,14 +1,11 @@
 package gov.usgs.wma.mlrgateway.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.io.Serializable;
 import java.time.Clock;
 import java.time.Instant;
@@ -16,16 +13,16 @@ import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.netflix.hystrix.exception.HystrixBadRequestException;
 
@@ -35,9 +32,12 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import static org.mockito.ArgumentMatchers.anyList;
+import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
 
-@RunWith(SpringRunner.class)
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.BDDMockito.given;
+
+@ExtendWith(SpringExtension.class)
 public class ExportWorkflowControllerTest extends BaseSpringTest {
 
 	@MockBean
@@ -45,26 +45,27 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	@MockBean
 	private NotificationService notificationService;
 	@MockBean
-	private OAuth2Authentication authentication;
-	@MockBean
-	private OAuth2Request mockOAuth2Request;
+	private UserAuthUtil userAuthUtil;
 
 	@Bean
 	@Primary
 	public Clock clock() {
 		return Clock.fixed(Instant.parse("2010-01-10T10:00:00Z"), ZoneId.of("UTC"));
 	}
-	
+
 	private ExportWorkflowController controller;
 	private MockHttpServletResponse response;
-	private String userName = "userName";
+	private String userName = "user";
 	private String reportDate = "01/01/2019";
 	private Map<String, Serializable> testEmail;
 	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
+	private UsernamePasswordAuthenticationToken mockAuth = new UsernamePasswordAuthenticationToken(userName, "pass");
 
-	@Before
+	@BeforeEach
 	public void init() {
-		controller = new ExportWorkflowController(export, notificationService, clock());
+		given(userAuthUtil.getUserEmail(any(Authentication.class))).willReturn("test@test");
+
+		controller = new ExportWorkflowController(export, notificationService, userAuthUtil, clock());
 		response = new MockHttpServletResponse();
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
@@ -73,9 +74,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 
 	@Test
 	public void happyPath_ExportWorkflow() throws Exception {
-		when(authentication.getOAuth2Request()).thenReturn(mockOAuth2Request);
-		when(mockOAuth2Request.getExtensions()).thenReturn(testEmail); 
-		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response, authentication);
+		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response, mockAuth);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> ExportWorkflowController.COMPLETE_WORKFLOW.equals(s.getName()))
 				.findAny().orElse(null);
@@ -84,7 +83,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		assertEquals(rtn.getName(), ExportWorkflowController.COMPLETE_WORKFLOW);
 		
 		verify(export).exportWorkflow(anyString(), anyString());
-		verify(notificationService).sendNotification(anyList(), anyString(), eq(null), anyString(), any());
+		verify(notificationService).sendNotification(anyList(), anyString(), anyString(), anyString(), any());
 	}
 
 	@Test
@@ -92,7 +91,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		String badText = "This is really bad.";
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(export).exportWorkflow(anyString(), anyString());
 
-		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response, authentication);
+		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response, mockAuth);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> ExportWorkflowController.COMPLETE_WORKFLOW.equals(s.getName()))
 				.findAny().orElse(null);
@@ -109,7 +108,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 
 		willThrow(new HystrixBadRequestException(badText)).given(export).exportWorkflow(anyString(), anyString());
 
-		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response, authentication);
+		GatewayReport rtn = controller.exportWorkflow("USGS", "12345678", response, mockAuth);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> ExportWorkflowController.COMPLETE_WORKFLOW.equals(s.getName()))
 				.findAny().orElse(null);

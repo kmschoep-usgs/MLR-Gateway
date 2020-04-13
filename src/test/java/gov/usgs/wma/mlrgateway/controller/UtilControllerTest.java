@@ -1,18 +1,18 @@
 package gov.usgs.wma.mlrgateway.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.multipart.MultipartFile;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
@@ -26,8 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class UtilControllerTest extends BaseSpringTest {
 
 	@MockBean
@@ -36,7 +35,7 @@ public class UtilControllerTest extends BaseSpringTest {
 	private UtilController controller;
 	private MockHttpServletResponse response;
 
-	@Before
+	@BeforeEach
 	public void init() {
 		controller = new UtilController(preVerificationService);
 		response = new MockHttpServletResponse();

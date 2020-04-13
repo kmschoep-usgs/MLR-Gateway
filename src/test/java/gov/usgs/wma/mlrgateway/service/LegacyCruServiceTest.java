@@ -14,19 +14,19 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minidev.json.JSONObject;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.verify;
 
 import static org.mockito.Mockito.mock;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class LegacyCruServiceTest extends BaseSpringTest {
 	private String reportName = "TEST LEGACYCRU";
 	private LegacyCruService service;
@@ -50,7 +50,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 	@MockBean
 	LegacyCruClient legacyCruClient;
 
-	@Before
+	@BeforeEach
 	public void init() {
 		service = new LegacyCruService(legacyCruClient);
 		WorkflowController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));

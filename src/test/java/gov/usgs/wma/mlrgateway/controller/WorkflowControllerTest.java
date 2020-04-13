@@ -1,22 +1,22 @@
 package gov.usgs.wma.mlrgateway.controller;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.willThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -28,7 +28,10 @@ import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.workflow.UpdatePrimaryKeyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+
 import static org.mockito.Mockito.verify;
+import static org.mockito.BDDMockito.given;
 
 import java.io.Serializable;
 import java.time.Clock;
@@ -39,7 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class WorkflowControllerTest extends BaseSpringTest {
 
 	@MockBean
@@ -49,9 +52,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@MockBean
 	private UpdatePrimaryKeyWorkflowService updatePrimaryKey;
 	@MockBean
-	private OAuth2Authentication authentication;
-	@MockBean
-	private OAuth2Request mockOAuth2Request;
+	private UserAuthUtil userAuthUtil;
 	
 	@Bean
 	@Primary
@@ -62,21 +63,22 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	private WorkflowController controller;
 	private MockHttpServletResponse response;
 	private Map<String, Serializable> testEmail;
+	private UsernamePasswordAuthenticationToken mockAuth = new UsernamePasswordAuthenticationToken("user", "pass");
 
-	@Before
+	@BeforeEach
 	public void init() {
+		given(userAuthUtil.getUserEmail(any(Authentication.class))).willReturn("test@test");
+		
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
-		controller = new WorkflowController(legacy, updatePrimaryKey, notify, clock());
+		controller = new WorkflowController(legacy, updatePrimaryKey, notify, userAuthUtil, clock());
 		response = new MockHttpServletResponse();
 	}
 
 	@Test
 	public void happyPath_LegacyWorkflow() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		when(authentication.getOAuth2Request()).thenReturn(mockOAuth2Request);
-		when(mockOAuth2Request.getExtensions()).thenReturn(testEmail); 
-		UserSummaryReport rtn = controller.legacyWorkflow(file, response, authentication);
+		UserSummaryReport rtn = controller.legacyWorkflow(file, response, mockAuth);
 		assertEquals(LegacyWorkflowService.COMPLETE_WORKFLOW, rtn.getName() );
 		assertEquals(new ArrayList<>(), rtn.getWorkflowSteps());
 		assertEquals(new ArrayList<>(), rtn.getSites());
@@ -90,7 +92,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).completeWorkflow(any(MultipartFile.class));
 
-		UserSummaryReport rtn = controller.legacyWorkflow(file, response, authentication);
+		UserSummaryReport rtn = controller.legacyWorkflow(file, response, mockAuth);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
@@ -107,7 +109,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		String badText = "This is really bad.";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new HystrixBadRequestException(badText)).given(legacy).completeWorkflow(any(MultipartFile.class));
-		UserSummaryReport rtn = controller.legacyWorkflow(file, response, authentication);
+		UserSummaryReport rtn = controller.legacyWorkflow(file, response, mockAuth);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
@@ -123,9 +125,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@Test
 	public void happyPath_LegacyValidationWorkflow() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
-		when(authentication.getOAuth2Request()).thenReturn(mockOAuth2Request);
-		when(mockOAuth2Request.getExtensions()).thenReturn(testEmail); 
-		UserSummaryReport userSummaryReport = controller.legacyValidationWorkflow(file, response, authentication);	
+		UserSummaryReport userSummaryReport = controller.legacyValidationWorkflow(file, response, mockAuth);	
 		assertEquals(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, userSummaryReport.getName());
 		assertEquals(new ArrayList<>(), userSummaryReport.getWorkflowSteps());
 		assertEquals(new ArrayList<>(), userSummaryReport.getSites());
@@ -139,7 +139,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).ddotValidation(any(MultipartFile.class));
 
-		UserSummaryReport rtn = controller.legacyValidationWorkflow(file, response, authentication);
+		UserSummaryReport rtn = controller.legacyValidationWorkflow(file, response, mockAuth);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
@@ -158,7 +158,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		willThrow(new HystrixBadRequestException(badText)).given(legacy).ddotValidation(any(MultipartFile.class));
 
-		UserSummaryReport rtn = controller.legacyValidationWorkflow(file, response, authentication);
+		UserSummaryReport rtn = controller.legacyValidationWorkflow(file, response, mockAuth);
 		StepReport completeWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
@@ -176,9 +176,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		String newAgencyCode = "BLAH";
 		String oldSiteNumber = "123456789";
 		String newSiteNumber = "987654321";
-		when(authentication.getOAuth2Request()).thenReturn(mockOAuth2Request);
-		when(mockOAuth2Request.getExtensions()).thenReturn(testEmail); 
-		UserSummaryReport rtn = controller.updatePrimaryKeyWorkflow(oldAgencyCode, newAgencyCode, oldSiteNumber, newSiteNumber, response, authentication);
+		UserSummaryReport rtn = controller.updatePrimaryKeyWorkflow(oldAgencyCode, newAgencyCode, oldSiteNumber, newSiteNumber, response, mockAuth);
 		assertEquals(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, rtn.getName() );
 		assertEquals(new ArrayList<>(), rtn.getWorkflowSteps());
 		assertEquals(new ArrayList<>(), rtn.getSites());
@@ -194,7 +192,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		String newSiteNumber = "987654321";
 		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 
-		UserSummaryReport rtn = controller.updatePrimaryKeyWorkflow(oldAgencyCode, newAgencyCode, oldSiteNumber, newSiteNumber, response, authentication);
+		UserSummaryReport rtn = controller.updatePrimaryKeyWorkflow(oldAgencyCode, newAgencyCode, oldSiteNumber, newSiteNumber, response, mockAuth);
 		StepReport updatePrimaryKeyWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
@@ -214,7 +212,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		String oldSiteNumber = "123456789";
 		String newSiteNumber = "987654321";
 		willThrow(new HystrixBadRequestException(badText)).given(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
-		UserSummaryReport rtn = controller.updatePrimaryKeyWorkflow(oldAgencyCode, newAgencyCode, oldSiteNumber, newSiteNumber, response, authentication);
+		UserSummaryReport rtn = controller.updatePrimaryKeyWorkflow(oldAgencyCode, newAgencyCode, oldSiteNumber, newSiteNumber, response, mockAuth);
 		StepReport updatePrimaryKeyWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);

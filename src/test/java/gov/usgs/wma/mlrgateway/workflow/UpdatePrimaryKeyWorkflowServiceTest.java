@@ -1,8 +1,8 @@
 package gov.usgs.wma.mlrgateway.workflow;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -15,14 +15,14 @@ import static org.mockito.Mockito.verify;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
@@ -32,7 +32,7 @@ import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import gov.usgs.wma.mlrgateway.service.LegacyTransformerService;
 import gov.usgs.wma.mlrgateway.service.LegacyValidatorService;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class UpdatePrimaryKeyWorkflowServiceTest extends BaseSpringTest {
 
 	@MockBean
@@ -55,7 +55,7 @@ public class UpdatePrimaryKeyWorkflowServiceTest extends BaseSpringTest {
 	private String oldSiteNumber = "12345678       ";
 	private String newSiteNumber = "87654321       ";
 	
-	@Before
+	@BeforeEach
 	public void init() {
 		service = new UpdatePrimaryKeyWorkflowService(legacyCruService, legacyValidatorService, transformService, fileExportService);
 		response = new MockHttpServletResponse();
@@ -66,9 +66,9 @@ public class UpdatePrimaryKeyWorkflowServiceTest extends BaseSpringTest {
 	public void updatePrimaryKeyTransaction_completeWorkflow_thenReturnUpdated() throws Exception {
 		Map<String, Object> ml = getAdd();
 		Map<String, Object> newMl = ml;
-		newMl.put(service.TRANSACTION_TYPE, "PK");
-		newMl.replace(service.AGENCY_CODE, newAgencyCode);
-		newMl.replace(service.SITE_NUMBER, newSiteNumber);
+		newMl.put(UpdatePrimaryKeyWorkflowService.TRANSACTION_TYPE, "PK");
+		newMl.replace(UpdatePrimaryKeyWorkflowService.AGENCY_CODE, newAgencyCode);
+		newMl.replace(UpdatePrimaryKeyWorkflowService.SITE_NUMBER, newSiteNumber);
 		Map<String, Object> mlValid = new HashMap<>(ml);
 		mlValid.put("validation",legacyValidation);
 
