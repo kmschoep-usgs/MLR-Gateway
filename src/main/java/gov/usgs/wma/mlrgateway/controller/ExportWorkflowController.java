@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +20,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -34,8 +35,8 @@ public class ExportWorkflowController extends BaseController {
 	private final Clock clock;
 	
 	@Autowired
-	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService, Clock clock) {
-		super(notificationService);
+	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService, UserAuthUtil userAuthUtil, Clock clock) {
+		super(notificationService, userAuthUtil);
 		this.export = export;
 		this.clock = clock;
 	}
@@ -48,7 +49,7 @@ public class ExportWorkflowController extends BaseController {
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/legacy/location/{agencyCode}/{siteNumber}")
-	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response, OAuth2Authentication authentication) {
+	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(COMPLETE_WORKFLOW
 				,null
 				,getUserName(authentication)

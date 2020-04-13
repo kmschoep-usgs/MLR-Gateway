@@ -2,6 +2,7 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.service.PreVerificationService;
+import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,8 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +32,10 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/util")
 public class UtilController extends BaseController {
 	private PreVerificationService preVerificationService;
+
+    @Autowired
+    UserAuthUtil userAuthUtil;
+
 	@Autowired
 	public UtilController(PreVerificationService preVerificationService) {
 		super();
@@ -47,12 +50,7 @@ public class UtilController extends BaseController {
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@GetMapping("/token")
 	public String getToken() {
-			if(SecurityContextHolder.getContext().getAuthentication() != null){
-				String jwtToken = ((OAuth2AuthenticationDetails) ((OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication()).getDetails()).getTokenValue();
-				return jwtToken;
-			}
-		
-		return null;
+		return userAuthUtil.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
 	}
 
 	@Operation(description="Return the user to the new UI, logged in.")
@@ -62,16 +60,14 @@ public class UtilController extends BaseController {
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@GetMapping("/login")
-	public void login(HttpServletResponse response) {
-			if(SecurityContextHolder.getContext().getAuthentication() != null){
-				try {
-					response.sendRedirect(uiDomainName + "?mlrAccessToken=" + ((OAuth2AuthenticationDetails) ((OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication()).getDetails()).getTokenValue());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+	public void login(HttpServletResponse response) throws IOException {
+		String tokenValue = userAuthUtil.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
 
-		
+		if (tokenValue != null && !tokenValue.isEmpty()) {
+            response.sendRedirect(uiDomainName + "?mlrAccessToken=" + tokenValue);
+        } else {
+			response.sendError(HttpStatus.SC_UNAUTHORIZED);
+		}
 	}
 	
 	@Operation(description="Parse ddot file and return the list of district codes")
