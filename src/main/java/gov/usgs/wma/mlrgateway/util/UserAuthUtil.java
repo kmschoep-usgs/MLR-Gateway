@@ -33,7 +33,11 @@ public class UserAuthUtil {
     }
 
     public String getUserEmail(Authentication auth) {
-        if(auth != null && auth instanceof JwtAuthenticationToken) {
+        if (auth != null && auth instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) auth;
+            return token.getPrincipal().getAttribute(EMAIL_CLAIM_KEY);
+        }
+        else if(auth != null && auth instanceof JwtAuthenticationToken) {
             JwtAuthenticationToken token = (JwtAuthenticationToken) auth;
             return token.getToken().containsClaim(EMAIL_CLAIM_KEY) ? 
                 token.getToken().getClaimAsString(EMAIL_CLAIM_KEY) : null;

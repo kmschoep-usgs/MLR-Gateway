@@ -10,10 +10,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 public class KeycloakJWTAuthorityMapper implements Converter<Jwt, Collection<GrantedAuthority>> {
+    public static final String AUTHORITIES_CLAIM = "authorities";
 
     public Collection<GrantedAuthority> convert(Jwt jwt) {
         Collection<?> authorities = (Collection<?>)
-                jwt.getClaims().getOrDefault("authorities", Collections.emptyList());
+                jwt.getClaims().getOrDefault(AUTHORITIES_CLAIM, Collections.emptyList());
 
         return authorities.stream()
                 .map(Object::toString)
