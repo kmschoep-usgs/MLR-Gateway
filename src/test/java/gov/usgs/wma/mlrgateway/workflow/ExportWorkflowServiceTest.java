@@ -6,11 +6,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.GatewayReport;
@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import static org.mockito.Mockito.never;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class ExportWorkflowServiceTest extends BaseSpringTest {
 	@MockBean
 	private LegacyCruService legacyCruService;
@@ -35,7 +35,7 @@ public class ExportWorkflowServiceTest extends BaseSpringTest {
 	private String userName = "userName";
 	private String reportDate = "01/01/2019";
 
-	@Before
+	@BeforeEach
 	public void init() {
 		service = new ExportWorkflowService(legacyCruService, fileExportService);
 		ExportWorkflowController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));

@@ -5,26 +5,25 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
-import gov.usgs.wma.mlrgateway.config.WaterAuthJwtConverter;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
 @Controller
 public abstract class BaseController {
 	private NotificationService notificationService;
+	private UserAuthUtil userAuthUtil;
 	
 	@Value("${additionalNotificationRecipients:}")
 	private String additionalNotificationRecipientsString;
@@ -43,8 +42,9 @@ public abstract class BaseController {
 	private UserSummaryReportBuilder userSummaryReportBuilder = new UserSummaryReportBuilder();
 	
 	public BaseController() {};
-	public BaseController(NotificationService notificationService) {
+	public BaseController(NotificationService notificationService, UserAuthUtil userAuthUtil) {
 		this.notificationService = notificationService;
+		this.userAuthUtil = userAuthUtil;
 	}
 
 	public static GatewayReport getReport() {
@@ -71,7 +71,7 @@ public abstract class BaseController {
 		gatewayReport.remove();
 	}
 
-	public String getUserName(OAuth2Authentication authentication) {
+	public String getUserName(Authentication authentication) {
 		String userName = "Unknown";
 		if(authentication != null){
 			userName = authentication.getName();
@@ -80,19 +80,8 @@ public abstract class BaseController {
 		}
 		return userName;
 	}
-	
-	public String getUserEmail(OAuth2Authentication authentication) {
-		String userEmail = "";
-		if(authentication != null){
-			Map<String, Serializable> oauthExtensions = authentication.getOAuth2Request().getExtensions();
-			userEmail = (String)oauthExtensions.get(WaterAuthJwtConverter.EMAIL_JWT_KEY);
-		} else {
-			log.warn("No Authentication present in the Web Security Context when getting user email!");
-		}
-		return userEmail;
-	}
-	
-	protected void notificationStep(String subject, String attachmentFileName, OAuth2Authentication authentication) {
+		
+	protected void notificationStep(String subject, String attachmentFileName, Authentication authentication) {
 		List<String> notificationRecipientList;
 		//Send Notification
 		try {
@@ -102,7 +91,7 @@ public abstract class BaseController {
 			} else {
 				notificationRecipientList = new ArrayList<>();
 			}
-			String userEmail = getUserEmail(authentication);
+			String userEmail = userAuthUtil.getUserEmail(authentication);
 				
 			if(userEmail != null && userEmail.length() > 0){
 				notificationRecipientList.add(userEmail);

@@ -3,34 +3,29 @@ package gov.usgs.wma.mlrgateway.controller;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.UnsupportedEncodingException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-
 import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
-import org.springframework.http.HttpHeaders;
+import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.util.LinkedMultiValueMap;
@@ -38,17 +33,21 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
+import gov.usgs.wma.mlrgateway.PermissionEvaluatorImpl;
 import gov.usgs.wma.mlrgateway.client.DdotClient;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.workflow.UpdatePrimaryKeyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.config.MethodSecurityConfig;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc()
+@ExtendWith(SpringExtension.class)
+@WebMvcTest(controllers={WorkflowController.class})
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import({MvcTestConfig.class, PermissionEvaluatorImpl.class, MethodSecurityConfig.class})
 public class WorkflowControllerMVCTest {
 
 	@Autowired
@@ -56,13 +55,13 @@ public class WorkflowControllerMVCTest {
 
 	@MockBean
 	private LegacyWorkflowService legacy;
-	
+
 	@MockBean
 	private UpdatePrimaryKeyWorkflowService updatePrimaryKey;
-	
+
 	@MockBean
 	private NotificationService notificationService;
-	
+
 	@MockBean
 	private NotificationClient notificationClient;
 
@@ -73,33 +72,26 @@ public class WorkflowControllerMVCTest {
 	private LegacyCruClient legacyClient;
 
 	@MockBean
-	private DiscoveryClient dc;
+	private UserAuthUtil userAuthUtil;
 
-	@MockBean
-	private SpringClientFactory scf;
-	
 	@MockBean
 	private Clock clockMock;
-	
-	@MockBean
-	private OAuth2Authentication auth;
 
-	MockMultipartFile file;
-	
-	@Before
+	private MockMultipartFile file;
+
+	@BeforeEach
 	public void init() {
 		file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		when(clockMock.instant()).thenReturn(Clock.fixed(Instant.parse("2010-01-10T10:00:00Z"), ZoneId.of("UTC")).instant());
 	}
 	
 	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void happyPathLegacyWorkflow() throws Exception {
 		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
-		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file)
-					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
-				)
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(legacyJson));
@@ -108,6 +100,17 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
+	@WithMockUser(username = "test")
+	public void happyPathLegacyWorkflowNoAuthorities() throws Exception {
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file))
+				.andExpect(status().isForbidden())
+				.andExpect(content().contentType("application/json"));
+
+		verify(legacy, never()).completeWorkflow(any(MultipartFile.class));
+	}
+
+	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void badResponse_LegacyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\",\"workflowSteps\":[{\"name\":\"" 
@@ -115,9 +118,7 @@ public class WorkflowControllerMVCTest {
 				+ "\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).completeWorkflow(any(MultipartFile.class));
 
-		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file)
-					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
-				)
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file))
 				.andExpect(status().isBadRequest())
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
@@ -126,6 +127,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void serverError_LegacyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -133,9 +135,7 @@ public class WorkflowControllerMVCTest {
 				+  "\"success\":false,\"details\":\"wow 456\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new RuntimeException("wow 456")).given(legacy).completeWorkflow(any(MultipartFile.class));
 
-		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file)
-					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
-				)
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file))
 				.andExpect(status().isInternalServerError())
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
@@ -144,13 +144,12 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void happyPathLegacyValidationWorkflow() throws Exception {
 		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
-		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file)
-					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
-				)
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(legacyJson));
@@ -159,6 +158,21 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
+	@WithMockUser(username = "test")
+	public void happyPathLegacyValidationWorkflowNoAuthorities() throws Exception {
+		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
+				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
+				+ "\"workflowSteps\":[],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType("application/json"))
+				.andExpect(content().string(legacyJson));
+
+		verify(legacy).ddotValidation(any(MultipartFile.class));
+	}
+
+	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void badDdot_LegacyValidationWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -166,9 +180,7 @@ public class WorkflowControllerMVCTest {
 				+ "\"success\":false,\"details\":\"{\\\"error\\\": 123}\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).ddotValidation(any(MultipartFile.class));
 
-		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file)
-					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
-				)
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file))
 				.andExpect(status().isBadRequest())
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
@@ -177,6 +189,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void serverError_LegacyValidationWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -184,9 +197,7 @@ public class WorkflowControllerMVCTest {
 				+ "\"success\":false,\"details\":\"wow 456\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		willThrow(new RuntimeException("wow 456")).given(legacy).ddotValidation(any(MultipartFile.class));
 
-		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file)
-					.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
-				)
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file))
 				.andExpect(status().isInternalServerError())
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
@@ -195,6 +206,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void happyPathUpdatePrimaryKeyWorkflow() throws Exception {
 		String legacyJson = "{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -205,7 +217,6 @@ public class WorkflowControllerMVCTest {
 		params.set("oldSiteNumber", "123345");
 		params.set("newSiteNumber", "9999090");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
-				.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
 				.params(params))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/json"))
@@ -213,8 +224,25 @@ public class WorkflowControllerMVCTest {
 
 		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 	}
+
+	@Test
+	@WithMockUser(username = "test")
+	public void happyPathUpdatePrimaryKeyWorkflowNoAuthorities() throws Exception {
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.set("oldAgencyCode", "USGS");
+		params.set("newAgencyCode", "BLAH");
+		params.set("oldSiteNumber", "123345");
+		params.set("newSiteNumber", "9999090");
+		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
+				.params(params))
+				.andExpect(status().isForbidden())
+				.andExpect(content().contentType("application/json"));
+
+		verify(updatePrimaryKey, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+	}
 	
 	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void badResponse_UpdatePrimaryKeyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\",\"workflowSteps\":[{\"name\":\"" 
@@ -228,7 +256,6 @@ public class WorkflowControllerMVCTest {
 		params.set("oldSiteNumber", "123345");
 		params.set("newSiteNumber", "9999090");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
-				.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
 				.params(params))
 				.andExpect(status().isBadRequest())
 				.andExpect(content().contentType("application/json"))
@@ -238,6 +265,7 @@ public class WorkflowControllerMVCTest {
 	}
 	
 	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void serverError_UpdatePrimaryKeyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -251,23 +279,11 @@ public class WorkflowControllerMVCTest {
 		params.set("oldSiteNumber", "123345");
 		params.set("newSiteNumber", "9999090");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
-				.headers(getAuthHeaders("test", "test@test.gov", "test_allowed"))
 				.params(params))
 				.andExpect(status().isInternalServerError())
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
 		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
-	}
-	
-	public HttpHeaders getAuthHeaders(String username, String email, String ... roles) throws UnsupportedEncodingException {
-		HttpHeaders headers = new HttpHeaders();
-		String jwtToken = JWT.create()
-			.withClaim("user_name", username)
-			.withClaim("email", email)
-			.withArrayClaim("authorities", roles)
-			.sign(Algorithm.HMAC256("secret"));
-		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
-		return headers;
 	}
 }
