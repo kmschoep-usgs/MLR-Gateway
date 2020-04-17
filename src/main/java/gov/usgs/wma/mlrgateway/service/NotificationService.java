@@ -2,6 +2,7 @@ package gov.usgs.wma.mlrgateway.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import gov.usgs.wma.mlrgateway.SiteReport;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,7 @@ public class NotificationService {
 			BaseController.addWorkflowStepReport(new StepReport(NOTIFICATION_STEP, notifResp.getStatusCodeValue(), true, NOTIFICATION_SUCCESSFULL));
 		} catch(Exception e) {
 			BaseController.addWorkflowStepReport(new StepReport(NOTIFICATION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, NOTIFICATION_FAILURE));
-			log.error(NOTIFICATION_STEP + ": " + e.getMessage());
+			log.error(NOTIFICATION_STEP + ": " + e.getMessage(), e);
 		}
 	}
 
