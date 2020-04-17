@@ -1,3 +1,17 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://test.gov/test
+
+security:
+  basic:
+    enabled: false
+  require-ssl: false
+
 ddot:
   ribbon:
     listOfServers: https://test.gov/test
@@ -38,17 +52,5 @@ hystrix:
           thread:
             timeoutInMilliseconds: 99999
 
-security:
-  maintenanceRoles: test_allowed
-  oauth2:
-    client:
-      clientId: test-client
-      clientSecret: test-secret
-      accessTokenUri: localhost
-      userAuthorizationUri: localhost
-    resource:
-      id: test-app
-      jwt:
-        keyValue: secret
-oauthResourceTokenKeyUri: 
 additionalNotificationRecipients: 
+maintenanceRoles: test_allowed

@@ -10,8 +10,62 @@ server:
     key-alias: ${keystoreSSLKey:tomcat}
     enabled-protocols: TLSv1.2
 
+security:
+  require-ssl: true
+  basic:
+    enabled: false
+  maintenanceRoles: ${maintenanceRoles:}
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration: 
+          wma-keycloak: 
+            client-id: ${oauthClientId:}
+            client-secret: ${oauthClientSecret:}
+        provider:
+          wma-keycloak:
+            issuer-uri: ${oauthIssuerUri:}
+      resourceserver:
+        jwt:
+          issuer-uri: ${oauthIssuerUri:}
+
+logging:
+  level:
+    org:
+      springframework: ${mlrgateway_springFrameworkLogLevel:INFO}
+
 additionalNotificationRecipients: ${mlrgateway_additionalNotificationRecipients:}
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui/api-docs.html
+
+eureka:
+  client:
+    enabled: false
+
+feign:
+  hystrix:
+    enabled: true
+
+ribbon:
+  MaxAutoRetries: ${mlrgateway_ribbonMaxAutoRetries}
+  MaxAutoRetriesNextServer: 0
+  ConnectTimeout: ${mlrgateway_ribbonConnectTimeout}
+  ReadTimeout: ${mlrgateway_ribbonReadTimeout}
+  OkToRetryOnAllOperations: true
+
+hystrix:
+  shareSecurityContext: true
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: SEMAPHORE
+          thread:
+            timeoutInMilliseconds: ${mlrgateway_hystrixThreadTimeout}
 
 zuul:
   retryable: true
@@ -56,53 +110,3 @@ notification:
   ribbon:
     listOfServers: ${mlrgateway_notificationServers}
     IsSecure: ${mlrgateway_notificationIsSecure:true}
-
-eureka:
-  client:
-    enabled: false
-
-feign:
-  hystrix:
-    enabled: true
-
-ribbon:
-  MaxAutoRetries: ${mlrgateway_ribbonMaxAutoRetries}
-  MaxAutoRetriesNextServer: 0
-  ConnectTimeout: ${mlrgateway_ribbonConnectTimeout}
-  ReadTimeout: ${mlrgateway_ribbonReadTimeout}
-  OkToRetryOnAllOperations: true
-
-hystrix:
-  shareSecurityContext: true
-  command:
-    default:
-      execution:
-        isolation:
-          strategy: SEMAPHORE
-          thread:
-            timeoutInMilliseconds: ${mlrgateway_hystrixThreadTimeout}
-
-logging:
-  level:
-    org:
-      springframework: ${mlrgateway_springFrameworkLogLevel:INFO}
-
-security:
-  require-ssl: true
-  basic:
-    enabled: false
-  oauth2:
-    client:
-      clientId: ${oauthClientId}
-      clientSecret: ${oauthClientSecret}
-      accessTokenUri: ${oauthClientAccessTokenUri}
-      userAuthorizationUri: ${oauthClientAuthorizationUri}
-    resource:
-      id: ${oauthResourceId}
-      jwt:
-        keyUri: ${oauthResourceTokenKeyUri}
-  maintenanceRoles: ${maintenanceRoles:}
-  
-springdoc:
-  swagger-ui:
-    path: /swagger-ui/api-docs.html

@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +23,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
+import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -41,8 +42,13 @@ public class WorkflowController extends BaseController {
 	private final Clock clock;
 	
 	@Autowired
+<<<<<<< HEAD
 	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, Clock clock) {
 		super(notificationService);
+=======
+	public WorkflowController(LegacyWorkflowService legacy, UpdatePrimaryKeyWorkflowService primaryKeyUpdate, NotificationService notificationService, UserAuthUtil userAuthUtil, Clock clock) {
+		super(notificationService, userAuthUtil);
+>>>>>>> 0e46cb7b505fc9190111c30a42058df93fd4c4a6
 		this.legacy = legacy;
 		this.clock = clock;
 	}
@@ -55,7 +61,7 @@ public class WorkflowController extends BaseController {
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/ddots")
-	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, OAuth2Authentication authentication) {
+	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW
 				,file.getOriginalFilename()
 				,getUserName(authentication)
@@ -94,7 +100,7 @@ public class WorkflowController extends BaseController {
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PostMapping("/ddots/validate")
-	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, OAuth2Authentication authentication) {
+	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
 				,file.getOriginalFilename()
 				,getUserName(authentication)
@@ -140,8 +146,13 @@ public class WorkflowController extends BaseController {
 			@RequestParam String oldSiteNumber,
 			@RequestParam String newSiteNumber,
 			HttpServletResponse response, 
+<<<<<<< HEAD
 			OAuth2Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
+=======
+			Authentication authentication) {
+		setReport(new GatewayReport(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
+>>>>>>> 0e46cb7b505fc9190111c30a42058df93fd4c4a6
 				,null
 				,getUserName(authentication)
 				,clock.instant().toString()));

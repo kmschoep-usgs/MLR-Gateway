@@ -1,11 +1,11 @@
 package gov.usgs.wma.mlrgateway.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class UserSummaryReportTest {
 
 	private UserSummaryReportBuilder builder;
@@ -47,7 +47,7 @@ public class UserSummaryReportTest {
 	private SiteReport siteReport2;
 	private ObjectMapper mapper;
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		builder = new UserSummaryReportBuilder();
 		ingestDdotFileSuccess = new StepReport("Ingest D dot File Good", 200, true, "D dot file parsed successfully.");

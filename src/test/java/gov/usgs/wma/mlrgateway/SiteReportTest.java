@@ -1,11 +1,11 @@
 package gov.usgs.wma.mlrgateway;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class SiteReportTest {
 
 	private SiteReport siteReport;
@@ -23,7 +23,7 @@ public class SiteReportTest {
 	private final String transactionType = "M";
 	private ObjectMapper mapper;
 
-	@Before
+	@BeforeEach
 	public void init() {
 		List<StepReport> steps = new ArrayList<>();
 		siteReport = new SiteReport(agencyCode, siteNumber);

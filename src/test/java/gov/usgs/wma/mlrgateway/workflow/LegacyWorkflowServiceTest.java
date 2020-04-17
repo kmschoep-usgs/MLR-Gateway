@@ -1,9 +1,9 @@
 package gov.usgs.wma.mlrgateway.workflow;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -17,14 +17,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.multipart.MultipartFile;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
@@ -37,7 +37,7 @@ import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import gov.usgs.wma.mlrgateway.service.LegacyValidatorService;
 import gov.usgs.wma.mlrgateway.service.LegacyTransformerService;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class LegacyWorkflowServiceTest extends BaseSpringTest {
 
 	@MockBean
@@ -62,7 +62,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	private String oldSiteNumber = "12345678";
 	private String newSiteNumber = "99999999";
 
-	@Before
+	@BeforeEach
 	public void init() {
 		service = new LegacyWorkflowService(ddotService, legacyCruService, transformService, legacyValidatorService, fileExportService);
 		response = new MockHttpServletResponse();

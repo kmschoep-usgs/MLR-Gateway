@@ -9,15 +9,15 @@ import static org.mockito.Mockito.never;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -28,10 +28,10 @@ import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.client.LegacyTransformerClient;
 import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import net.minidev.json.JSONObject;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class LegacyTransformerServiceTest extends BaseSpringTest {
 
 	@MockBean
@@ -56,7 +56,7 @@ public class LegacyTransformerServiceTest extends BaseSpringTest {
 	private final String transformerJsonGeo = "{\"decimalLatitude\" : 40, \"decimalLongitude\": -100}";
 	
 
-	@Before
+	@BeforeEach
 	public void init() {
 		service = new LegacyTransformerService(legacyTransformerClient);
 		WorkflowController.setReport(new GatewayReport(reportName, fileName,userName,reportDate));
