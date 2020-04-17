@@ -234,7 +234,7 @@ public class WorkflowControllerMVCTest {
 				.andExpect(status().isForbidden())
 				.andExpect(content().contentType("application/json"));
 
-		verify(updatePrimaryKey, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 	}
 	
 	@Test

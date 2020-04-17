@@ -1,11 +1,9 @@
 package gov.usgs.wma.mlrgateway.controller;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.willThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +68,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
-		controller = new WorkflowController(legacy, notify, clock());
+		controller = new WorkflowController(legacy, notify, userAuthUtil, clock());
 		response = new MockHttpServletResponse();
 	}
 
