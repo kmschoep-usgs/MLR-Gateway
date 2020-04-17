@@ -57,6 +57,10 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	private String fileName = "test.d";
 	private String userName = "userName";
 	private String reportDate = "01/01/2019";
+	private String oldAgencyCode = "USGS";
+	private String newAgencyCode = "BLAH";
+	private String oldSiteNumber = "12345678";
+	private String newSiteNumber = "99999999";
 
 	@Before
 	public void init() {
@@ -80,7 +84,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyValidatorService, never()).doValidation(anyMap(), anyBoolean(), any());
 		verify(transformService, never()).transformGeo(anyMap(), any());
 		verify(legacyCruService, never()).addTransaction(anyString(), anyString(), anyString(), any());
-		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), any());
+		verify(legacyCruService, never()).patchTransaction(anyString(), anyString(), anyString(), any());
 		verify(fileExportService, never()).exportAdd(anyString(), anyString(), anyString(), any());
 		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), anyString(), any());
 		assertEquals(rtn.getSites().get(0).isSuccess(), false);
@@ -110,7 +114,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
 		verify(transformService).transformGeo(anyMap(), any());
 		verify(legacyCruService).addTransaction(anyString(), anyString(), anyString(), any());
-		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), anyString(), any());
+		verify(legacyCruService, never()).patchTransaction(anyString(), anyString(), anyString(), any());
 		verify(fileExportService).exportAdd(anyString(), anyString(), eq(null), any());
 		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), anyString(), any());
 		assertFalse(rtn.getSites().get(0).isSuccess());
@@ -167,7 +171,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(transformService).transformStationIx(anyMap(), any());
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
 		verify(transformService).transformGeo(anyMap(), any());
-		verify(legacyCruService).updateTransaction(anyString(), anyString(), anyString(), any());
+		verify(legacyCruService).patchTransaction(anyString(), anyString(), anyString(), any());
 		verify(fileExportService).exportUpdate(anyString(), anyString(), eq(null), any());
 		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
@@ -235,5 +239,61 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), LegacyWorkflowService.VALIDATE_DDOT_TRANSACTION_STEP);
 		verify(ddotService).parseDdot(any(MultipartFile.class));
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
+	}
+	
+	@Test
+	public void oneUpdateTransaction_primaryKeyUpdateWorkflow_thenReturnUpdated() throws Exception {
+		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> mlValid = new HashMap<>(ml);
+		mlValid.put("validation",legacyValidation);
+
+		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willReturn(mlValid);
+
+		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+		GatewayReport rtn = WorkflowController.getReport();
+		
+		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
+		verify(legacyCruService).updateTransaction(anyString(), anyString(), any());
+		verify(fileExportService).exportUpdate(anyString(), anyString(), eq(null), any());
+		assertTrue(rtn.getSites().get(0).isSuccess());
+		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
+	}
+	
+	@Test
+	public void primaryKeyUpdateWorkflow_throwsException() throws Exception {
+		Map<String, Object> ml = getUpdatePK();
+
+		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willThrow(new RuntimeException());
+
+		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+
+		GatewayReport rtn = WorkflowController.getReport();
+		
+		assertEquals(HttpStatus.OK.value(), response.getStatus());
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "500");
+		assertFalse(rtn.getSites().get(0).getSteps().get(0).isSuccess());
+		assertFalse(rtn.getSites().get(0).isSuccess());
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\": \"null\"}");
+		assertEquals(LegacyWorkflowService.PRIMARY_KEY_UPDATE_TRANSACTION_STEP, rtn.getSites().get(0).getSteps().get(0).getName());
+		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
+		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), any());
+	}
+	
+	@Test
+	public void oneUpdateTransaction_primaryKeyUpdateWorkflow_NotFound() throws Exception {
+		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> mlValid = new HashMap<>(ml);
+		mlValid.put("validation",legacyValidation);
+
+		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(new HashMap<>());
+
+		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+		GatewayReport rtn = WorkflowController.getReport();
+		
+		verify(legacyValidatorService, never()).doValidation(anyMap(), anyBoolean(), any());
+		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), any());
+		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), eq(null), any());
 	}
 }

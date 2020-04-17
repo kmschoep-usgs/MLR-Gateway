@@ -22,7 +22,6 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
-import gov.usgs.wma.mlrgateway.workflow.UpdatePrimaryKeyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +34,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/workflows")
 public class WorkflowController extends BaseController {
 	private LegacyWorkflowService legacy;
-	private UpdatePrimaryKeyWorkflowService primaryKeyUpdate;
 	private UserSummaryReportBuilder userSummaryReportbuilder;
 	public static final String COMPLETE_WORKFLOW_SUBJECT = "Submitted Ddot Transaction";
 	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "Submitted Ddot Validation";
@@ -43,10 +41,9 @@ public class WorkflowController extends BaseController {
 	private final Clock clock;
 	
 	@Autowired
-	public WorkflowController(LegacyWorkflowService legacy, UpdatePrimaryKeyWorkflowService primaryKeyUpdate, NotificationService notificationService, Clock clock) {
+	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, Clock clock) {
 		super(notificationService);
 		this.legacy = legacy;
-		this.primaryKeyUpdate = primaryKeyUpdate;
 		this.clock = clock;
 	}
 
@@ -130,7 +127,7 @@ public class WorkflowController extends BaseController {
 		return userSummaryReport;
 	}
 	
-	@Operation(description="Updates primary key by creating a new location as a copy of the old location with the new site number and sends an A and M transaction file(s) to WSC.")
+	@Operation(description="Updates primary key (agency code and/or site number) of a monitoring location.")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
@@ -144,22 +141,22 @@ public class WorkflowController extends BaseController {
 			@RequestParam String newSiteNumber,
 			HttpServletResponse response, 
 			OAuth2Authentication authentication) {
-		setReport(new GatewayReport(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
+		setReport(new GatewayReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
 				,null
 				,getUserName(authentication)
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
-			primaryKeyUpdate.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
-			WorkflowController.addWorkflowStepReport(new StepReport(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, HttpStatus.SC_OK, true, UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_SUCCESS));
+			legacy.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_SUCCESS));
 
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
-				WorkflowController.addWorkflowStepReport(new StepReport(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.addWorkflowStepReport(new StepReport(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
 			}
 		}
 

@@ -108,7 +108,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 		given(legacyCruClient.patchMonitoringLocation(anyString())).willReturn(legacyRtn);
 		
 
-		service.updateTransaction(agencyCode, siteNumber, "{}", siteReport);
+		service.patchTransaction(agencyCode, siteNumber, "{}", siteReport);
 		GatewayReport rtn = WorkflowController.getReport();
 		rtn.addSiteReport(siteReport);
 		
@@ -127,7 +127,7 @@ public class LegacyCruServiceTest extends BaseSpringTest {
 		given(legacyCruClient.patchMonitoringLocation(anyString())).willThrow(new RuntimeException());
 		
 		try {
-			service.updateTransaction(agencyCode, siteNumber, "{}", siteReport);
+			service.patchTransaction(agencyCode, siteNumber, "{}", siteReport);
 			fail("addTransaction did not throw an exception to its caller");
 		} catch(Exception e) {}
 		
