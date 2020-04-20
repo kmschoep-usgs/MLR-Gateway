@@ -76,7 +76,7 @@ public class LegacyCruService {
 		}
 	}
 	
-	public String updateTransaction(Object mlId, String json, SiteReport siteReport) {
+	public String updateTransaction(String mlId, String json, SiteReport siteReport) {
 		try {
 			ResponseEntity<String> cruResp = legacyCruClient.updateMonitoringLocation(mlId.toString(), json);
 			int cruStatus = cruResp.getStatusCodeValue();
@@ -84,7 +84,7 @@ public class LegacyCruService {
 			return cruResp.getBody();
 		} catch (Exception e){
 			siteReport.addStepReport(new StepReport(SITE_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, SITE_UPDATE_FAILED));
-			log.error(SITE_UPDATE_STEP + ": " + SITE_UPDATE_FAILED + ":" +  e.getMessage());			
+			log.error(SITE_UPDATE_STEP + ": " + SITE_UPDATE_FAILED + ":" +  e.getMessage(), e);			
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, SITE_UPDATE_FAILED);
 		}
 	}

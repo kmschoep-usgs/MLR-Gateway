@@ -181,7 +181,7 @@ public class LegacyWorkflowService {
 				updatedMonitoringLocation = legacyValidatorService.doValidation(updatedMonitoringLocation, true, siteReport);
 				json = mlToJson(updatedMonitoringLocation);
 				
-				json = legacyCruService.updateTransaction(updatedMonitoringLocation.get(ID), json, siteReport);
+				json = legacyCruService.updateTransaction(updatedMonitoringLocation.get(ID).toString(), json, siteReport);
 				fileExportService.exportUpdate(updatedMonitoringLocation.get(AGENCY_CODE).toString(), updatedMonitoringLocation.get(SITE_NUMBER).toString(), json, siteReport);
 			}
 		} catch (Exception e) {
