@@ -171,12 +171,12 @@ public class LegacyWorkflowService {
 		try {
 			if (!monitoringLocation.isEmpty()) {
 				
-				updatedMonitoringLocation.putAll(monitoringLocation);
+				updatedMonitoringLocation.put(ID, monitoringLocation.get(ID));
 				// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
 				updatedMonitoringLocation.put(TRANSACTION_TYPE, "M");
 				
-				updatedMonitoringLocation.replace(AGENCY_CODE, newAgencyCode);
-				updatedMonitoringLocation.replace(SITE_NUMBER, newSiteNumber);
+				updatedMonitoringLocation.put(AGENCY_CODE, newAgencyCode);
+				updatedMonitoringLocation.put(SITE_NUMBER, newSiteNumber);
 				
 				updatedMonitoringLocation = legacyValidatorService.doValidation(updatedMonitoringLocation, true, siteReport);
 				json = mlToJson(updatedMonitoringLocation);
