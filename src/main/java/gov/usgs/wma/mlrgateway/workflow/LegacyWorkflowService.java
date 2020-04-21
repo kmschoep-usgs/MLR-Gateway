@@ -1,5 +1,6 @@
 package gov.usgs.wma.mlrgateway.workflow;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ public class LegacyWorkflowService {
 	private LegacyCruService legacyCruService;
 	private FileExportService fileExportService;
 	
+	public static final String ID = "id";
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";
 	public static final String DISTRICT_CODE = "districtCode";
@@ -47,10 +49,15 @@ public class LegacyWorkflowService {
 	public static final String VALIDATE_DDOT_WORKFLOW = "Validate D dot File";
 	public static final String VALIDATE_DDOT_WORKFLOW_FAILED = "Validate D dot File workflow failed";
 	public static final String VALIDATE_DDOT_WORKFLOW_SUCCESS = "Validate D dot File workflow completed";
+	public static final String PRIMARY_KEY_UPDATE_WORKFLOW = "Site Agency Code and/or Site Number Update Workflow";
+	public static final String PRIMARY_KEY_UPDATE_WORKFLOW_SUCCESS = "Site Agency Code and/or Site Number Update workflow completed";
+	public static final String PRIMARY_KEY_UPDATE_WORKFLOW_FAILED = "Site Agency Code and/or Site Number Update workflow failed";
 	
 	public static final String VALIDATE_DDOT_TRANSACTION_STEP = "Validate Single D dot Transaction";
 	public static final String VALIDATE_DDOT_TRANSACTION_STEP_FAILURE = "Single transaction validation failed.";
 	public static final String COMPLETE_TRANSACTION_STEP = "Process Single D dot Transaction";
+	public static final String PRIMARY_KEY_UPDATE_TRANSACTION_STEP = "Update Agency Code and/or Site Number";
+
 
 	@Autowired
 	public LegacyWorkflowService(DdotService ddotService, LegacyCruService legacyCruService, LegacyTransformerService transformService, 
@@ -88,7 +95,7 @@ public class LegacyWorkflowService {
 						json = legacyCruService.addTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json, siteReport);
 						fileExportService.exportAdd(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString(), json, siteReport);
 					} else {
-						json = legacyCruService.updateTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json, siteReport);
+						json = legacyCruService.patchTransaction(ml.get(AGENCY_CODE), ml.get(SITE_NUMBER), json, siteReport);
 						fileExportService.exportUpdate(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString(), json, siteReport);
 					}
 
@@ -148,6 +155,46 @@ public class LegacyWorkflowService {
 			WorkflowController.addSiteReport(siteReport);
 			LOG.trace("End processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size());
 		}
+	}
+	
+	public void updatePrimaryKeyWorkflow(String oldAgencyCode, String oldSiteNumber, String newAgencyCode, String newSiteNumber) throws HystrixBadRequestException {
+		String json;
+		Map<String, Object> monitoringLocation = new HashMap<>();
+		Map<String, Object> updatedMonitoringLocation = new HashMap<>();
+		SiteReport siteReport = new SiteReport(oldAgencyCode, oldSiteNumber);
+		// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
+		siteReport.setTransactionType("M");
+		
+		LOG.trace("Start processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ");
+		
+		monitoringLocation = legacyCruService.getMonitoringLocation(oldAgencyCode, oldSiteNumber, false, siteReport);
+		try {
+			if (!monitoringLocation.isEmpty()) {
+				
+				updatedMonitoringLocation.put(ID, monitoringLocation.get(ID));
+				// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
+				updatedMonitoringLocation.put(TRANSACTION_TYPE, "M");
+				
+				updatedMonitoringLocation.put(AGENCY_CODE, newAgencyCode);
+				updatedMonitoringLocation.put(SITE_NUMBER, newSiteNumber);
+				
+				updatedMonitoringLocation = legacyValidatorService.doValidation(updatedMonitoringLocation, true, siteReport);
+				json = mlToJson(updatedMonitoringLocation);
+				
+				json = legacyCruService.updateTransaction(updatedMonitoringLocation.get(ID).toString(), json, siteReport);
+				fileExportService.exportUpdate(updatedMonitoringLocation.get(AGENCY_CODE).toString(), updatedMonitoringLocation.get(SITE_NUMBER).toString(), json, siteReport);
+			}
+		} catch (Exception e) {
+			if(e instanceof FeignBadResponseWrapper){
+				LOG.debug("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);
+				siteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
+			} else {
+				LOG.error("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);
+				siteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
+			}
+		}
+		WorkflowController.addSiteReport(siteReport);
+		LOG.trace("End processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ");
 	}
 	
 	protected String mlToJson(Map<String, Object> ml) {
