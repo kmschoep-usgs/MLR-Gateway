@@ -2,6 +2,8 @@ package gov.usgs.wma.mlrgateway.config;
 
 import java.time.Clock;
 import java.util.concurrent.TimeUnit;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
@@ -12,10 +14,13 @@ import org.springframework.web.servlet.resource.WebJarsResourceResolver;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+	
+	@Value("${ui.host}")
+	private String uiDomainName;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins("*").allowedMethods("GET", "POST","PUT", "DELETE","PATCH");
+        registry.addMapping("/**").allowedOrigins(uiDomainName).allowCredentials(true).allowedMethods("GET", "POST","PUT", "DELETE","PATCH");
     }
 	
 	@Override
