@@ -31,9 +31,6 @@ spring:
         jwt:
           issuer-uri: ${oauthIssuerUri:}
 
-ui:
-  host: ${uiHost:http://localhost:8080}
-
 logging:
   level:
     org:

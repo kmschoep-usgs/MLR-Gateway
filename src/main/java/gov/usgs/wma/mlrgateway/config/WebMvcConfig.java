@@ -14,13 +14,10 @@ import org.springframework.web.servlet.resource.WebJarsResourceResolver;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
-	
-	@Value("${ui.host}")
-	private String uiDomainName;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins(uiDomainName).allowCredentials(true).allowedMethods("GET", "POST","PUT", "DELETE","PATCH");
+        registry.addMapping("/**").allowedOrigins("*").allowCredentials(true).allowedMethods("GET", "POST","PUT", "DELETE","PATCH");
     }
 	
 	@Override
