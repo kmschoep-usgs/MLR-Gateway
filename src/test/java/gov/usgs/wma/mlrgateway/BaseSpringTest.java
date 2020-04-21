@@ -49,6 +49,15 @@ public class BaseSpringTest {
 		return m;
 	}
 	
+	public static Map<String, Object> getUpdatePK() {
+		Map<String, Object> m = new HashMap<>();
+		m.put(LegacyWorkflowService.ID, "1");
+		m.put(LegacyWorkflowService.TRANSACTION_TYPE, LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
+		m.put(LegacyWorkflowService.AGENCY_CODE, "USGS ");
+		m.put(LegacyWorkflowService.SITE_NUMBER, "12345678       ");
+		return m;
+	}
+	
 	public static Map<String,Object> getUpdateValid() {
 		Map<String, Object> m = getUpdate();
 		Map<String, Object> validationMap = new HashMap<>();

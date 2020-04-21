@@ -5,6 +5,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html). (Patch version X.Y.0 is implied if not specified.)
 
 ## [Unreleased]
+### Added
+- Maven code quality parent pom
+- Maven caching for docker build efficiency
+- Update Primary Key workflow
+- Login to Util Controller for separate UI
+
+### Changed
+- Made authorization group checking case sensitive
+- Authentication uses JWT instead of JDBC sessions
+- Upgrade to Spring Boot 2.x
+- Library upgrades
+- Use Springdoc for swagger UI instead of Springfox
+- Fix Docker health check
+- Fix PATCH, CORS, and NPE when DDot has no district codes.
+
+### Removed
+- UI code
 
 ## [0.5.0] - 2019-04-12 - End of Pilot
 ### Added

@@ -26,7 +26,6 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
-import gov.usgs.wma.mlrgateway.workflow.UpdatePrimaryKeyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
 
@@ -50,8 +49,6 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@MockBean
 	private LegacyWorkflowService legacy;
 	@MockBean
-	private UpdatePrimaryKeyWorkflowService updatePrimaryKey;
-	@MockBean
 	private UserAuthUtil userAuthUtil;
 	
 	@Bean
@@ -71,7 +68,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
-		controller = new WorkflowController(legacy, updatePrimaryKey, notify, userAuthUtil, clock());
+		controller = new WorkflowController(legacy, notify, userAuthUtil, clock());
 		response = new MockHttpServletResponse();
 	}
 
@@ -177,10 +174,10 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		String oldSiteNumber = "123456789";
 		String newSiteNumber = "987654321";
 		UserSummaryReport rtn = controller.updatePrimaryKeyWorkflow(oldAgencyCode, newAgencyCode, oldSiteNumber, newSiteNumber, response, mockAuth);
-		assertEquals(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, rtn.getName() );
+		assertEquals(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, rtn.getName() );
 		assertEquals(new ArrayList<>(), rtn.getWorkflowSteps());
 		assertEquals(new ArrayList<>(), rtn.getSites());
-		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 	}
 	
 	@Test
@@ -190,18 +187,18 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		String newAgencyCode = "BLAH";
 		String oldSiteNumber = "123456789";
 		String newSiteNumber = "987654321";
-		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		willThrow(new FeignBadResponseWrapper(400, null, badText)).given(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 
 		UserSummaryReport rtn = controller.updatePrimaryKeyWorkflow(oldAgencyCode, newAgencyCode, oldSiteNumber, newSiteNumber, response, mockAuth);
 		StepReport updatePrimaryKeyWorkflowStep = rtn.getWorkflowSteps().stream()
-				.filter(s -> UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED.equals(s.getName()))
+				.filter(s -> LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
-		assertEquals(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, rtn.getName());
+		assertEquals(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, rtn.getName());
 		assertEquals("400", updatePrimaryKeyWorkflowStep.getHttpStatus().toString());
-		assertEquals(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, updatePrimaryKeyWorkflowStep.getName());
+		assertEquals(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, updatePrimaryKeyWorkflowStep.getName());
 		assertEquals(badText, updatePrimaryKeyWorkflowStep.getDetails());
 
-		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 	}
 	
 	@Test
@@ -211,17 +208,17 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		String newAgencyCode = "BLAH";
 		String oldSiteNumber = "123456789";
 		String newSiteNumber = "987654321";
-		willThrow(new HystrixBadRequestException(badText)).given(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		willThrow(new HystrixBadRequestException(badText)).given(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 		UserSummaryReport rtn = controller.updatePrimaryKeyWorkflow(oldAgencyCode, newAgencyCode, oldSiteNumber, newSiteNumber, response, mockAuth);
 		StepReport updatePrimaryKeyWorkflowStep = rtn.getWorkflowSteps().stream()
-				.filter(s -> UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED.equals(s.getName()))
+				.filter(s -> LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
-		assertEquals(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, rtn.getName());
+		assertEquals(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, rtn.getName());
 		assertEquals("500", updatePrimaryKeyWorkflowStep.getHttpStatus().toString());
-		assertEquals(UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, updatePrimaryKeyWorkflowStep.getName());
+		assertEquals(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, updatePrimaryKeyWorkflowStep.getName());
 		assertEquals(badText, updatePrimaryKeyWorkflowStep.getDetails());
 		
-		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 	}
 
 }

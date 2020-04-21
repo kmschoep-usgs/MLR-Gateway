@@ -38,7 +38,6 @@ import gov.usgs.wma.mlrgateway.client.DdotClient;
 import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
-import gov.usgs.wma.mlrgateway.workflow.UpdatePrimaryKeyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
 import gov.usgs.wma.mlrgateway.config.MethodSecurityConfig;
@@ -55,9 +54,6 @@ public class WorkflowControllerMVCTest {
 
 	@MockBean
 	private LegacyWorkflowService legacy;
-
-	@MockBean
-	private UpdatePrimaryKeyWorkflowService updatePrimaryKey;
 
 	@MockBean
 	private NotificationService notificationService;
@@ -208,7 +204,7 @@ public class WorkflowControllerMVCTest {
 	@Test
 	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void happyPathUpdatePrimaryKeyWorkflow() throws Exception {
-		String legacyJson = "{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
+		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -222,7 +218,7 @@ public class WorkflowControllerMVCTest {
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(legacyJson));
 
-		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 	}
 
 	@Test
@@ -238,17 +234,17 @@ public class WorkflowControllerMVCTest {
 				.andExpect(status().isForbidden())
 				.andExpect(content().contentType("application/json"));
 
-		verify(updatePrimaryKey, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 	}
 	
 	@Test
 	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void badResponse_UpdatePrimaryKeyWorkflow() throws Exception {
-		String badJson = "{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
+		String badJson = "{\"name\":\"" + LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\",\"workflowSteps\":[{\"name\":\"" 
-				+ UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED + "\",\"httpStatus\":400,\"success\":false,\"details\":\"{\\\"error\\\": 123}\"}],"
+				+ LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED + "\",\"httpStatus\":400,\"success\":false,\"details\":\"{\\\"error\\\": 123}\"}],"
 				+ "\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
-		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.set("oldAgencyCode", "USGS");
@@ -261,17 +257,17 @@ public class WorkflowControllerMVCTest {
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
-		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 	}
 	
 	@Test
 	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void serverError_UpdatePrimaryKeyWorkflow() throws Exception {
-		String badJson = "{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
+		String badJson = "{\"name\":\"" + LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
-				+ "\"workflowSteps\":[{\"name\":\"" + UpdatePrimaryKeyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED + "\",\"httpStatus\":500,"
+				+ "\"workflowSteps\":[{\"name\":\"" + LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED + "\",\"httpStatus\":500,"
 				+  "\"success\":false,\"details\":\"wow 456\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
-		willThrow(new RuntimeException("wow 456")).given(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		willThrow(new RuntimeException("wow 456")).given(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.set("oldAgencyCode", "USGS");
@@ -284,6 +280,6 @@ public class WorkflowControllerMVCTest {
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
-		verify(updatePrimaryKey).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
 	}
 }
