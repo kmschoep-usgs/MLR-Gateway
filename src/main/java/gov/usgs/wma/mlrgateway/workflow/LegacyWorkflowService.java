@@ -171,16 +171,20 @@ public class LegacyWorkflowService {
 		try {
 			if (!monitoringLocation.isEmpty()) {
 				
-				updatedMonitoringLocation.put(ID, monitoringLocation.get(ID));
+				updatedMonitoringLocation.putAll(monitoringLocation);
 				// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
 				updatedMonitoringLocation.put(TRANSACTION_TYPE, "M");
 				
-				updatedMonitoringLocation.put(AGENCY_CODE, newAgencyCode);
-				updatedMonitoringLocation.put(SITE_NUMBER, newSiteNumber);
+				updatedMonitoringLocation.replace(AGENCY_CODE, newAgencyCode);
+				updatedMonitoringLocation.replace(SITE_NUMBER, newSiteNumber);
 				
+				// Need full object to validate as an Add transaction.  Need to validate as an Add transaction because the update
+				// validations will attempt to retrieve the existing record based on the new primary key, which won't exist.
 				updatedMonitoringLocation = legacyValidatorService.doValidation(updatedMonitoringLocation, true, siteReport);
+				
 				json = mlToJson(updatedMonitoringLocation);
 				
+				// Need to submit entire record for update (vs. patch), otherwise fields that are not submitted are set to null in the database.
 				json = legacyCruService.updateTransaction(updatedMonitoringLocation.get(ID).toString(), json, siteReport);
 				fileExportService.exportUpdate(updatedMonitoringLocation.get(AGENCY_CODE).toString(), updatedMonitoringLocation.get(SITE_NUMBER).toString(), json, siteReport);
 			}
