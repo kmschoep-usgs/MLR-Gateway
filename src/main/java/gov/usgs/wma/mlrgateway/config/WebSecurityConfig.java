@@ -34,7 +34,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.csrf().disable()
 		;
 	}
-
+	
 	@Bean
 	public TaskScheduler taskScheduler() {
 		return new ConcurrentTaskScheduler();

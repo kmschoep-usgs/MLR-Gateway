@@ -161,6 +161,7 @@ public class LegacyWorkflowService {
 		String json;
 		Map<String, Object> monitoringLocation = new HashMap<>();
 		Map<String, Object> updatedMonitoringLocation = new HashMap<>();
+		Map<String, Object> validatedMonitoringLocation = new HashMap<>();
 		SiteReport siteReport = new SiteReport(oldAgencyCode, oldSiteNumber);
 		// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
 		siteReport.setTransactionType("M");
@@ -171,18 +172,28 @@ public class LegacyWorkflowService {
 		try {
 			if (!monitoringLocation.isEmpty()) {
 				
-				updatedMonitoringLocation.put(ID, monitoringLocation.get(ID));
+				updatedMonitoringLocation.putAll(monitoringLocation);
 				// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
 				updatedMonitoringLocation.put(TRANSACTION_TYPE, "M");
 				
-				updatedMonitoringLocation.put(AGENCY_CODE, newAgencyCode);
-				updatedMonitoringLocation.put(SITE_NUMBER, newSiteNumber);
+				updatedMonitoringLocation.replace(AGENCY_CODE, newAgencyCode);
+				updatedMonitoringLocation.replace(SITE_NUMBER, newSiteNumber);
 				
+				// Need full object to validate as an Add transaction.  Need to validate as an Add transaction because the update
+				// validations will attempt to retrieve the existing record based on the new primary key, which won't exist.
 				updatedMonitoringLocation = legacyValidatorService.doValidation(updatedMonitoringLocation, true, siteReport);
-				json = mlToJson(updatedMonitoringLocation);
 				
-				json = legacyCruService.updateTransaction(updatedMonitoringLocation.get(ID).toString(), json, siteReport);
-				fileExportService.exportUpdate(updatedMonitoringLocation.get(AGENCY_CODE).toString(), updatedMonitoringLocation.get(SITE_NUMBER).toString(), json, siteReport);
+				// Only submit the fields we want to update to the update service so that we don't accidentally overwrite a change
+				// that may have happened while the updated monitoring location was being validated.
+				validatedMonitoringLocation.put(ID, updatedMonitoringLocation.get(ID));
+				validatedMonitoringLocation.put(TRANSACTION_TYPE, updatedMonitoringLocation.get(TRANSACTION_TYPE));
+				validatedMonitoringLocation.put(AGENCY_CODE, updatedMonitoringLocation.get(AGENCY_CODE));
+				validatedMonitoringLocation.put(SITE_NUMBER, updatedMonitoringLocation.get(SITE_NUMBER));
+				
+				json = mlToJson(validatedMonitoringLocation);
+				
+				json = legacyCruService.updateTransaction(validatedMonitoringLocation.get(ID).toString(), json, siteReport);
+				fileExportService.exportUpdate(validatedMonitoringLocation.get(AGENCY_CODE).toString(), validatedMonitoringLocation.get(SITE_NUMBER).toString(), json, siteReport);
 			}
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper){
