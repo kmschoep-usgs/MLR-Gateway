@@ -1,6 +1,7 @@
 package gov.usgs.wma.mlrgateway.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,6 +54,19 @@ public class AdminServiceTest extends BaseSpringTest {
         assertTrue(bodyHtml.contains("<tr><th>District Code</th><th>New Locations Added</th><th>Location Modifications</th></tr>"));
         assertTrue(bodyHtml.contains("<tr><td>1</td><td>0</td><td>0</td></tr>"));
         assertTrue(bodyHtml.contains("<tr><td>2</td><td>1</td><td>1</td></tr>"));
+        assertFalse(bodyHtml.contains("No transactions were executed on 2020-01-01"));
+    }
+
+    @Test
+    public void generateSummaryHTMLEmptyTest() throws Exception {
+        given(cruClient.getLoggedTransactionSummary("2020-01-01", "2020-01-01", null)).willReturn(
+            new ResponseEntity<String>("[]", HttpStatus.OK)
+        );
+
+        String bodyHtml = service.generateSummaryHTML("2020-01-01");
+
+        assertFalse(bodyHtml.contains("<tr><th>District Code</th><th>New Locations Added</th><th>Location Modifications</th></tr>"));
+        assertTrue(bodyHtml.contains("No transactions were executed on 2020-01-01"));
     }
 
     @Test

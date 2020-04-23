@@ -64,29 +64,36 @@ public class AdminService {
         List<Map<String, Object>> summaryList = new ObjectMapper().readValue(rawResponse, ArrayList.class);
 
         builder.append("<h1>Summary of MLR Transactions executed on " + date + "</h1>");
-        builder.append("<p>This table shows the number of transactions that were executed which "); 
-        builder.append("<i>affected</i> the listed district code. This does not guarantee that ");
-        builder.append("a given location still exists within the district code. I.E: A ");
-        builder.append("modification of a location that moves it from one district code to ");
-        builder.append("another will be reflected in this table as a Location Modification for ");
-        builder.append("both the old and new district code.</p>");
-        builder.append("<table style=\"border-collapse: collapse;\" cellpadding=\"7\" border=\"1\">");
-        builder.append("<tr>");
-        builder.append("<th>District Code</th>");
-        builder.append("<th>New Locations Added</th>");
-        builder.append("<th>Location Modifications</th>");
-        builder.append("</tr>");
 
-        for(Map<String,Object> summary : summaryList) {
+        if(summaryList != null && !summaryList.isEmpty()) {
+            builder.append("<p>This table shows the number of transactions that were executed which "); 
+            builder.append("<i>affected</i> the listed district code. This will not list transactions that ");
+            builder.append("resulted in no fields of a location being changed. This table does not infer ");
+            builder.append("that a given location still exists within a given district code. I.E: A ");
+            builder.append("modification of a location that moves it from one district code to ");
+            builder.append("another will be reflected in this table as a Location Modification for ");
+            builder.append("both the old and new district code.</p>");
+            builder.append("<table style=\"border-collapse: collapse;\" cellpadding=\"7\" border=\"1\">");
             builder.append("<tr>");
-            builder.append("<td>" + summary.get(DISTRICT_CODE_KEY) + "</td>");
-            builder.append("<td>" + summary.get(INSERT_COUNT_KEY) + "</td>");
-            builder.append("<td>" + summary.get(UPDATE_COUNT_KEY) + "</td>");
+            builder.append("<th>District Code</th>");
+            builder.append("<th>New Locations Added</th>");
+            builder.append("<th>Location Modifications</th>");
             builder.append("</tr>");
-        }
 
-        builder.append("</table>\n");
-        builder.append("<p>To view the details of each change visit the Audit Table section of the MLR Website.</p>");
+            for(Map<String,Object> summary : summaryList) {
+                builder.append("<tr>");
+                builder.append("<td>" + summary.get(DISTRICT_CODE_KEY) + "</td>");
+                builder.append("<td>" + summary.get(INSERT_COUNT_KEY) + "</td>");
+                builder.append("<td>" + summary.get(UPDATE_COUNT_KEY) + "</td>");
+                builder.append("</tr>");
+            }
+
+            builder.append("</table>");
+            builder.append("<p>To view the details of each change visit the Audit Table section of the MLR Website.</p>");
+        } else {
+            builder.append("<p>No transactions were executed on " + date + " that resulted in any modifications to location data in MLR.");
+        }
+        
         return builder.toString();
     }
 }
