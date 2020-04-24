@@ -38,15 +38,15 @@ public class AdminControllerTest extends BaseSpringTest {
 	}
 
 	@Test
-	public void _sendSummaryEmailHappyPath() {
+	public void sendSummaryEmailHappyPath() {
 		List<String> recipients = new ArrayList<>();
 		recipients.add("test");
 
 		try {
 			controller.sendSummaryEmail("2020-01-01", recipients, response);
 		} catch(Exception e) {
-            fail("Expected no Exceptions, but got " + e.getClass().getName());
-        }
+			fail("Expected no Exceptions, but got " + e.getClass().getName());
+		}
 	}
 
 	@Test
