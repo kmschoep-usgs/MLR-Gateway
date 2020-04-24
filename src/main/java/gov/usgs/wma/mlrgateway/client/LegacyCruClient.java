@@ -45,17 +45,6 @@ public interface LegacyCruClient {
 		@RequestParam("districtCode") String districtCode
 	);
 		
-	@RequestMapping(method=RequestMethod.GET, value="monitoringLocations/loggedTransactions/count")
-	ResponseEntity<Integer> getLoggedTransactionCount(
-		@RequestParam("agencyCode") String agencyCode, 
-		@RequestParam("siteNumber") String siteNumber,
-		@RequestParam("startDate") String startDate,
-		@RequestParam("endDate") String endDate,
-		@RequestParam("username") String username,
-		@RequestParam("action") String action,
-		@RequestParam("districtCode") String districtCode
-	);
-		
 	@RequestMapping(method=RequestMethod.GET, value="monitoringLocations/loggedTransactions/summary")
 	ResponseEntity<String> getLoggedTransactionSummary(
 		@RequestParam("startDate") String startDate,
