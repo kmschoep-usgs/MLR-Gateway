@@ -27,12 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private AdminService adminService;
+	private AdminService adminService;
 
-    @Autowired
-    public AdminController(AdminService adminService) {
-        this.adminService = adminService;
-    }
+	@Autowired
+	public AdminController(AdminService adminService) {
+		this.adminService = adminService;
+	}
 
 	@Operation(description="Generates and sends a transaction summary email for the provided date")
 	@ApiResponses(value={
@@ -44,7 +44,7 @@ public class AdminController {
 	public void sendSummaryEmail(
 		@RequestParam @Pattern(regexp="\\d\\d\\d\\d-\\d\\d-\\d\\d") String date,
 		@RequestParam @NotEmpty List<String> recipientList,
-        HttpServletResponse response) throws IOException {
+		HttpServletResponse response) throws IOException {
 		try {
 			adminService.sendSummaryEmail(date, recipientList);
 			response.setStatus(HttpStatus.OK.value());
