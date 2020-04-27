@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,7 +21,7 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.BulkTransactionFilesWorkflowService;
-import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
+import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
@@ -57,7 +56,7 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PreAuthorize("hasPermission(null, null)")
-	@PostMapping("/bulk")
+	@PostMapping(path = "/bulkTransactionFiles", consumes = "multipart/form-data")
 	public UserSummaryReport bulkGenerateTransactionFilesWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_STEP
 				,file.getOriginalFilename()
@@ -66,6 +65,7 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
 			transactionFiles.generateTransactionFilesWorkflow(file);
+			BulkTransactionFilesWorkflowController.addWorkflowStepReport(new StepReport(BULK_GENERATE_TRANSACTION_FILES_WORKFLOW, HttpStatus.SC_OK, true, FileExportService.EXPORT_SUCCESSFULL));
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
@@ -75,7 +75,6 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 				BulkTransactionFilesWorkflowController.addWorkflowStepReport(new StepReport(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
 			}
 		}
-
 		// Overall Status ignores Notification Status
 		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
 		

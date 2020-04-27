@@ -20,7 +20,7 @@ import com.opencsv.exceptions.CsvException;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
-import gov.usgs.wma.mlrgateway.controller.WorkflowController;
+import gov.usgs.wma.mlrgateway.controller.BulkTransactionFilesWorkflowController;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import gov.usgs.wma.mlrgateway.util.ParseCSV;
@@ -66,19 +66,19 @@ public class BulkTransactionFilesWorkflowService {
 				 SiteReport siteReport = new SiteReport(ml[0], ml[1]);
 			 try {
 				 Map<String, Object> monitoringLocation = new HashMap<>();
-				 monitoringLocation = legacyCruService.getMonitoringLocation(ml[0], ml[1], false, siteReport);
+				 monitoringLocation = legacyCruService.getMonitoringLocation(ml[0].trim(), ml[1].trim(), false, siteReport);
 				 json = mlToJson(monitoringLocation);
 				 fileExportService.exportUpdate(monitoringLocation.get(AGENCY_CODE).toString(), monitoringLocation.get(SITE_NUMBER).toString(), json, siteReport);
-				 WorkflowController.addSiteReport(siteReport);	
+				 BulkTransactionFilesWorkflowController.addSiteReport(siteReport);	
 			 	} catch (Exception e) {
 			 		if(e instanceof FeignBadResponseWrapper){
 			 			LOG.error("An error occurred while processing transaction: agency code: " + ml[0] + "site number: " + ml[1], e);
 			 			siteReport.addStepReport(new StepReport(BULK_GENERATE_TRANSACTION_FILES_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
-						WorkflowController.addSiteReport(siteReport);
+			 			BulkTransactionFilesWorkflowController.addSiteReport(siteReport);
 				 	} else {
 			 			LOG.error("An error occurred while processing transaction: agency code: " + ml[0] + "site number: " + ml[1], e);
 						siteReport.addStepReport(new StepReport(BULK_GENERATE_TRANSACTION_FILES_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
-						WorkflowController.addSiteReport(siteReport);
+						BulkTransactionFilesWorkflowController.addSiteReport(siteReport);
 					}
 			 	}
 			 }

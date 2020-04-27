@@ -12,8 +12,10 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Service
 public class ParseCSV {
 
 	public List<String[]> getMlList(MultipartFile inputCsvFile) throws CsvException, IOException {
