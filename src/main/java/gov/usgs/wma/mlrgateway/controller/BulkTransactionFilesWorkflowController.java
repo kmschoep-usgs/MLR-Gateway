@@ -37,8 +37,7 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 	private BulkTransactionFilesWorkflowService transactionFiles;
 	private UserSummaryReportBuilder userSummaryReportbuilder;
 	
-	public static final String BULK_GENERATE_TRANSACTION_FILES_WORKFLOW = "Submit a CSV file of agency codes and site numbers to bulk generate transaction files";
-	public static final String BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_SUBJECT = "Submitted Bulk Generation Transactions file";
+	
 	private final Clock clock;
 	
 	@Autowired
@@ -58,14 +57,14 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping(path = "/bulkTransactionFiles", consumes = "multipart/form-data")
 	public UserSummaryReport bulkGenerateTransactionFilesWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
-		setReport(new GatewayReport(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_STEP
+		setReport(new GatewayReport(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW
 				,file.getOriginalFilename()
 				,getUserName(authentication)
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
 			transactionFiles.generateTransactionFilesWorkflow(file);
-			BulkTransactionFilesWorkflowController.addWorkflowStepReport(new StepReport(BULK_GENERATE_TRANSACTION_FILES_WORKFLOW, HttpStatus.SC_OK, true, FileExportService.EXPORT_SUCCESSFULL));
+			BulkTransactionFilesWorkflowController.addWorkflowStepReport(new StepReport(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW, HttpStatus.SC_OK, true, FileExportService.EXPORT_SUCCESSFULL));
 		} catch (Exception e) {
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
@@ -79,7 +78,7 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
 		
 		//Send Notification
-		notificationStep(BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_SUBJECT, "process-" + file.getOriginalFilename(), authentication);
+		notificationStep(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_SUBJECT, "process-" + file.getOriginalFilename(), authentication);
 
 		//Return report
 		GatewayReport rtn = getReport();

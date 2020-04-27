@@ -75,7 +75,7 @@ public class BulkTransactionFilesWorkflowControllerTest extends BaseSpringTest {
 	public void happyPath_BulkTransactionFilesWorkflow() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "sites.csv", "text/plain", "".getBytes());
 		UserSummaryReport rtn = controller.bulkGenerateTransactionFilesWorkflow(file, response, mockAuth);
-		assertEquals(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_STEP, rtn.getName() );
+		assertEquals(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW, rtn.getName() );
 		assertEquals(new ArrayList<>(), rtn.getWorkflowSteps());
 		assertEquals(new ArrayList<>(), rtn.getSites());
 		assertEquals("sites.csv", rtn.getInputFileName());
@@ -92,7 +92,7 @@ public class BulkTransactionFilesWorkflowControllerTest extends BaseSpringTest {
 		StepReport bulkTransactionsWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
-		assertEquals(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_STEP, rtn.getName());
+		assertEquals(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW, rtn.getName());
 		assertEquals("400", bulkTransactionsWorkflowStep.getHttpStatus().toString());
 		assertEquals(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_FAILED, bulkTransactionsWorkflowStep.getName());
 		assertEquals(badText, bulkTransactionsWorkflowStep.getDetails());
@@ -109,7 +109,7 @@ public class BulkTransactionFilesWorkflowControllerTest extends BaseSpringTest {
 		StepReport bulkTransactionsWorkflowStep = rtn.getWorkflowSteps().stream()
 				.filter(s -> BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_FAILED.equals(s.getName()))
 				.findAny().orElse(null);
-		assertEquals(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_STEP, rtn.getName());
+		assertEquals(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW, rtn.getName());
 		assertEquals("500", bulkTransactionsWorkflowStep.getHttpStatus().toString());
 		assertEquals(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_FAILED, bulkTransactionsWorkflowStep.getName());
 		assertEquals(badText, bulkTransactionsWorkflowStep.getDetails());

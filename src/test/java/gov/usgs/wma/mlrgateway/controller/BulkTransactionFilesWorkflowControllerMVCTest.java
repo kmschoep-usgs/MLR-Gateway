@@ -81,7 +81,7 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 	@Test
 	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void happyPathBulkTransactionFilesWorkflow() throws Exception {
-		String bulkTransactionsJson = "{\"name\":\"" + BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_STEP + "\",\"inputFileName\":\"sites.csv\","
+		String bulkTransactionsJson = "{\"name\":\"" + BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW + "\",\"inputFileName\":\"sites.csv\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
 		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/bulkTransactionFiles").file(file))
@@ -105,7 +105,7 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 	@Test
 	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void badResponse_BulkTransactionFilesWorkflow() throws Exception {
-		String badJson = "{\"name\":\"" + BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_STEP + "\",\"inputFileName\":\"sites.csv\","
+		String badJson = "{\"name\":\"" + BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW + "\",\"inputFileName\":\"sites.csv\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\",\"workflowSteps\":[{\"name\":\"" 
 				+ BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_FAILED + "\",\"httpStatus\":400,\"success\":false,\"details\":\"{\\\"error\\\": 123}\"}],"
 				+ "\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
@@ -122,7 +122,7 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 	@Test
 	@WithMockUser(username = "test", authorities = "test_allowed")
 	public void serverError_BulkTransactionFilesWorkflow() throws Exception {
-		String badJson = "{\"name\":\"" + BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_STEP + "\",\"inputFileName\":\"sites.csv\","
+		String badJson = "{\"name\":\"" + BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW + "\",\"inputFileName\":\"sites.csv\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[{\"name\":\"" + BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_FAILED + "\",\"httpStatus\":500,"
 				+  "\"success\":false,\"details\":\"wow 456\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";

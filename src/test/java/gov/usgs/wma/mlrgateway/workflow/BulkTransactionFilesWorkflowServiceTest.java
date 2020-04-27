@@ -101,7 +101,7 @@ public class BulkTransactionFilesWorkflowServiceTest extends BaseSpringTest {
 		assertFalse(rtn.getSites().get(0).getSteps().get(0).isSuccess());
 		assertFalse(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\": \"null\"}");
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_STEP);
+		assertEquals(rtn.getSites().get(0).getSteps().get(0).getName(), BulkTransactionFilesWorkflowService.GENERATE_TRANSACTION_FILE_STEP);
 		verify(parseService).getMlList(any(MultipartFile.class));
 		verify(legacyCruService).getMonitoringLocation(any(), any(), anyBoolean(), any());
 	}

@@ -21,8 +21,10 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.controller.BulkTransactionFilesWorkflowController;
+import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
+import gov.usgs.wma.mlrgateway.service.NotificationService;
 import gov.usgs.wma.mlrgateway.util.ParseCSV;
 
 @Service
@@ -34,9 +36,15 @@ public class BulkTransactionFilesWorkflowService {
 	
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";	
-	public static final String BULK_GENERATE_TRANSACTION_FILES_STEP = "Bulk generate transaction files from a list of agency codes and site numbers";
-	public static final String BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_FAILED = "Bulk generate transaction files workflow failed";
+	public static final String BULK_GENERATE_TRANSACTION_FILES_WORKFLOW = "Submit a CSV file of agency codes and site numbers to bulk generate transaction files";
+	public static final String BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_SUBJECT = "Submitted Bulk Generation Transactions file";
+	public static final String BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_FAILED = "Submit a CSV file of agency codes and site numbers to bulk generate transaction files failed";
 
+	public static final String GET_LIST_OF_MONITORING_LOCATIONS_STEP = "Retrieve a list of agency codes and site numbers from a CSV file";
+	public static final String GET_LIST_OF_MONITORING_LOCATIONS_STEP_FAILED = "Retrieve a list of agency codes and site numbers from a CSV file failed";
+	public static final String GENERATE_TRANSACTION_FILE_STEP = "Generate transaction file for monitoring location";
+	public static final String GENERATE_TRANSACTION_FILE_STEP_FAILED = "Generate transaction file failed";
+	
 
 
 	@Autowired
@@ -53,10 +61,15 @@ public class BulkTransactionFilesWorkflowService {
 		List<String[]> monitoringLocations = new LinkedList<>();
 		try {
 			monitoringLocations = parseService.getMlList(file);
-		} catch (CsvException e1) {
-			LOG.error("An error occurred while parsing input file [" + file.getOriginalFilename() + "] ", e1);	
-		} catch (IOException e1) {
-			LOG.error("An error occurred while parsing input file [" + file.getOriginalFilename() + "] ", e1);
+		} catch (CsvException | IOException e) {
+			LOG.error("An error occurred while parsing input file [" + file.getOriginalFilename() + "] ", e);	
+			if (e instanceof FeignBadResponseWrapper) {
+				int status = ((FeignBadResponseWrapper) e).getStatus();
+				BulkTransactionFilesWorkflowController.addWorkflowStepReport(new StepReport(GET_LIST_OF_MONITORING_LOCATIONS_STEP_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
+			} else {
+				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				BulkTransactionFilesWorkflowController.addWorkflowStepReport(new StepReport(GET_LIST_OF_MONITORING_LOCATIONS_STEP_FAILED, status, false, e.getMessage()));
+			}
 		}
 		LOG.trace("End CSV file Parsing");
 
@@ -73,11 +86,11 @@ public class BulkTransactionFilesWorkflowService {
 			 	} catch (Exception e) {
 			 		if(e instanceof FeignBadResponseWrapper){
 			 			LOG.error("An error occurred while processing transaction: agency code: " + ml[0] + "site number: " + ml[1], e);
-			 			siteReport.addStepReport(new StepReport(BULK_GENERATE_TRANSACTION_FILES_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
+			 			siteReport.addStepReport(new StepReport(GENERATE_TRANSACTION_FILE_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
 			 			BulkTransactionFilesWorkflowController.addSiteReport(siteReport);
 				 	} else {
 			 			LOG.error("An error occurred while processing transaction: agency code: " + ml[0] + "site number: " + ml[1], e);
-						siteReport.addStepReport(new StepReport(BULK_GENERATE_TRANSACTION_FILES_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
+						siteReport.addStepReport(new StepReport(GENERATE_TRANSACTION_FILE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
 						BulkTransactionFilesWorkflowController.addSiteReport(siteReport);
 					}
 			 	}
