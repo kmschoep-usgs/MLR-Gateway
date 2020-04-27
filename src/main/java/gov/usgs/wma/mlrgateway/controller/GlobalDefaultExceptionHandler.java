@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartException;
 
+import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
+
 @ControllerAdvice
 public class GlobalDefaultExceptionHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(GlobalDefaultExceptionHandler.class);
@@ -69,7 +71,16 @@ public class GlobalDefaultExceptionHandler {
 			//Note: we are giving the user a generic message.  
 			//Server logs can be used to troubleshoot problems.
 			String msgText = "Something bad happened. Contact us with Reference Number: " + hashValue;
-			LOG.error(msgText, ex);
+			String errorText = msgText;
+
+			if(ex instanceof FeignBadResponseWrapper) {
+				FeignBadResponseWrapper badReq = ((FeignBadResponseWrapper)ex);
+				errorText += "\nFeignBadResponse:\nHTTP: " + badReq.getStatus()
+					+ "\nBody: " + badReq.getBody() + "\nMessage: " + badReq.getMessage() + "\n'";
+			}
+
+			LOG.error(errorText, ex);
+			
 			responseMap.put(ERROR_MESSAGE_KEY, msgText);
 		}
 		return responseMap;
