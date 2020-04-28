@@ -21,10 +21,8 @@ import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.controller.BulkTransactionFilesWorkflowController;
-import gov.usgs.wma.mlrgateway.controller.WorkflowController;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
-import gov.usgs.wma.mlrgateway.service.NotificationService;
 import gov.usgs.wma.mlrgateway.util.ParseCSV;
 
 @Service
@@ -61,7 +59,7 @@ public class BulkTransactionFilesWorkflowService {
 		List<String[]> monitoringLocations = new LinkedList<>();
 		try {
 			monitoringLocations = parseService.getMlList(file);
-		} catch (CsvException | IOException e) {
+		} catch (CsvException | IOException | FeignBadResponseWrapper e) {
 			LOG.error("An error occurred while parsing input file [" + file.getOriginalFilename() + "] ", e);	
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
@@ -75,27 +73,27 @@ public class BulkTransactionFilesWorkflowService {
 
 		//2. Get Individual Monitoring Locations
 		LOG.trace("Start processing monitoring locations [" + file.getOriginalFilename() + "] " + monitoringLocations.size());
-			 for (String[] ml : monitoringLocations) {
-				 SiteReport siteReport = new SiteReport(ml[0], ml[1]);
-			 try {
-				 Map<String, Object> monitoringLocation = new HashMap<>();
-				 monitoringLocation = legacyCruService.getMonitoringLocation(ml[0].trim(), ml[1].trim(), false, siteReport);
-				 json = mlToJson(monitoringLocation);
-				 fileExportService.exportUpdate(monitoringLocation.get(AGENCY_CODE).toString(), monitoringLocation.get(SITE_NUMBER).toString(), json, siteReport);
-				 BulkTransactionFilesWorkflowController.addSiteReport(siteReport);	
-			 	} catch (Exception e) {
-			 		if(e instanceof FeignBadResponseWrapper){
-			 			LOG.error("An error occurred while processing transaction: agency code: " + ml[0] + "site number: " + ml[1], e);
-			 			siteReport.addStepReport(new StepReport(GENERATE_TRANSACTION_FILE_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
-			 			BulkTransactionFilesWorkflowController.addSiteReport(siteReport);
-				 	} else {
-			 			LOG.error("An error occurred while processing transaction: agency code: " + ml[0] + "site number: " + ml[1], e);
-						siteReport.addStepReport(new StepReport(GENERATE_TRANSACTION_FILE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
-						BulkTransactionFilesWorkflowController.addSiteReport(siteReport);
-					}
-			 	}
-			 }
-			 LOG.trace("End processing monitoring locations [" + file.getOriginalFilename() + "] " + monitoringLocations.size());
+		 for (String[] ml : monitoringLocations) {
+			 SiteReport siteReport = new SiteReport(ml[0], ml[1]);
+		 try {
+			 Map<String, Object> monitoringLocation = new HashMap<>();
+			 monitoringLocation = legacyCruService.getMonitoringLocation(ml[0].trim(), ml[1].trim(), false, siteReport);
+			 json = mlToJson(monitoringLocation);
+			 fileExportService.exportUpdate(monitoringLocation.get(AGENCY_CODE).toString(), monitoringLocation.get(SITE_NUMBER).toString(), json, siteReport);
+			 BulkTransactionFilesWorkflowController.addSiteReport(siteReport);	
+		 	} catch (Exception e) {
+		 		if(e instanceof FeignBadResponseWrapper){
+		 			LOG.error("An error occurred while processing transaction: agency code: " + ml[0] + "site number: " + ml[1], e);
+		 			siteReport.addStepReport(new StepReport(GENERATE_TRANSACTION_FILE_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
+		 			BulkTransactionFilesWorkflowController.addSiteReport(siteReport);
+			 	} else {
+		 			LOG.error("An error occurred while processing transaction: agency code: " + ml[0] + "site number: " + ml[1], e);
+					siteReport.addStepReport(new StepReport(GENERATE_TRANSACTION_FILE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
+					BulkTransactionFilesWorkflowController.addSiteReport(siteReport);
+				}
+		 	}
+		 }
+		 LOG.trace("End processing monitoring locations [" + file.getOriginalFilename() + "] " + monitoringLocations.size());
 	}
 
 	
