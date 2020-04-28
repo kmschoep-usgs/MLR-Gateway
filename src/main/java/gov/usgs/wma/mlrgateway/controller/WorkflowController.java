@@ -55,7 +55,7 @@ public class WorkflowController extends BaseController {
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PreAuthorize("hasPermission(null, null)")
-	@PostMapping("/ddots")
+	@PostMapping(path = "/ddots", consumes = "multipart/form-data")
 	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW
 				,file.getOriginalFilename()
@@ -94,7 +94,7 @@ public class WorkflowController extends BaseController {
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
-	@PostMapping("/ddots/validate")
+	@PostMapping(path = "/ddots/validate", consumes = "multipart/form-data")
 	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
 				,file.getOriginalFilename()
