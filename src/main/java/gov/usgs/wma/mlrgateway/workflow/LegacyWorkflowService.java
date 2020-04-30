@@ -37,6 +37,11 @@ public class LegacyWorkflowService {
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";
 	public static final String DISTRICT_CODE = "districtCode";
+	public static final String NEW_AGENCY_CODE = "newAgencyCode";
+	public static final String NEW_SITE_NUMBER = "newSiteNumber";
+	public static final String REQUESTER_NAME = "requesterName";	
+	public static final String UPDATED = "updated";
+	public static final String REASON_TEXT = "reasonText";
 	public static final String TRANSACTION_TYPE = "transactionType";
 	public static final String TRANSACTION_TYPE_ADD = "A";
 	public static final String TRANSACTION_TYPE_UPDATE = "M";
@@ -157,10 +162,11 @@ public class LegacyWorkflowService {
 		}
 	}
 	
-	public void updatePrimaryKeyWorkflow(String oldAgencyCode, String oldSiteNumber, String newAgencyCode, String newSiteNumber) throws HystrixBadRequestException {
+	public void updatePrimaryKeyWorkflow(String oldAgencyCode, String oldSiteNumber, String newAgencyCode, String newSiteNumber, String reasonText) throws HystrixBadRequestException {
 		String json;
 		Map<String, Object> monitoringLocation = new HashMap<>();
 		Map<String, Object> updatedMonitoringLocation = new HashMap<>();
+		Map<String, Object> exportChangeObject = new HashMap<>();
 		SiteReport siteReport = new SiteReport(oldAgencyCode, oldSiteNumber);
 		// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
 		siteReport.setTransactionType("M");
@@ -182,11 +188,19 @@ public class LegacyWorkflowService {
 				// validations will attempt to retrieve the existing record based on the new primary key, which won't exist.
 				updatedMonitoringLocation = legacyValidatorService.doValidation(updatedMonitoringLocation, true, siteReport);
 				
+				exportChangeObject.put(AGENCY_CODE, oldAgencyCode);
+				exportChangeObject.put(NEW_AGENCY_CODE, updatedMonitoringLocation.get(AGENCY_CODE));
+				exportChangeObject.put(SITE_NUMBER, oldSiteNumber);
+				exportChangeObject.put(NEW_SITE_NUMBER, updatedMonitoringLocation.get(SITE_NUMBER));
+				exportChangeObject.put(REQUESTER_NAME, updatedMonitoringLocation.get("updatedBy"));
+				exportChangeObject.put(UPDATED, updatedMonitoringLocation.get(UPDATED));
+				exportChangeObject.put(REASON_TEXT, reasonText);
+				
 				json = mlToJson(updatedMonitoringLocation);
 				
 				// Need to submit entire record for update (vs. patch), otherwise fields that are not submitted are set to null in the database.
 				json = legacyCruService.updateTransaction(updatedMonitoringLocation.get(ID).toString(), json, siteReport);
-				fileExportService.exportUpdate(updatedMonitoringLocation.get(AGENCY_CODE).toString(), updatedMonitoringLocation.get(SITE_NUMBER).toString(), json, siteReport);
+				fileExportService.exportChange(json, siteReport);
 			}
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper){

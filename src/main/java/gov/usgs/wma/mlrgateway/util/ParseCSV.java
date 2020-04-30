@@ -7,8 +7,6 @@ import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
-import gov.usgs.wma.mlrgateway.StepReport;
-import gov.usgs.wma.mlrgateway.controller.BulkTransactionFilesWorkflowController;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

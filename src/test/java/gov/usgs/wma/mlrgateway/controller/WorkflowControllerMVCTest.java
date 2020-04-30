@@ -212,13 +212,14 @@ public class WorkflowControllerMVCTest {
 		params.set("newAgencyCode", "BLAH");
 		params.set("oldSiteNumber", "123345");
 		params.set("newSiteNumber", "9999090");
+		params.set("reasonText", "test");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
 				.params(params))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(legacyJson));
 
-		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
 
 	@Test
@@ -229,12 +230,13 @@ public class WorkflowControllerMVCTest {
 		params.set("newAgencyCode", "BLAH");
 		params.set("oldSiteNumber", "123345");
 		params.set("newSiteNumber", "9999090");
+		params.set("reasonText", "test");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
 				.params(params))
 				.andExpect(status().isForbidden())
 				.andExpect(content().contentType("application/json"));
 
-		verify(legacy, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
 	
 	@Test
@@ -244,20 +246,21 @@ public class WorkflowControllerMVCTest {
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\",\"workflowSteps\":[{\"name\":\"" 
 				+ LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED + "\",\"httpStatus\":400,\"success\":false,\"details\":\"{\\\"error\\\": 123}\"}],"
 				+ "\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
-		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		willThrow(new FeignBadResponseWrapper(HttpStatus.SC_BAD_REQUEST, null, "{\"error\": 123}")).given(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.set("oldAgencyCode", "USGS");
 		params.set("newAgencyCode", "BLAH");
 		params.set("oldSiteNumber", "123345");
 		params.set("newSiteNumber", "9999090");
+		params.set("reasonText", "test");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
 				.params(params))
 				.andExpect(status().isBadRequest())
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
-		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
 	
 	@Test
@@ -267,19 +270,20 @@ public class WorkflowControllerMVCTest {
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
 				+ "\"workflowSteps\":[{\"name\":\"" + LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED + "\",\"httpStatus\":500,"
 				+  "\"success\":false,\"details\":\"wow 456\"}],\"sites\":[],\"numberSiteSuccess\":0,\"numberSiteFailure\":0}";
-		willThrow(new RuntimeException("wow 456")).given(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		willThrow(new RuntimeException("wow 456")).given(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.set("oldAgencyCode", "USGS");
 		params.set("newAgencyCode", "BLAH");
 		params.set("oldSiteNumber", "123345");
 		params.set("newSiteNumber", "9999090");
+		params.set("reasonText", "test");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
 				.params(params))
 				.andExpect(status().isInternalServerError())
 				.andExpect(content().contentType("application/json"))
 				.andExpect(content().string(badJson));
 
-		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString());
+		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
 }

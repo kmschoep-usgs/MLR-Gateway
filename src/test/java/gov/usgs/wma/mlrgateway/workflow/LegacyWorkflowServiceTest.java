@@ -61,6 +61,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	private String newAgencyCode = "BLAH";
 	private String oldSiteNumber = "12345678";
 	private String newSiteNumber = "99999999";
+	private String reasonText = "update primary key";
 
 	@BeforeEach
 	public void init() {
@@ -250,12 +251,12 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(ml);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willReturn(mlValid);
 
-		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
 		GatewayReport rtn = WorkflowController.getReport();
 		
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
 		verify(legacyCruService).updateTransaction(anyString(), anyString(), any());
-		verify(fileExportService).exportUpdate(anyString(), anyString(), eq(null), any());
+		verify(fileExportService).exportChange(eq(null), any());
 		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
 	}
@@ -267,7 +268,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(ml);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willThrow(new RuntimeException());
 
-		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
 
 		GatewayReport rtn = WorkflowController.getReport();
 		
@@ -289,11 +290,11 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 
 		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(new HashMap<>());
 
-		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
 		GatewayReport rtn = WorkflowController.getReport();
 		
 		verify(legacyValidatorService, never()).doValidation(anyMap(), anyBoolean(), any());
 		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), any());
-		verify(fileExportService, never()).exportUpdate(anyString(), anyString(), eq(null), any());
+		verify(fileExportService, never()).exportChange(eq(null), any());
 	}
 }

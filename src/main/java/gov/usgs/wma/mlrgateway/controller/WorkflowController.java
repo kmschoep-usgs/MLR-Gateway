@@ -140,6 +140,7 @@ public class WorkflowController extends BaseController {
 			@RequestParam String newAgencyCode,
 			@RequestParam String oldSiteNumber,
 			@RequestParam String newSiteNumber,
+			@RequestParam String reasonText,
 			HttpServletResponse response, 
 			Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
@@ -148,7 +149,7 @@ public class WorkflowController extends BaseController {
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
-			legacy.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+			legacy.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
 			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_SUCCESS));
 
 		} catch (Exception e) {
