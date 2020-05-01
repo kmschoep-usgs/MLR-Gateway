@@ -35,6 +35,7 @@ import gov.usgs.wma.mlrgateway.service.DdotServiceTest;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import gov.usgs.wma.mlrgateway.service.LegacyValidatorService;
+import gov.usgs.wma.mlrgateway.util.ValidateTextInput;
 import gov.usgs.wma.mlrgateway.service.LegacyTransformerService;
 
 @ExtendWith(SpringExtension.class)
@@ -52,6 +53,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	private FileExportService fileExportService;
 
 	private LegacyWorkflowService service;
+	private ValidateTextInput validateTextInput;
 	private MockHttpServletResponse response;
 	private String reportName = "TEST Legacy Workflow";
 	private String fileName = "test.d";
@@ -61,11 +63,13 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	private String newAgencyCode = "BLAH";
 	private String oldSiteNumber = "12345678";
 	private String newSiteNumber = "99999999";
-	private String reasonText = "update primary key";
+	private String reasonText = "update primary key 123";
+	private String invalidReasonText = "-update primary key-";
 
 	@BeforeEach
 	public void init() {
-		service = new LegacyWorkflowService(ddotService, legacyCruService, transformService, legacyValidatorService, fileExportService);
+		validateTextInput = new ValidateTextInput();
+		service = new LegacyWorkflowService(ddotService, legacyCruService, transformService, legacyValidatorService, fileExportService, validateTextInput);
 		response = new MockHttpServletResponse();
 		WorkflowController.setReport(new GatewayReport(reportName, fileName, userName, reportDate));
 	}
@@ -297,4 +301,22 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), any());
 		verify(fileExportService, never()).exportChange(eq(null), any());
 	}
+	
+	@Test
+	public void oneUpdateTransaction_primaryKeyUpdateWorkflow_invalidReasonText() throws Exception {
+		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> mlValid = new HashMap<>(ml);
+		mlValid.put("validation",legacyValidation);
+
+		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(ml);
+		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willReturn(mlValid);
+
+		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, invalidReasonText);
+		GatewayReport rtn = WorkflowController.getReport();
+		
+		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
+		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), any());
+		verify(fileExportService, never()).exportChange(eq(null), any());
+	}
+	
 }
