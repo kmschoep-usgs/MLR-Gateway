@@ -256,7 +256,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		
 		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
 		verify(legacyCruService).updateTransaction(anyString(), anyString(), any());
-		verify(fileExportService).exportChange(eq(null), any());
+		verify(fileExportService).exportChange(anyString(), any());
 		assertTrue(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getTransactionType(), LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
 	}
