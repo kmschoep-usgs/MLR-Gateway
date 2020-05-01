@@ -5,11 +5,14 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,6 +35,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name="Workflow", description="Display")
 @RestController
+@Validated
 @RequestMapping("/workflows")
 public class WorkflowController extends BaseController {
 	private LegacyWorkflowService legacy;
@@ -140,6 +144,7 @@ public class WorkflowController extends BaseController {
 			@RequestParam String newAgencyCode,
 			@RequestParam String oldSiteNumber,
 			@RequestParam String newSiteNumber,
+			@RequestParam @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message="Invalid characters submitted in reasonText. Only alpha-numeric characters are allowed.")  @Size(max = 64) String reasonText,
 			HttpServletResponse response, 
 			Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
@@ -148,7 +153,7 @@ public class WorkflowController extends BaseController {
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
-			legacy.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+			legacy.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
 			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_SUCCESS));
 
 		} catch (Exception e) {

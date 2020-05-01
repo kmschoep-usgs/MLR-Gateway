@@ -19,9 +19,12 @@ public class FileExportService {
 	public static final String STEP_NAME = "";
 	public static final String EXPORT_ADD_STEP = "Export Add Transaction File";
 	public static final String EXPORT_UPDATE_STEP = "Export Update Transaction File";
+	public static final String EXPORT_CHANGE_STEP = "Export Change Transaction File";
 	public static final String EXPORT_SUCCESSFULL = "Transaction File created Successfully.";
 	public static final String EXPORT_ADD_FAILED = "{\"error_message\": \"Export add failed\"}";
 	public static final String EXPORT_UPDATE_FAILED = "{\"error_message\": \"Export update failed\"}";
+	public static final String EXPORT_CHANGE_FAILED = "{\"error_message\": \"Export change failed\"}";
+
 	
 	@Autowired
 	public FileExportService(FileExportClient fileExportClient){
@@ -48,6 +51,18 @@ public class FileExportService {
 		} catch (Exception e) {
 			siteReport.addStepReport(new StepReport(EXPORT_UPDATE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\":\"" + e.getMessage() + ".  This error requires manual intervention to resolve. Please contact the support team for assistance.\"}"));
 			log.error(EXPORT_UPDATE_STEP + ": " + e.getMessage());
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\":\"" + e.getMessage() + ". This error requires manual intervention to resolve. Please contact the support team for assistance.\"}");	
+		}
+	}
+	
+	public void exportChange(String json, SiteReport siteReport) {
+		try {
+			ResponseEntity<String> exportResp = fileExportClient.exportChange(json);
+			int exportStatus = exportResp.getStatusCodeValue();
+			siteReport.addStepReport(new StepReport(EXPORT_CHANGE_STEP, exportStatus, 200 == exportStatus ? true : false, 200 == exportStatus ? EXPORT_SUCCESSFULL : exportResp.getBody()));
+		} catch (Exception e) {
+			siteReport.addStepReport(new StepReport(EXPORT_CHANGE_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\":\"" + e.getMessage() + ".  This error requires manual intervention to resolve. Please contact the support team for assistance.\"}"));
+			log.error(EXPORT_CHANGE_STEP + ": " + e.getMessage());
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\":\"" + e.getMessage() + ". This error requires manual intervention to resolve. Please contact the support team for assistance.\"}");	
 		}
 	}

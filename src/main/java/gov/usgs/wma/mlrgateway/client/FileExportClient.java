@@ -16,5 +16,8 @@ public interface FileExportClient {
 
 	@RequestMapping(method=RequestMethod.POST, value="file_export/update", consumes="application/json")
 	ResponseEntity<String> exportUpdate(@RequestBody String ml);
+	
+	@RequestMapping(method=RequestMethod.POST, value="file_export/change", consumes="application/json")
+	ResponseEntity<String> exportChange(@RequestBody String ml);
 
 }
