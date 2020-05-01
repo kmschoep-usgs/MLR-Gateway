@@ -22,7 +22,6 @@ import gov.usgs.wma.mlrgateway.service.DdotService;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.LegacyCruService;
 import gov.usgs.wma.mlrgateway.service.LegacyValidatorService;
-import gov.usgs.wma.mlrgateway.util.ValidateTextInput;
 import gov.usgs.wma.mlrgateway.service.LegacyTransformerService;
 
 @Service
@@ -33,7 +32,6 @@ public class LegacyWorkflowService {
 	private LegacyValidatorService legacyValidatorService;
 	private LegacyCruService legacyCruService;
 	private FileExportService fileExportService;
-	private ValidateTextInput validateTextInput;
 	
 	public static final String ID = "id";
 	public static final String AGENCY_CODE = "agencyCode";
@@ -64,17 +62,15 @@ public class LegacyWorkflowService {
 	public static final String VALIDATE_DDOT_TRANSACTION_STEP_FAILURE = "Single transaction validation failed.";
 	public static final String COMPLETE_TRANSACTION_STEP = "Process Single D dot Transaction";
 	public static final String PRIMARY_KEY_UPDATE_TRANSACTION_STEP = "Update Agency Code and/or Site Number";
-
-
+	
 	@Autowired
 	public LegacyWorkflowService(DdotService ddotService, LegacyCruService legacyCruService, LegacyTransformerService transformService, 
-			LegacyValidatorService legacyValidatorService, FileExportService fileExportService, ValidateTextInput validateTextInput) {
+			LegacyValidatorService legacyValidatorService, FileExportService fileExportService) {
 		this.ddotService = ddotService;
 		this.legacyCruService = legacyCruService;
 		this.transformService = transformService;
 		this.legacyValidatorService = legacyValidatorService;
 		this.fileExportService = fileExportService;
-		this.validateTextInput = validateTextInput;
 	}
 
 	public void completeWorkflow(MultipartFile file) throws HystrixBadRequestException {
@@ -197,7 +193,7 @@ public class LegacyWorkflowService {
 				exportChangeObject.put(NEW_SITE_NUMBER, updatedMonitoringLocation.get(SITE_NUMBER));
 				exportChangeObject.put(REQUESTER_NAME, updatedMonitoringLocation.get("updatedBy"));
 				exportChangeObject.put(UPDATED, updatedMonitoringLocation.get(UPDATED));
-				exportChangeObject.put(REASON_TEXT, validateTextInput.validateInput(reasonText));
+				exportChangeObject.put(REASON_TEXT, reasonText);
 				
 				json = mlToJson(updatedMonitoringLocation);
 				

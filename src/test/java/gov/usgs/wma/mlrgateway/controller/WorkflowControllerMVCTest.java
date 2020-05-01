@@ -286,4 +286,37 @@ public class WorkflowControllerMVCTest {
 
 		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
+	
+	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
+	public void badText_UpdatePrimaryKeyWorkflow() throws Exception {
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.set("oldAgencyCode", "USGS");
+		params.set("newAgencyCode", "BLAH");
+		params.set("oldSiteNumber", "123345");
+		params.set("newSiteNumber", "9999090");
+		params.set("reasonText", "test.");
+		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
+				.params(params))
+				.andExpect(status().isInternalServerError());
+
+		verify(legacy, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
+	}
+	
+	@Test
+	@WithMockUser(username = "test", authorities = "test_allowed")
+	public void badTextTooLong_UpdatePrimaryKeyWorkflow() throws Exception {
+		String textTooLong = "jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj";
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.set("oldAgencyCode", "USGS");
+		params.set("newAgencyCode", "BLAH");
+		params.set("oldSiteNumber", "123345");
+		params.set("newSiteNumber", "9999090");
+		params.set("reasonText", textTooLong);
+		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
+				.params(params))
+				.andExpect(status().isInternalServerError());
+
+		verify(legacy, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
+	}
 }
