@@ -187,6 +187,11 @@ public class LegacyWorkflowService {
 				// validations will attempt to retrieve the existing record based on the new primary key, which won't exist.
 				updatedMonitoringLocation = legacyValidatorService.doValidation(updatedMonitoringLocation, true, siteReport);
 				
+				json = mlToJson(updatedMonitoringLocation);
+				
+				// Need to submit entire record for update (vs. patch), otherwise fields that are not submitted are set to null in the database.
+				json = legacyCruService.updateTransaction(updatedMonitoringLocation.get(ID).toString(), json, siteReport);
+				
 				exportChangeObject.put(AGENCY_CODE, oldAgencyCode);
 				exportChangeObject.put(NEW_AGENCY_CODE, updatedMonitoringLocation.get(AGENCY_CODE));
 				exportChangeObject.put(SITE_NUMBER, oldSiteNumber);
@@ -195,10 +200,8 @@ public class LegacyWorkflowService {
 				exportChangeObject.put(UPDATED, updatedMonitoringLocation.get(UPDATED));
 				exportChangeObject.put(REASON_TEXT, reasonText);
 				
-				json = mlToJson(updatedMonitoringLocation);
+				json = mlToJson(exportChangeObject);
 				
-				// Need to submit entire record for update (vs. patch), otherwise fields that are not submitted are set to null in the database.
-				json = legacyCruService.updateTransaction(updatedMonitoringLocation.get(ID).toString(), json, siteReport);
 				fileExportService.exportChange(json, siteReport);
 			}
 		} catch (Exception e) {
