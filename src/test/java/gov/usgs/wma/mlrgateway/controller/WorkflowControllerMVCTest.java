@@ -298,7 +298,7 @@ public class WorkflowControllerMVCTest {
 		params.set("reasonText", "test.");
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
 				.params(params))
-				.andExpect(status().isInternalServerError());
+				.andExpect(status().isBadRequest());
 
 		verify(legacy, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
@@ -315,7 +315,7 @@ public class WorkflowControllerMVCTest {
 		params.set("reasonText", textTooLong);
 		mvc.perform(MockMvcRequestBuilders.post("/workflows/primaryKey/update")
 				.params(params))
-				.andExpect(status().isInternalServerError());
+				.andExpect(status().isBadRequest());
 
 		verify(legacy, never()).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
