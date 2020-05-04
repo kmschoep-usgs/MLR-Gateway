@@ -246,10 +246,12 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 	public void oneUpdateTransaction_primaryKeyUpdateWorkflow_thenReturnUpdated() throws Exception {
 		Map<String, Object> ml = getUpdatePK();
 		Map<String, Object> mlValid = new HashMap<>(ml);
+		String updatedMl = "{}";
 		mlValid.put("validation",legacyValidation);
 
 		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(ml);
 		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willReturn(mlValid);
+		given(legacyCruService.updateTransaction(anyString(), anyString(), any())).willReturn(updatedMl);
 
 		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
 		GatewayReport rtn = WorkflowController.getReport();
@@ -291,7 +293,6 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(new HashMap<>());
 
 		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
-		GatewayReport rtn = WorkflowController.getReport();
 		
 		verify(legacyValidatorService, never()).doValidation(anyMap(), anyBoolean(), any());
 		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), any());
