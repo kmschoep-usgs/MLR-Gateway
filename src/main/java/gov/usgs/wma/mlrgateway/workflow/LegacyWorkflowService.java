@@ -225,6 +225,7 @@ public class LegacyWorkflowService {
 		try {
 			json = mapper.writeValueAsString(ml);
 		} catch (Exception e) {
+			LOG.error("Unable to serialize transformer output: ", e);
 			// Unable to determine when this might actually happen, but the api says it can...
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize transformer output.\"}");
 		}
@@ -242,7 +243,8 @@ public class LegacyWorkflowService {
 			
 		} catch (Exception e) {
 			// Unable to determine when this might actually happen, but the api says it can...
-			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize transformer output.\"}");
+			LOG.error("Unable to serialize legacy cru output: ", e);
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize legacy cru output.\"}");
 		}
 		return ml;
 	}
