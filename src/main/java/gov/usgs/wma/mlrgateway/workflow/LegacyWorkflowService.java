@@ -176,21 +176,22 @@ public class LegacyWorkflowService {
 		try {
 			if (!monitoringLocation.isEmpty()) {
 				
-				updatedMonitoringLocation.putAll(monitoringLocation);
 				// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
-				updatedMonitoringLocation.put(TRANSACTION_TYPE, "M");
+				monitoringLocation.put(TRANSACTION_TYPE, "M");
 				
-				updatedMonitoringLocation.replace(AGENCY_CODE, newAgencyCode);
-				updatedMonitoringLocation.replace(SITE_NUMBER, newSiteNumber);
+				monitoringLocation.replace(AGENCY_CODE, newAgencyCode);
+				monitoringLocation.replace(SITE_NUMBER, newSiteNumber);
 				
 				// Need full object to validate as an Add transaction.  Need to validate as an Add transaction because the update
 				// validations will attempt to retrieve the existing record based on the new primary key, which won't exist.
-				updatedMonitoringLocation = legacyValidatorService.doValidation(updatedMonitoringLocation, true, siteReport);
+				monitoringLocation = legacyValidatorService.doValidation(monitoringLocation, true, siteReport);
 				
-				json = mlToJson(updatedMonitoringLocation);
+				json = mlToJson(monitoringLocation);
 				
 				// Need to submit entire record for update (vs. patch), otherwise fields that are not submitted are set to null in the database.
-				json = legacyCruService.updateTransaction(updatedMonitoringLocation.get(ID).toString(), json, siteReport);
+				json = legacyCruService.updateTransaction(monitoringLocation.get(ID).toString(), json, siteReport);
+				
+				updatedMonitoringLocation = jsonToMl(json);
 				
 				exportChangeObject.put(AGENCY_CODE, oldAgencyCode);
 				exportChangeObject.put(NEW_AGENCY_CODE, updatedMonitoringLocation.get(AGENCY_CODE));
@@ -224,10 +225,27 @@ public class LegacyWorkflowService {
 		try {
 			json = mapper.writeValueAsString(ml);
 		} catch (Exception e) {
+			LOG.error("Unable to serialize transformer output: ", e);
 			// Unable to determine when this might actually happen, but the api says it can...
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize transformer output.\"}");
 		}
 		
 		return json;
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected Map<String, Object> jsonToMl(String json) {
+		ObjectMapper mapper = new ObjectMapper();
+		Map<String, Object> ml = new HashMap<>();
+		
+		try {
+			ml = mapper.readValue(json, Map.class);
+			
+		} catch (Exception e) {
+			// Unable to determine when this might actually happen, but the api says it can...
+			LOG.error("Unable to serialize legacy cru output: ", e);
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize legacy cru output.\"}");
+		}
+		return ml;
 	}
 }
