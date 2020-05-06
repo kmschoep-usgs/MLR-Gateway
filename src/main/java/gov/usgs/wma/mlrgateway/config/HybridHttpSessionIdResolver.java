@@ -40,6 +40,14 @@ public class HybridHttpSessionIdResolver implements HttpSessionIdResolver {
 
 	public HybridHttpSessionIdResolver() {
         this.headerName = HEADER_X_AUTH_TOKEN;
+        
+        DefaultCookieSerializer serializer = new DefaultCookieSerializer();
+		serializer.setCookieName("SESSION"); 
+		serializer.setCookiePath("/");
+		serializer.setUseSecureCookie(true);
+        serializer.setSameSite(SameSiteCookies.STRICT.getValue());
+        
+        this.cookieSerializer = serializer;
 	}
 
 	@Override
