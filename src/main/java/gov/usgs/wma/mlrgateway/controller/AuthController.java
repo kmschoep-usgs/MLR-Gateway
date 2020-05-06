@@ -22,20 +22,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 
-@Tag(name="Util Controller", description="Display")
+@Tag(name="Auth Controller", description="Display")
 @RestController
-@RequestMapping("/util")
-public class UtilController extends BaseController {
+@RequestMapping("/auth")
+public class AuthController extends BaseController {
 
     @Autowired
     UserAuthUtil userAuthUtil;
 
 	@Autowired
-	public UtilController() {
+	public AuthController() {
 		super();
 	}
 
-	@Operation(description="Return the logged-in user's JWT token")
+	@Operation(description="Return the logged-in user's current short-lived JWT token")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "403", description = "Forbidden") })
+	@GetMapping("/jwt")
+	public String getJwt() {
+		return userAuthUtil.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
+	}
+
+	@Operation(description="Return the logged-in user's X-Auth-Token")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "OK"),
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
