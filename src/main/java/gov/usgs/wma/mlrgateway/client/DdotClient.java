@@ -16,7 +16,7 @@ import feign.form.spring.SpringFormEncoder;
 import feign.codec.Encoder;
 import gov.usgs.wma.mlrgateway.config.PropagateBadRequest;
 
-@FeignClient(name="ddot", configuration={DdotClient.MultipartSupportConfig.class, PropagateBadRequest.class})
+@FeignClient(name="mlrDdot", configuration={DdotClient.MultipartSupportConfig.class, PropagateBadRequest.class})
 public interface DdotClient {
 
 	@PostMapping(value="ddots", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

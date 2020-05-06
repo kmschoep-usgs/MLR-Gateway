@@ -75,39 +75,39 @@ zuul:
   routes:
     legacyCruBase:
       path: /monitoringLocations**
-      serviceId: legacyCru
+      serviceId: mlrLegacyCru
       stripPrefix: false
     legacyCruPlus:
       path: /monitoringLocations/**
-      serviceId: legacyCru
+      serviceId: mlrLegacyCru
       stripPrefix: false
 
-ddot:
+mlrDdot:
   ribbon:
     listOfServers: ${mlrgateway_ddotServers}
     IsSecure: ${mlrgateway_ddotIsSecure:true}
 
-legacyTransformer:
+mlrLegacyTransformer:
   ribbon:
     listOfServers: ${mlrgateway_legacyTransformerServers}
     IsSecure: ${mlrgateway_legacyTransformerIsSecure:true}
 
-legacyValidator:
+mlrLegacyValidator:
   ribbon:
     listOfServers: ${mlrgateway_legacyValidatorServers}
     IsSecure: ${mlrgateway_legacyValidatorIsSecure:true}
 
-legacyCru:
+mlrLegacyCru:
   ribbon:
     listOfServers: ${mlrgateway_legacyCruServers}
     IsSecure: ${mlrgateway_legacyCruIsSecure:true}
 
-fileExport:
+mlrFileExport:
   ribbon:
     listOfServers: ${mlrgateway_fileExportServers}
     IsSecure: ${mlrgateway_fileExportIsSecure:true}
 
-notification:
+mlrNotification:
   ribbon:
     listOfServers: ${mlrgateway_notificationServers}
     IsSecure: ${mlrgateway_notificationIsSecure:true}

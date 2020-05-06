@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import gov.usgs.wma.mlrgateway.config.PropagateBadRequest;
 
-@FeignClient(name="legacyValidator", configuration=PropagateBadRequest.class)
+@FeignClient(name="mlrLegacyValidator", configuration=PropagateBadRequest.class)
 public interface LegacyValidatorClient {
 	
 	public static final String NEW_RECORD_PAYLOAD = "ddotLocation";

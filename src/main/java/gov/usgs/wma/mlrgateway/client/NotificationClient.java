@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import gov.usgs.wma.mlrgateway.config.PropagateBadRequest;
 
-@FeignClient(name="notification", configuration=PropagateBadRequest.class)
+@FeignClient(name="mlrNotification", configuration=PropagateBadRequest.class)
 public interface NotificationClient {
 	public static final String MESSAGE_SUBJECT_KEY = "subject";
 	public static final String MESSAGE_TO_KEY = "to";
