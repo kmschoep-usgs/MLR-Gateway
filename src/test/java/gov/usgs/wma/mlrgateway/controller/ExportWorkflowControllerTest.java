@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
+
 import java.io.Serializable;
 import java.time.Clock;
 import java.time.Instant;
@@ -64,7 +65,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	@BeforeEach
 	public void init() {
 		given(userAuthUtil.getUserEmail(any(Authentication.class))).willReturn("test@test");
-
+		given(userAuthUtil.getUserName(any(Authentication.class))).willReturn("test");
 		controller = new ExportWorkflowController(export, notificationService, userAuthUtil, clock());
 		response = new MockHttpServletResponse();
 		testEmail = new HashMap<>();

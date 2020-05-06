@@ -23,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -79,10 +80,11 @@ public class WorkflowControllerMVCTest {
 	public void init() {
 		file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		when(clockMock.instant()).thenReturn(Clock.fixed(Instant.parse("2010-01-10T10:00:00Z"), ZoneId.of("UTC")).instant());
+		when(userAuthUtil.getUserName(any(Authentication.class))).thenReturn("test");
 	}
 	
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void happyPathLegacyWorkflow() throws Exception {
 		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -96,7 +98,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test")
+	@WithMockUser
 	public void happyPathLegacyWorkflowNoAuthorities() throws Exception {
 		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file))
 				.andExpect(status().isForbidden())
@@ -106,7 +108,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void badResponse_LegacyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\",\"workflowSteps\":[{\"name\":\"" 
@@ -123,7 +125,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void serverError_LegacyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.COMPLETE_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -140,7 +142,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void happyPathLegacyValidationWorkflow() throws Exception {
 		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -154,7 +156,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test")
+	@WithMockUser
 	public void happyPathLegacyValidationWorkflowNoAuthorities() throws Exception {
 		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -168,7 +170,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void badDdot_LegacyValidationWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -185,7 +187,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void serverError_LegacyValidationWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW + "\",\"inputFileName\":\"d.\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -202,7 +204,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void happyPathUpdatePrimaryKeyWorkflow() throws Exception {
 		String legacyJson = "{\"name\":\"" + LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -223,7 +225,7 @@ public class WorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test")
+	@WithMockUser
 	public void happyPathUpdatePrimaryKeyWorkflowNoAuthorities() throws Exception {
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.set("oldAgencyCode", "USGS");
@@ -240,7 +242,7 @@ public class WorkflowControllerMVCTest {
 	}
 	
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void badResponse_UpdatePrimaryKeyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\",\"workflowSteps\":[{\"name\":\"" 
@@ -264,7 +266,7 @@ public class WorkflowControllerMVCTest {
 	}
 	
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void serverError_UpdatePrimaryKeyWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW + "\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -288,7 +290,7 @@ public class WorkflowControllerMVCTest {
 	}
 	
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void badText_UpdatePrimaryKeyWorkflow() throws Exception {
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.set("oldAgencyCode", "USGS");
@@ -304,7 +306,7 @@ public class WorkflowControllerMVCTest {
 	}
 	
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void badTextTooLong_UpdatePrimaryKeyWorkflow() throws Exception {
 		String textTooLong = "jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj jjjjjjjjjj";
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
