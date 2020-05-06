@@ -59,7 +59,7 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 	public UserSummaryReport bulkGenerateTransactionFilesWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW
 				,file.getOriginalFilename()
-				,getUserName(authentication)
+				,userAuthUtil.getUserName(authentication)
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {

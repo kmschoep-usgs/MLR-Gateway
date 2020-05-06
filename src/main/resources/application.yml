@@ -15,6 +15,10 @@ security:
   basic:
     enabled: false
   maintenanceRoles: ${maintenanceRoles:}
+  token:
+    claims:
+      email: email
+      username: preferred_username
 
 spring:
   security:
@@ -27,9 +31,6 @@ spring:
         provider:
           wma-keycloak:
             issuer-uri: ${oauthIssuerUri:}
-      resourceserver:
-        jwt:
-          issuer-uri: ${oauthIssuerUri:}
 
 logging:
   level:
@@ -70,7 +71,7 @@ hystrix:
 zuul:
   retryable: true
   ribbonIsolationStrategy: SEMAPHORE
-  sensitiveHeaders: 
+  sensitiveHeaders: Cookie,Set-Cookie
   routes:
     legacyCruBase:
       path: /monitoringLocations**

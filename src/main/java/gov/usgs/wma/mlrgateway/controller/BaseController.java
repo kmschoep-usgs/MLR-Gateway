@@ -22,8 +22,8 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public abstract class BaseController {
-	private NotificationService notificationService;
-	private UserAuthUtil userAuthUtil;
+	protected NotificationService notificationService;
+	protected UserAuthUtil userAuthUtil;
 	
 	@Value("${additionalNotificationRecipients:}")
 	private String additionalNotificationRecipientsString;
@@ -71,16 +71,6 @@ public abstract class BaseController {
 		gatewayReport.remove();
 	}
 
-	public String getUserName(Authentication authentication) {
-		String userName = "Unknown";
-		if(authentication != null){
-			userName = authentication.getName();
-		} else {
-			log.warn("No Authentication present in the Web Security Context when getting user name.");
-		}
-		return userName;
-	}
-		
 	protected void notificationStep(String subject, String attachmentFileName, Authentication authentication) {
 		List<String> notificationRecipientList;
 		//Send Notification

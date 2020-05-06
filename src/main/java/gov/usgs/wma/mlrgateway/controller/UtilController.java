@@ -7,15 +7,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.io.IOException;
+import java.time.Instant;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
 
 @Tag(name="Util Controller", description="Display")
 @RestController
@@ -38,7 +43,7 @@ public class UtilController extends BaseController {
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@GetMapping("/token")
 	public String getToken() {
-		return userAuthUtil.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
+		return RequestContextHolder.currentRequestAttributes().getSessionId();
 	}
 
 	@Operation(description="Return the user to the new UI, logged in.")
@@ -48,15 +53,15 @@ public class UtilController extends BaseController {
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@GetMapping("/login")
-	public void login(HttpServletResponse response) throws IOException {
-		String tokenValue = userAuthUtil.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
-
-		if (tokenValue != null && !tokenValue.isEmpty()) {
-            response.sendRedirect(uiDomainName + "?mlrAccessToken=" + tokenValue);
+	public void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		OAuth2AccessToken token = userAuthUtil.getRefreshAccessToken(auth);
+		String cacheBreak = String.valueOf(Instant.now().getEpochSecond());
+		if (token != null && !token.getTokenValue().isEmpty()) {
+            response.sendRedirect(uiDomainName + "?mlrAccessToken=" + getToken() + "&cacheBreak=" + cacheBreak);
         } else {
-			response.sendError(HttpStatus.SC_UNAUTHORIZED);
+            response.sendError(HttpStatus.UNAUTHORIZED.value());
 		}
 	}
-
 }
 	

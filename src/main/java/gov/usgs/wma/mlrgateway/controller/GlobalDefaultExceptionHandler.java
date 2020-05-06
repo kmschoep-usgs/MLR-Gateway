@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -65,6 +66,10 @@ public class GlobalDefaultExceptionHandler {
 			response.setStatus(HttpStatus.BAD_REQUEST.value());
 			responseMap.put(ERROR_MESSAGE_KEY, "The file you tried to upload exceeds the maximum allowed size for a single file ("+ MAX_FILE_SIZE + 
 				"). Please split your transaction into multiple files or contact the support team for assistance.");
+		} else if(ex instanceof OAuth2AuthorizationException) {
+			response.setStatus(HttpStatus.UNAUTHORIZED.value());
+			responseMap.put(ERROR_MESSAGE_KEY, "Your login has expired. Please refresh the page to login again. If you continue " +
+				"to experience this error please contact the support team for assistance.");
 		} else {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			int hashValue = response.hashCode();

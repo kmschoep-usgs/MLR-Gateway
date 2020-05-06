@@ -1,19 +1,21 @@
 package gov.usgs.wma.mlrgateway.config;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.session.MapSessionRepository;
+import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
+import org.springframework.session.web.http.HttpSessionIdResolver;
 
+@EnableSpringHttpSession
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http
@@ -29,24 +31,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.and()
 				.oauth2Login()
 			.and()
-				.oauth2ResourceServer().jwt(jwt -> jwt.jwtAuthenticationConverter(keycloakJwtConverter()))
-			.and()
 				.csrf().disable()
 		;
 	}
-	
+
 	@Bean
 	public TaskScheduler taskScheduler() {
 		return new ConcurrentTaskScheduler();
 	}
 
-	private Converter<Jwt, AbstractAuthenticationToken> keycloakJwtConverter() {
-		JwtAuthenticationConverter jwtAuthenticationConverter =
-				new JwtAuthenticationConverter();
-	
-		jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter
-				(new KeycloakJWTAuthorityMapper());
-	
-		return jwtAuthenticationConverter;
+	@Bean
+	public MapSessionRepository sessionRepository() {
+		return new MapSessionRepository(new ConcurrentHashMap<>());
+	}
+
+	@Bean
+	public HttpSessionIdResolver httpSessionIdResolver() {
+		return new HybridHttpSessionIdResolver();
 	}
 }
