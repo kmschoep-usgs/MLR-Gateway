@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.time.temporal.Temporal;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
@@ -35,9 +35,8 @@ public class NotificationService {
 	private String environmentTier;
 	
 	public static final String NOTIFICATION_STEP = "Notification";
-	public static final String NOTIFICATION_SUCCESSFULL = "Notification sent successfully.";
+	public static final String NOTIFICATION_SUCCESSFUL = "Notification sent successfully.";
 	public static final String NOTIFICATION_FAILURE = "{\"error_message\": \"Notification failed to send.\"}";
-	public static Temporal reportDateTime;
 	public static final String ATTACHMENT_FILE_NAME = "mlr-%NAME%-report.json";
 	public static final String ERROR_MESSAGE = "error_message";
 	public static final String FATAL_ERROR_MESSAGE = "fatal_error_message";
@@ -49,26 +48,27 @@ public class NotificationService {
 		this.notificationClient = notificationClient;
 	}
 
-	public void sendNotification(List<String> recipientList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
+	public void sendNotification(String recipient, List<String> ccList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
 		ObjectMapper mapper = new ObjectMapper();
 		String messageJson;
-		HashMap<String, Object> messageMap = buildRequestMap(recipientList, subject, user, attachmentFileName, report);
+		HashMap<String, Object> messageMap = buildRequestMap(recipient, ccList, subject, user, attachmentFileName, report);
 
 		try {
 			messageJson = mapper.writeValueAsString(messageMap);
 			ResponseEntity<String> notifResp = notificationClient.sendEmail(messageJson);
-			BaseController.addWorkflowStepReport(new StepReport(NOTIFICATION_STEP, notifResp.getStatusCodeValue(), true, NOTIFICATION_SUCCESSFULL));
+			BaseController.addWorkflowStepReport(new StepReport(NOTIFICATION_STEP, notifResp.getStatusCodeValue(), true, NOTIFICATION_SUCCESSFUL));
 		} catch(Exception e) {
 			BaseController.addWorkflowStepReport(new StepReport(NOTIFICATION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, NOTIFICATION_FAILURE));
 			log.error(NOTIFICATION_STEP + ": " + e.getMessage(), e);
 		}
 	}
 
-	protected HashMap<String, Object> buildRequestMap(List<String> recipientList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
+	protected HashMap<String, Object> buildRequestMap(String recipient, List<String> ccList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
 		HashMap<String, Object> messageMap = new HashMap<>();
 
 		//Build Request
-		messageMap.put(NotificationClient.MESSAGE_TO_KEY, recipientList);
+		messageMap.put(NotificationClient.MESSAGE_TO_KEY, Arrays.asList(recipient));
+		messageMap.put(NotificationClient.MESSAGE_CC_KEY, ccList);
 		messageMap.put(NotificationClient.MESSAGE_SUBJECT_KEY, subject);
 		messageMap.put(NotificationClient.MESSAGE_TEXT_BODY_KEY, buildMessageBody(report, user));
 		messageMap.put(NotificationClient.MESSAGE_ATTACHMENT_KEY, report.toPrettyPrintString());

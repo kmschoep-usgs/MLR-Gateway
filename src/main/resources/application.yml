@@ -37,7 +37,9 @@ logging:
     org:
       springframework: ${mlrgateway_springFrameworkLogLevel:INFO}
 
-additionalNotificationRecipients: ${mlrgateway_additionalNotificationRecipients:}
+notification:
+  email:
+    cc-list: ${emailCCList:}
 
 springdoc:
   swagger-ui:

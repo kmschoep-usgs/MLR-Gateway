@@ -7,6 +7,8 @@ import java.util.Comparator;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -34,6 +36,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/workflows")
 public class BulkTransactionFilesWorkflowController extends BaseController {
+	private Logger log = LoggerFactory.getLogger(BulkTransactionFilesWorkflowController.class);
 	private BulkTransactionFilesWorkflowService transactionFiles;
 	private UserSummaryReportBuilder userSummaryReportbuilder;
 	
@@ -57,6 +60,7 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping(path = "/bulkTransactionFiles", consumes = "multipart/form-data")
 	public UserSummaryReport bulkGenerateTransactionFilesWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
+		log.info("[BULK TRANSACTION WORKFLOW]: Starting bulk transaction workflow for: User: " + userAuthUtil.getUserName(authentication) + " | File: " + file.getOriginalFilename());
 		setReport(new GatewayReport(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW
 				,file.getOriginalFilename()
 				,userAuthUtil.getUserName(authentication)
@@ -74,11 +78,12 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 				BulkTransactionFilesWorkflowController.addWorkflowStepReport(new StepReport(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
 			}
 		}
+		
 		// Overall Status ignores Notification Status
 		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
 		
 		//Send Notification
-		notificationStep(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_SUBJECT, "process-" + file.getOriginalFilename(), authentication);
+		notificationStep(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW_SUBJECT, "process-" + file.getOriginalFilename(), authentication, true);
 
 		//Return report
 		GatewayReport rtn = getReport();

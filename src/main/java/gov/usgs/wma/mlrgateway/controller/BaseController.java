@@ -5,6 +5,7 @@ import gov.usgs.wma.mlrgateway.GatewayReport;
 import gov.usgs.wma.mlrgateway.SiteReport;
 import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
+import gov.usgs.wma.mlrgateway.exception.InvalidEmailException;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
@@ -25,8 +26,8 @@ public abstract class BaseController {
 	protected NotificationService notificationService;
 	protected UserAuthUtil userAuthUtil;
 	
-	@Value("${additionalNotificationRecipients:}")
-	private String additionalNotificationRecipientsString;
+	@Value("${notification.email.cc-list:}")
+	private String notificationEmailCCListString;
 	
 	@Value("${environmentTier:}")
 	protected String environmentTier;
@@ -71,28 +72,26 @@ public abstract class BaseController {
 		gatewayReport.remove();
 	}
 
-	protected void notificationStep(String subject, String attachmentFileName, Authentication authentication) {
-		List<String> notificationRecipientList;
+	protected void notificationStep(String subject, String attachmentFileName, Authentication authentication, Boolean includeCCList) {
+		List<String> ccList = new ArrayList<>();;
 		//Send Notification
 		try {
-			if(additionalNotificationRecipientsString != null && additionalNotificationRecipientsString.length() > 0){
+			if(includeCCList && notificationEmailCCListString != null && !notificationEmailCCListString.trim().isEmpty()){
 				//Note List returned from Arrays.asList does not implement .add() thus the need for the additional ArrayList<> constructor
-				notificationRecipientList = new ArrayList<>(Arrays.asList(StringUtils.split(additionalNotificationRecipientsString, ',')));
-			} else {
-				notificationRecipientList = new ArrayList<>();
+				ccList = new ArrayList<>(Arrays.asList(StringUtils.split(notificationEmailCCListString.trim(), ',')));
 			}
+			
 			String userEmail = userAuthUtil.getUserEmail(authentication);
 				
 			if(userEmail != null && userEmail.length() > 0){
-				notificationRecipientList.add(userEmail);
-			} else {
-				log.warn("No User Email present in the Web Security Context when sending the Notification Email!");
+				throw new InvalidEmailException("Could not find valid user email in security context.");
 			}
+
 			String fullSubject = SUBJECT_PREFIX.replace("%environment%", environmentTier != null && environmentTier.length() > 0 ? environmentTier : "") + subject;
 			userSummaryReport = userSummaryReportBuilder.buildUserSummaryReport(getReport());
-			notificationService.sendNotification(notificationRecipientList, fullSubject, getReport().getUserName(), attachmentFileName, userSummaryReport);
+			notificationService.sendNotification(userEmail, ccList, fullSubject, getReport().getUserName(), attachmentFileName, userSummaryReport);
 		} catch(Exception e) {
-			log.error("An error occured while attempting to send the notification email: ", e);
+			log.error("An error occurred while attempting to send the notification email: ", e);
 			if (e instanceof FeignBadResponseWrapper) {
 				int status = ((FeignBadResponseWrapper) e).getStatus();
 				WorkflowController.addWorkflowStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, ((FeignBadResponseWrapper) e).getBody()));
