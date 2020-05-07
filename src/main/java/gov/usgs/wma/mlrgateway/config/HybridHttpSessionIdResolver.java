@@ -45,8 +45,7 @@ public class HybridHttpSessionIdResolver implements HttpSessionIdResolver {
 		serializer.setCookieName("SESSION"); 
 		serializer.setCookiePath("/");
 		serializer.setUseSecureCookie(true);
-		serializer.setSameSite(SameSiteCookies.STRICT.getValue());
-		
+		serializer.setSameSite(SameSiteCookies.LAX.getValue());
 		this.cookieSerializer = serializer;
 	}
 
