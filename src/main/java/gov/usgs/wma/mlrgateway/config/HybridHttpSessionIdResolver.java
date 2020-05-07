@@ -32,61 +32,61 @@ public class HybridHttpSessionIdResolver implements HttpSessionIdResolver {
 	private static final String HEADER_X_AUTH_TOKEN = "X-Auth-Token";
 
 	private static final String WRITTEN_SESSION_ID_ATTR = CookieHttpSessionIdResolver.class.getName()
-    .concat(".WRITTEN_SESSION_ID_ATTR");
+		.concat(".WRITTEN_SESSION_ID_ATTR");
 
-    private CookieSerializer cookieSerializer;
+	private CookieSerializer cookieSerializer;
 
 	private final String headerName;
 
 	public HybridHttpSessionIdResolver() {
-        this.headerName = HEADER_X_AUTH_TOKEN;
-        
-        DefaultCookieSerializer serializer = new DefaultCookieSerializer();
+		this.headerName = HEADER_X_AUTH_TOKEN;
+		
+		DefaultCookieSerializer serializer = new DefaultCookieSerializer();
 		serializer.setCookieName("SESSION"); 
 		serializer.setCookiePath("/");
 		serializer.setUseSecureCookie(true);
-        serializer.setSameSite(SameSiteCookies.STRICT.getValue());
-        
-        this.cookieSerializer = serializer;
+		serializer.setSameSite(SameSiteCookies.STRICT.getValue());
+		
+		this.cookieSerializer = serializer;
 	}
 
 	@Override
 	public List<String> resolveSessionIds(HttpServletRequest request) {
-        String headerValue = request.getHeader(this.headerName);
-        List<String> sessionIds = (headerValue != null) ? Collections.singletonList(headerValue) : Collections.emptyList();
-        
-        if(sessionIds.isEmpty()) {
-            sessionIds =  this.cookieSerializer.readCookieValues(request);
-        }
+		String headerValue = request.getHeader(this.headerName);
+		List<String> sessionIds = (headerValue != null) ? Collections.singletonList(headerValue) : Collections.emptyList();
+		
+		if(sessionIds.isEmpty()) {
+			sessionIds =  this.cookieSerializer.readCookieValues(request);
+		}
 
 		return sessionIds;
 	}
 
 	@Override
 	public void setSessionId(HttpServletRequest request, HttpServletResponse response, String sessionId) {
-        response.setHeader(this.headerName, sessionId);
+		response.setHeader(this.headerName, sessionId);
 
-        if (!sessionId.equals(request.getAttribute(WRITTEN_SESSION_ID_ATTR))) {
-            request.setAttribute(WRITTEN_SESSION_ID_ATTR, sessionId);
-            this.cookieSerializer.writeCookieValue(new CookieValue(request, response, sessionId));
-        }
+		if (!sessionId.equals(request.getAttribute(WRITTEN_SESSION_ID_ATTR))) {
+			request.setAttribute(WRITTEN_SESSION_ID_ATTR, sessionId);
+			this.cookieSerializer.writeCookieValue(new CookieValue(request, response, sessionId));
+		}
 	}
 
 	@Override
 	public void expireSession(HttpServletRequest request, HttpServletResponse response) {
 		response.setHeader(this.headerName, "");
-        this.cookieSerializer.writeCookieValue(new CookieValue(request, response, ""));
-    }
+		this.cookieSerializer.writeCookieValue(new CookieValue(request, response, ""));
+	}
 
-    /**
-    * Sets the {@link CookieSerializer} to be used.
-    * @param cookieSerializer the cookieSerializer to set. Cannot be null.
-    */
-    public void setCookieSerializer(CookieSerializer cookieSerializer) {
-        if (cookieSerializer == null) {
-            throw new IllegalArgumentException("cookieSerializer cannot be null");
-        }
-        this.cookieSerializer = cookieSerializer;
-    }
+	/**
+	* Sets the {@link CookieSerializer} to be used.
+	* @param cookieSerializer the cookieSerializer to set. Cannot be null.
+	*/
+	public void setCookieSerializer(CookieSerializer cookieSerializer) {
+		if (cookieSerializer == null) {
+			throw new IllegalArgumentException("cookieSerializer cannot be null");
+		}
+		this.cookieSerializer = cookieSerializer;
+	}
 
 }
