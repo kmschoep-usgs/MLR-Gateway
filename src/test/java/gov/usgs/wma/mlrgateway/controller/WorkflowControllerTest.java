@@ -65,7 +65,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@BeforeEach
 	public void init() {
 		given(userAuthUtil.getUserEmail(any(Authentication.class))).willReturn("test@test");
-		
+		given(userAuthUtil.getUserName(any(Authentication.class))).willReturn("test");
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
 		controller = new WorkflowController(legacy, notify, userAuthUtil, clock());

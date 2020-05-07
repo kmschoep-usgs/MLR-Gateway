@@ -22,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -76,10 +77,11 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 	public void init() {
 		file = new MockMultipartFile("file", "sites.csv", "text/plain", "".getBytes());
 		when(clockMock.instant()).thenReturn(Clock.fixed(Instant.parse("2010-01-10T10:00:00Z"), ZoneId.of("UTC")).instant());
+		when(userAuthUtil.getUserName(any(Authentication.class))).thenReturn("test");
 	}
 	
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void happyPathBulkTransactionFilesWorkflow() throws Exception {
 		String bulkTransactionsJson = "{\"name\":\"" + BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW + "\",\"inputFileName\":\"sites.csv\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","
@@ -93,7 +95,7 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test")
+	@WithMockUser
 	public void happyPathBulkTransactionFilesWorkflowNoAuthorities() throws Exception {
 		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/bulkTransactionFiles").file(file))
 				.andExpect(status().isForbidden())
@@ -103,7 +105,7 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void badResponse_BulkTransactionFilesWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW + "\",\"inputFileName\":\"sites.csv\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\",\"workflowSteps\":[{\"name\":\"" 
@@ -120,7 +122,7 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 	}
 
 	@Test
-	@WithMockUser(username = "test", authorities = "test_allowed")
+	@WithMockUser(authorities = "test_allowed")
 	public void serverError_BulkTransactionFilesWorkflow() throws Exception {
 		String badJson = "{\"name\":\"" + BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW + "\",\"inputFileName\":\"sites.csv\","
 				+ "\"reportDateTime\":\"2010-01-10T10:00:00Z\",\"userName\":\"test\","

@@ -52,7 +52,7 @@ public class ExportWorkflowController extends BaseController {
 	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(COMPLETE_WORKFLOW
 				,null
-				,getUserName(authentication)
+				,userAuthUtil.getUserName(authentication)
 				,clock.instant().toString()));
 		try {
 			export.exportWorkflow(agencyCode, siteNumber);

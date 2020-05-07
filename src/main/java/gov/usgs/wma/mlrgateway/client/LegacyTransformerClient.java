@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import gov.usgs.wma.mlrgateway.config.PropagateBadRequest;
 
-@FeignClient(name="legacyTransformer", configuration=PropagateBadRequest.class)
+@FeignClient(name="mlrLegacyTransformer", configuration=PropagateBadRequest.class)
 public interface LegacyTransformerClient {
 
 	@RequestMapping(method=RequestMethod.POST, value="transformer/decimal_location", consumes="application/json")
