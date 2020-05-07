@@ -18,6 +18,7 @@ import com.netflix.zuul.context.RequestContext;
 public class ZuulOAuth2Filter extends ZuulFilter {
 
 	public static final String MLR_SERVICE_PREFIX = "mlr";
+	public static final String AUTHORIZATION_HEADER = "authorization";
 
 	@Autowired
 	private UserAuthUtil userAuthUtil;
@@ -26,7 +27,8 @@ public class ZuulOAuth2Filter extends ZuulFilter {
 	public boolean shouldFilter() {
 		RequestContext ctx = RequestContext.getCurrentContext();
 		return !(ctx.containsKey(FORWARD_TO_KEY) && !ctx.get(FORWARD_TO_KEY).toString().isEmpty())
-				&& ctx.getOrDefault(SERVICE_ID_KEY, "").toString().startsWith(MLR_SERVICE_PREFIX);
+				&& ctx.getOrDefault(SERVICE_ID_KEY, "").toString().startsWith(MLR_SERVICE_PREFIX)
+				&& !ctx.getZuulRequestHeaders().containsKey(AUTHORIZATION_HEADER);
 	}
 
 	@Override
@@ -34,11 +36,8 @@ public class ZuulOAuth2Filter extends ZuulFilter {
 		RequestContext ctx = RequestContext.getCurrentContext();
 		String authToken = userAuthUtil.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
 
-		if(authToken != null && !authToken.isEmpty() && !ctx.getZuulRequestHeaders().containsKey("Authorization")) {
-			ctx.addZuulRequestHeader(
-				"Authorization", 
-				"Bearer " + authToken
-			);
+		if(authToken != null && !authToken.isEmpty()) {
+			ctx.addZuulRequestHeader(AUTHORIZATION_HEADER, "Bearer " + authToken);
 		}
 			
 		return null;
