@@ -27,8 +27,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 @RequestMapping("/auth")
 public class AuthController extends BaseController {
 
-    @Autowired
-    UserAuthUtil userAuthUtil;
+	@Autowired
+	UserAuthUtil userAuthUtil;
 
 	@Autowired
 	public AuthController() {
@@ -69,9 +69,9 @@ public class AuthController extends BaseController {
 		OAuth2AccessToken token = userAuthUtil.getRefreshAccessToken(auth);
 		String cacheBreak = String.valueOf(Instant.now().getEpochSecond());
 		if (token != null && !token.getTokenValue().isEmpty()) {
-            response.sendRedirect(uiDomainName + "?mlrAccessToken=" + getToken() + "&cacheBreak=" + cacheBreak);
-        } else {
-            response.sendError(HttpStatus.UNAUTHORIZED.value());
+			response.sendRedirect(uiDomainName + "?mlrAccessToken=" + getToken() + "&cacheBreak=" + cacheBreak);
+		} else {
+			response.sendError(HttpStatus.UNAUTHORIZED.value());
 		}
 	}
 }

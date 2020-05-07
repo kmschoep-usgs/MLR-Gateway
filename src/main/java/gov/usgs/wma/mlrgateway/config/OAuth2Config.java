@@ -26,10 +26,10 @@ public class OAuth2Config {
 
 	private static final Logger LOG = LoggerFactory.getLogger(OAuth2Config.class);
 
-    private final Duration accessTokenExpireSkew = Duration.ofMinutes(1);
+	private final Duration accessTokenExpireSkew = Duration.ofMinutes(1);
 
-    @Autowired
-    private UserAuthUtil userAuthUtil;
+	@Autowired
+	private UserAuthUtil userAuthUtil;
 
 	@Bean
 	RequestInterceptor oauth2FeignRequestInterceptor() {
