@@ -52,5 +52,5 @@ hystrix:
           thread:
             timeoutInMilliseconds: 99999
 
-additionalNotificationRecipients: 
+emailCCList: test@test.test
 maintenanceRoles: test_allowed

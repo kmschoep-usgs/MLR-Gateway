@@ -64,12 +64,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	@Test
 	public void happyPath() throws Exception {
 		ResponseEntity<String> emailResp = new ResponseEntity<>("test", HttpStatus.OK);
-		List<String> recipientList = Arrays.asList("test");
+		List<String> ccList = Arrays.asList("test");
 		given(notificationClient.sendEmail(anyString())).willReturn(emailResp);
 		UserSummaryReport report = basicReport();
 		report.setNumberSiteFailure(0);
 		report.setNumberSiteSuccess(0);
-		service.sendNotification(recipientList, "test", "test", "test", report);
+		service.sendNotification("test@test", ccList, "test", "test", "test", report);
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
 		assertEquals(report.getUserName(), "test");
 		assertNotNull(report.getReportDateTime());
@@ -80,14 +80,15 @@ public class NotificationServiceTest extends BaseSpringTest {
 	}
 
 	@Test
-	public void buildRequestMapTest() throws Exception {
+	public void buildRequestMapCCTest() throws Exception {
 		UserSummaryReport report = basicReport();
 		report.setName("TEST NOTIFICATION");
 		report.setNumberSiteFailure(0);
 		report.setNumberSiteSuccess(0);
-		List<String> recipientList = Arrays.asList("test-recipient");
+		List<String> ccList = Arrays.asList("test-recipient1", "test-recipient2");
 		String subject = "test-subject";
 		String user = "test-user";
+		String userEmail = "test@test";
 		report.setUserName(user);
 		String attachmentFileName = "test-d.file";
 		String expectedBody = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
@@ -99,8 +100,9 @@ public class NotificationServiceTest extends BaseSpringTest {
 			"Status:  0 Transactions Succeeded, 0 Transactions Failed\n\n";
 		String expectedAttachment = "mlr-test-d.file-report.json";
 
-		HashMap<String, Object> result = service.buildRequestMap(recipientList, subject, user, attachmentFileName, report);
-		assertEquals(result.get(NotificationClient.MESSAGE_TO_KEY), recipientList);
+		HashMap<String, Object> result = service.buildRequestMap(userEmail, ccList, subject, user, attachmentFileName, report);
+		assertEquals(result.get(NotificationClient.MESSAGE_TO_KEY), Arrays.asList(userEmail));
+		assertEquals(result.get(NotificationClient.MESSAGE_CC_KEY), ccList);
 		assertEquals(result.get(NotificationClient.MESSAGE_TEXT_BODY_KEY), expectedBody);
 		assertEquals(result.get(NotificationClient.MESSAGE_SUBJECT_KEY), subject);
 		assertEquals(result.get(NotificationClient.MESSAGE_ATTACHMENT_KEY), report.toPrettyPrintString());
@@ -108,13 +110,42 @@ public class NotificationServiceTest extends BaseSpringTest {
 	}
 	
 	@Test
+	public void buildRequestMapNoCCTest() throws Exception {
+		UserSummaryReport report = basicReport();
+		report.setName("TEST NOTIFICATION");
+		report.setNumberSiteFailure(0);
+		report.setNumberSiteSuccess(0);
+		String subject = "test-subject";
+		String user = "test-user";
+		String userEmail = "test@test";
+		report.setUserName(user);
+		String attachmentFileName = "test-d.file";
+		String expectedBody = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+			"User:        test-user\n" +
+			"Workflow:    TEST NOTIFICATION\n" +
+			"Report Date: report-date-time\n" +
+			"Input File: " + DEFAULT_FILE_NAME + "\n" +
+			"The full, raw report output is attached.\n\n" +
+			"Status:  0 Transactions Succeeded, 0 Transactions Failed\n\n";
+		String expectedAttachment = "mlr-test-d.file-report.json";
+
+		HashMap<String, Object> result = service.buildRequestMap(userEmail, null, subject, user, attachmentFileName, report);
+		assertEquals(result.get(NotificationClient.MESSAGE_TO_KEY), Arrays.asList(userEmail));
+		assertEquals(result.get(NotificationClient.MESSAGE_CC_KEY), null);
+		assertEquals(result.get(NotificationClient.MESSAGE_TEXT_BODY_KEY), expectedBody);
+		assertEquals(result.get(NotificationClient.MESSAGE_SUBJECT_KEY), subject);
+		assertEquals(result.get(NotificationClient.MESSAGE_ATTACHMENT_KEY), report.toPrettyPrintString());
+		assertEquals(result.get(NotificationClient.MESSAGE_ATTACHMENT_FILE_NAME_KEY), expectedAttachment);
+	}
+
+	@Test
 	public void notificationService_sendEmail_handlesError() {
 		UserSummaryReport report = basicReport();
 		report.setNumberSiteFailure(0);
 		report.setNumberSiteSuccess(0);
 		given(notificationClient.sendEmail(anyString())).willThrow(new RuntimeException());
-		List<String> recipientList = Arrays.asList("test");
-		service.sendNotification(recipientList, "test", "test", "test", report);
+		List<String> ccList = Arrays.asList("test");
+		service.sendNotification("test@test", ccList, "test", "test", "test", report);
 	}
 
 	@Test

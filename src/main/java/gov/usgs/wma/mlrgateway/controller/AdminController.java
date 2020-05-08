@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
-
+	private Logger log = LoggerFactory.getLogger(AdminController.class);
 	private AdminService adminService;
 
 	@Autowired
@@ -43,7 +45,9 @@ public class AdminController {
 	public void sendSummaryEmail(
 		@RequestParam @Pattern(regexp="\\d\\d\\d\\d-\\d\\d-\\d\\d") String date,
 		@RequestParam @NotEmpty List<String> recipientList,
-		HttpServletResponse response) throws IOException {
+		HttpServletResponse response
+	) throws IOException {
+		log.info("[SUMMARY EMAIL WORKFLOW]: Starting summary email generation for date: " + date);
 		try {
 			adminService.sendSummaryEmail(date, recipientList);
 			response.setStatus(HttpStatus.OK.value());

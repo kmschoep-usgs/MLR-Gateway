@@ -81,6 +81,7 @@ public class WorkflowControllerMVCTest {
 		file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		when(clockMock.instant()).thenReturn(Clock.fixed(Instant.parse("2010-01-10T10:00:00Z"), ZoneId.of("UTC")).instant());
 		when(userAuthUtil.getUserName(any(Authentication.class))).thenReturn("test");
+		when(userAuthUtil.getUserEmail(any(Authentication.class))).thenReturn("test@test.test");
 	}
 	
 	@Test
