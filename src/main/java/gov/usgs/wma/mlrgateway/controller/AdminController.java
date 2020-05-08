@@ -45,8 +45,9 @@ public class AdminController {
 	public void sendSummaryEmail(
 		@RequestParam @Pattern(regexp="\\d\\d\\d\\d-\\d\\d-\\d\\d") String date,
 		@RequestParam @NotEmpty List<String> recipientList,
-		HttpServletResponse response) throws IOException {
-			log.info("[SUMMARY EMAIL WORKFLOW]: Starting summary email generation for date: " + date);
+		HttpServletResponse response
+	) throws IOException {
+		log.info("[SUMMARY EMAIL WORKFLOW]: Starting summary email generation for date: " + date);
 		try {
 			adminService.sendSummaryEmail(date, recipientList);
 			response.setStatus(HttpStatus.OK.value());
