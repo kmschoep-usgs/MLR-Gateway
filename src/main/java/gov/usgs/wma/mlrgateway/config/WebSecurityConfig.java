@@ -2,6 +2,7 @@ package gov.usgs.wma.mlrgateway.config;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
@@ -15,6 +16,9 @@ import org.springframework.session.web.http.HttpSessionIdResolver;
 @EnableSpringHttpSession
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	@Value("${server.session.timeout:}")
+	private Integer sessionTimeoutSeconds;
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -42,7 +46,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	public MapSessionRepository sessionRepository() {
-		return new MapSessionRepository(new ConcurrentHashMap<>());
+		MapSessionRepository sessionRepo = new MapSessionRepository(new ConcurrentHashMap<>());
+		sessionRepo.setDefaultMaxInactiveInterval(sessionTimeoutSeconds);
+		return sessionRepo;
 	}
 
 	@Bean
