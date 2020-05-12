@@ -250,13 +250,13 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		mlValid.put("validation",legacyValidation);
 
 		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(ml);
-		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willReturn(mlValid);
+		given(legacyValidatorService.doPKValidation(anyMap(), any())).willReturn(mlValid);
 		given(legacyCruService.updateTransaction(anyString(), anyString(), any())).willReturn(updatedMl);
 
 		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
 		GatewayReport rtn = WorkflowController.getReport();
 		
-		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
+		verify(legacyValidatorService).doPKValidation(anyMap(), any());
 		verify(legacyCruService).updateTransaction(anyString(), anyString(), any());
 		verify(fileExportService).exportChange(anyString(), any());
 		assertTrue(rtn.getSites().get(0).isSuccess());
@@ -268,7 +268,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		Map<String, Object> ml = getUpdatePK();
 
 		given(legacyCruService.getMonitoringLocation(any(), any(), anyBoolean(), any())).willReturn(ml);
-		given(legacyValidatorService.doValidation(anyMap(), anyBoolean(), any())).willThrow(new RuntimeException());
+		given(legacyValidatorService.doPKValidation(anyMap(), any())).willThrow(new RuntimeException());
 
 		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
 
@@ -280,7 +280,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		assertFalse(rtn.getSites().get(0).isSuccess());
 		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\": \"null\"}");
 		assertEquals(LegacyWorkflowService.PRIMARY_KEY_UPDATE_TRANSACTION_STEP, rtn.getSites().get(0).getSteps().get(0).getName());
-		verify(legacyValidatorService).doValidation(anyMap(), anyBoolean(), any());
+		verify(legacyValidatorService).doPKValidation(anyMap(), any());
 		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), any());
 	}
 	

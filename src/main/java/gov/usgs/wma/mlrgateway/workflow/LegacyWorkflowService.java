@@ -164,6 +164,7 @@ public class LegacyWorkflowService {
 	public void updatePrimaryKeyWorkflow(String oldAgencyCode, String oldSiteNumber, String newAgencyCode, String newSiteNumber, String reasonText) throws HystrixBadRequestException {
 		String json;
 		Map<String, Object> monitoringLocation = new HashMap<>();
+		Map<String, Object> monitoringLocationToValidate = new HashMap<>();
 		Map<String, Object> updatedMonitoringLocation = new HashMap<>();
 		Map<String, Object> exportChangeObject = new HashMap<>();
 		SiteReport siteReport = new SiteReport(oldAgencyCode, oldSiteNumber);
@@ -182,9 +183,13 @@ public class LegacyWorkflowService {
 				monitoringLocation.replace(AGENCY_CODE, newAgencyCode);
 				monitoringLocation.replace(SITE_NUMBER, newSiteNumber);
 				
-				// Need full object to validate as an Add transaction.  Need to validate as an Add transaction because the update
-				// validations will attempt to retrieve the existing record based on the new primary key, which won't exist.
-				monitoringLocation = legacyValidatorService.doValidation(monitoringLocation, true, siteReport);
+				// Just send relevant fields to the validator
+				monitoringLocationToValidate.put(TRANSACTION_TYPE, "M");
+				monitoringLocationToValidate.put(ID, monitoringLocation.get(ID));
+				monitoringLocationToValidate.put(AGENCY_CODE, newAgencyCode);
+				monitoringLocationToValidate.put(SITE_NUMBER, newSiteNumber);
+				
+				monitoringLocationToValidate = legacyValidatorService.doPKValidation(monitoringLocationToValidate,siteReport);
 				
 				json = mlToJson(monitoringLocation);
 				
