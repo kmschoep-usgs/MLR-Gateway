@@ -115,11 +115,11 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		
 		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
 		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertTrue(mlValid.containsKey("validation"));
@@ -195,19 +195,19 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 400);
-			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertEquals(400, e.getStatus());
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, e.getBody());
 		}
 		
 		GatewayReport gatewayReport = WorkflowController.getReport();
 		gatewayReport.addSiteReport(siteReport);
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -226,17 +226,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 500);
-			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertEquals(500, e.getStatus());
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, e.getBody());
 		}
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
-		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
+		assertEquals("500", siteReport.getSteps().get(1).getHttpStatus().toString());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -255,17 +255,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 500);
-			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertEquals(500, e.getStatus());
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, e.getBody());
 		}
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
-		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
+		assertEquals("500", siteReport.getSteps().get(1).getHttpStatus().toString());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -284,17 +284,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 400);
-			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertEquals(400, e.getStatus());
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, e.getBody());
 		}
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": \"An internal error occurred during validation: " + responseMsg + "\"}");
-		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "400");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"error_message\": \"An internal error occurred during validation: " + responseMsg + "\"}", siteReport.getSteps().get(1).getDetails());
+		assertEquals("400", siteReport.getSteps().get(1).getHttpStatus().toString());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -313,17 +313,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doValidation(ml, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 500);
-			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertEquals(500, e.getStatus());
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, e.getBody());
 		}
 
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": \"Unable to deserialize validator response as JSON: " + responseMsg + "\"}");
-		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"error_message\": \"Unable to deserialize validator response as JSON: " + responseMsg + "\"}", siteReport.getSteps().get(1).getDetails());
+		assertEquals("500", siteReport.getSteps().get(1).getHttpStatus().toString());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -349,11 +349,11 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			assertEquals(LEGACY_VALIDATION_ERROR_BODY, body);
 		}
 
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error\"}");
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals("{\"error_message\": \"Error\"}", siteReport.getSteps().get(0).getDetails());
 		assertFalse(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
 		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
@@ -411,12 +411,12 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			assertEquals(LEGACY_VALIDATION_ERROR_BODY, body);
 		}
 
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error\"}");
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals("{\"error_message\": \"Error\"}", siteReport.getSteps().get(0).getDetails());
 		assertFalse(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -460,19 +460,19 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doPKValidation(ml, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 400);
-			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertEquals(400, e.getStatus());
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, e.getBody());
 		}
 		
 		GatewayReport gatewayReport = WorkflowController.getReport();
 		gatewayReport.addSiteReport(siteReport);
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -491,17 +491,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doPKValidation(ml, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 500);
-			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertEquals(500, e.getStatus());
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, e.getBody());
 		}
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
-		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
+		assertEquals("500", siteReport.getSteps().get(1).getHttpStatus().toString());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -520,17 +520,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doPKValidation(ml, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 500);
-			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertEquals(500, e.getStatus());
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, e.getBody());
 		}
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
-		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
+		assertEquals("500", siteReport.getSteps().get(1).getHttpStatus().toString());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -549,17 +549,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doPKValidation(ml, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 400);
-			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertEquals(400, e.getStatus());
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, e.getBody());
 		}
 		
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": \"An internal error occurred during validation: " + responseMsg + "\"}");
-		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "400");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"error_message\": \"An internal error occurred during validation: " + responseMsg + "\"}", siteReport.getSteps().get(1).getDetails());
+		assertEquals("400", siteReport.getSteps().get(1).getHttpStatus().toString());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -578,17 +578,17 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			service.doPKValidation(ml, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
-			assertTrue(e.getStatus() == 500);
-			assertTrue(LEGACY_VALIDATION_ERROR_BODY.equals(e.getBody()));
+			assertEquals(500, e.getStatus());
+			assertEquals(LEGACY_VALIDATION_ERROR_BODY, e.getBody());
 		}
 
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL);
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_SUCCESSFUL, siteReport.getSteps().get(0).getDetails());
 		assertTrue(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"error_message\": \"Unable to deserialize validator response as JSON: " + responseMsg + "\"}");
-		assertEquals(siteReport.getSteps().get(1).getHttpStatus().toString(), "500");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"error_message\": \"Unable to deserialize validator response as JSON: " + responseMsg + "\"}", siteReport.getSteps().get(1).getDetails());
+		assertEquals("500", siteReport.getSteps().get(1).getHttpStatus().toString());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
@@ -614,11 +614,11 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			assertEquals(LEGACY_VALIDATION_ERROR_BODY, body);
 		}
 
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error\"}");
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals("{\"error_message\": \"Error\"}", siteReport.getSteps().get(0).getDetails());
 		assertFalse(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
 		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertTrue(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
@@ -676,12 +676,12 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 			assertEquals(LEGACY_VALIDATION_ERROR_BODY, body);
 		}
 
-		assertEquals(siteReport.getSteps().size(), 2);
-		assertEquals(siteReport.getSteps().get(0).getName(), LegacyValidatorService.SITE_VALIDATE_STEP);
-		assertEquals(siteReport.getSteps().get(0).getDetails(), "{\"error_message\": \"Error\"}");
+		assertEquals(2, siteReport.getSteps().size());
+		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
+		assertEquals("{\"error_message\": \"Error\"}", siteReport.getSteps().get(0).getDetails());
 		assertFalse(siteReport.getSteps().get(0).isSuccess());
-		assertEquals(siteReport.getSteps().get(1).getName(), LegacyValidatorService.VALIDATION_STEP);
-		assertEquals(siteReport.getSteps().get(1).getDetails(), "{\"validator_message\": " + responseMsg + "}");
+		assertEquals(LegacyValidatorService.VALIDATION_STEP, siteReport.getSteps().get(1).getName());
+		assertEquals("{\"validator_message\": " + responseMsg + "}", siteReport.getSteps().get(1).getDetails());
 		assertFalse(siteReport.getSteps().get(1).isSuccess());
 		assertFalse(siteReport.isSuccess());
 	}
