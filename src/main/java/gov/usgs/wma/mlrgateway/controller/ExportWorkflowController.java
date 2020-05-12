@@ -7,6 +7,8 @@ import java.util.Comparator;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -29,6 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name="Export Workflow", description="Display")
 @RestController
 public class ExportWorkflowController extends BaseController {
+	private Logger log = LoggerFactory.getLogger(ExportWorkflowController.class);
 	private ExportWorkflowService export;
 	public static final String COMPLETE_WORKFLOW = "Complete Export Workflow";
 	public static final String EXPORT_WORKFLOW_SUBJECT = "Transaction File Generation for Requested Location";
@@ -50,9 +53,10 @@ public class ExportWorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/legacy/location/{agencyCode}/{siteNumber}")
 	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response, Authentication authentication) {
+		log.info("COPY WORKFLOW: Starting copy to NWIS Hosts workflow for: User: " + userAuthUtil.getUserName(authentication) + " | Location: [" + agencyCode + " - " + siteNumber + "]");
 		setReport(new GatewayReport(COMPLETE_WORKFLOW
 				,null
-				,getUserName(authentication)
+				,userAuthUtil.getUserName(authentication)
 				,clock.instant().toString()));
 		try {
 			export.exportWorkflow(agencyCode, siteNumber);
@@ -71,7 +75,7 @@ public class ExportWorkflowController extends BaseController {
 		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
 		
 		//Send Notification
-		notificationStep(EXPORT_WORKFLOW_SUBJECT, "export-" + agencyCode + "-" + siteNumber, authentication);
+		notificationStep(EXPORT_WORKFLOW_SUBJECT, "export-" + agencyCode + "-" + siteNumber, authentication, false);
 		
 		//Return Report
 		GatewayReport rtn = getReport();

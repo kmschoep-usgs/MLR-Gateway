@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Maven caching for docker build efficiency
 - Update Primary Key workflow
 - Login to Util Controller for separate UI
+- Service that takes in a .csv file of agency code and site number, and generates an update transaction for each monitoring location
 
 ### Changed
 - Made authorization group checking case sensitive

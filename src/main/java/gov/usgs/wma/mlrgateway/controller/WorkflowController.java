@@ -5,11 +5,16 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,8 +37,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name="Workflow", description="Display")
 @RestController
+@Validated
 @RequestMapping("/workflows")
 public class WorkflowController extends BaseController {
+	private Logger log = LoggerFactory.getLogger(WorkflowController.class);
 	private LegacyWorkflowService legacy;
 	private UserSummaryReportBuilder userSummaryReportbuilder;
 	public static final String COMPLETE_WORKFLOW_SUBJECT = "Submitted Ddot Transaction";
@@ -55,11 +62,12 @@ public class WorkflowController extends BaseController {
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PreAuthorize("hasPermission(null, null)")
-	@PostMapping("/ddots")
+	@PostMapping(path = "/ddots", consumes = "multipart/form-data")
 	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
+		log.info("[VALIDATE AND UPDATE WORKFLOW]: Starting full validate and update workflow for: User: " + userAuthUtil.getUserName(authentication) + " | File: " + file.getOriginalFilename());
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW
 				,file.getOriginalFilename()
-				,getUserName(authentication)
+				,userAuthUtil.getUserName(authentication)
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
@@ -79,7 +87,7 @@ public class WorkflowController extends BaseController {
 		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
 		
 		//Send Notification
-		notificationStep(COMPLETE_WORKFLOW_SUBJECT, "process-" + file.getOriginalFilename(), authentication);
+		notificationStep(COMPLETE_WORKFLOW_SUBJECT, "process-" + file.getOriginalFilename(), authentication, true);
 
 		//Return report
 		GatewayReport rtn = getReport();
@@ -94,11 +102,11 @@ public class WorkflowController extends BaseController {
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
-	@PostMapping("/ddots/validate")
+	@PostMapping(path = "/ddots/validate", consumes = "multipart/form-data")
 	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
 				,file.getOriginalFilename()
-				,getUserName(authentication)
+				,userAuthUtil.getUserName(authentication)
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
@@ -119,7 +127,7 @@ public class WorkflowController extends BaseController {
 		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
 		
 		//Send Notification
-		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT, "validate-" + file.getOriginalFilename(), authentication);
+		notificationStep(VALIDATE_DDOT_WORKFLOW_SUBJECT, "validate-" + file.getOriginalFilename(), authentication, false);
 
 		//Return report
 		GatewayReport rtn = getReport();
@@ -140,15 +148,18 @@ public class WorkflowController extends BaseController {
 			@RequestParam String newAgencyCode,
 			@RequestParam String oldSiteNumber,
 			@RequestParam String newSiteNumber,
+			@RequestParam @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message="Invalid characters submitted in reasonText. Only alpha-numeric characters are allowed.")  @Size(max = 64) String reasonText,
 			HttpServletResponse response, 
-			Authentication authentication) {
+			Authentication authentication) 
+	{
+		log.info("[PK CHANGE WORKFLOW]: Starting primary key change workflow for: User: " + userAuthUtil.getUserName(authentication) + " | Location: [" + oldAgencyCode + " - " + oldSiteNumber + "] --> [" + newAgencyCode + " - " + newSiteNumber + "]");
 		setReport(new GatewayReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
 				,null
-				,getUserName(authentication)
+				,userAuthUtil.getUserName(authentication)
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
-			legacy.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber);
+			legacy.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
 			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_SUCCESS));
 
 		} catch (Exception e) {
@@ -165,7 +176,8 @@ public class WorkflowController extends BaseController {
 		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
 		
 		//Send Notification
-		notificationStep(PRIMARY_KEY_UPDATE_WORKFLOW_SUBJECT, "update primary key:" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber, authentication);
+		String attachmentName = "update primary key:" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber;
+		notificationStep(PRIMARY_KEY_UPDATE_WORKFLOW_SUBJECT, attachmentName, authentication, true);
 
 		//Return report
 		GatewayReport rtn = getReport();

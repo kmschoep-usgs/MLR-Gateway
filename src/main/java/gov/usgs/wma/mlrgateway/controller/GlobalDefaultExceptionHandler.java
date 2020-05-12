@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartException;
+
+import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 
 @ControllerAdvice
 public class GlobalDefaultExceptionHandler {
@@ -63,13 +66,26 @@ public class GlobalDefaultExceptionHandler {
 			response.setStatus(HttpStatus.BAD_REQUEST.value());
 			responseMap.put(ERROR_MESSAGE_KEY, "The file you tried to upload exceeds the maximum allowed size for a single file ("+ MAX_FILE_SIZE + 
 				"). Please split your transaction into multiple files or contact the support team for assistance.");
+		} else if(ex instanceof OAuth2AuthorizationException) {
+			response.setStatus(HttpStatus.UNAUTHORIZED.value());
+			responseMap.put(ERROR_MESSAGE_KEY, "Your login has expired. Please refresh the page to login again. If you continue " +
+				"to experience this error please contact the support team for assistance.");
 		} else {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			int hashValue = response.hashCode();
 			//Note: we are giving the user a generic message.  
 			//Server logs can be used to troubleshoot problems.
 			String msgText = "Something bad happened. Contact us with Reference Number: " + hashValue;
-			LOG.error(msgText, ex);
+			String errorText = msgText;
+
+			if(ex instanceof FeignBadResponseWrapper) {
+				FeignBadResponseWrapper badReq = ((FeignBadResponseWrapper)ex);
+				errorText += "\nFeignBadResponse:\nHTTP: " + badReq.getStatus()
+					+ "\nBody: " + badReq.getBody() + "\nMessage: " + badReq.getMessage() + "\n'";
+			}
+
+			LOG.error(errorText, ex);
+			
 			responseMap.put(ERROR_MESSAGE_KEY, msgText);
 		}
 		return responseMap;

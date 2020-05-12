@@ -37,6 +37,11 @@ public class LegacyWorkflowService {
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";
 	public static final String DISTRICT_CODE = "districtCode";
+	public static final String NEW_AGENCY_CODE = "newAgencyCode";
+	public static final String NEW_SITE_NUMBER = "newSiteNumber";
+	public static final String REQUESTER_NAME = "requesterName";	
+	public static final String UPDATED = "updated";
+	public static final String REASON_TEXT = "reasonText";
 	public static final String TRANSACTION_TYPE = "transactionType";
 	public static final String TRANSACTION_TYPE_ADD = "A";
 	public static final String TRANSACTION_TYPE_UPDATE = "M";
@@ -57,8 +62,7 @@ public class LegacyWorkflowService {
 	public static final String VALIDATE_DDOT_TRANSACTION_STEP_FAILURE = "Single transaction validation failed.";
 	public static final String COMPLETE_TRANSACTION_STEP = "Process Single D dot Transaction";
 	public static final String PRIMARY_KEY_UPDATE_TRANSACTION_STEP = "Update Agency Code and/or Site Number";
-
-
+	
 	@Autowired
 	public LegacyWorkflowService(DdotService ddotService, LegacyCruService legacyCruService, LegacyTransformerService transformService, 
 			LegacyValidatorService legacyValidatorService, FileExportService fileExportService) {
@@ -157,10 +161,11 @@ public class LegacyWorkflowService {
 		}
 	}
 	
-	public void updatePrimaryKeyWorkflow(String oldAgencyCode, String oldSiteNumber, String newAgencyCode, String newSiteNumber) throws HystrixBadRequestException {
+	public void updatePrimaryKeyWorkflow(String oldAgencyCode, String oldSiteNumber, String newAgencyCode, String newSiteNumber, String reasonText) throws HystrixBadRequestException {
 		String json;
 		Map<String, Object> monitoringLocation = new HashMap<>();
 		Map<String, Object> updatedMonitoringLocation = new HashMap<>();
+		Map<String, Object> exportChangeObject = new HashMap<>();
 		SiteReport siteReport = new SiteReport(oldAgencyCode, oldSiteNumber);
 		// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
 		siteReport.setTransactionType("M");
@@ -171,22 +176,34 @@ public class LegacyWorkflowService {
 		try {
 			if (!monitoringLocation.isEmpty()) {
 				
-				updatedMonitoringLocation.putAll(monitoringLocation);
 				// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
-				updatedMonitoringLocation.put(TRANSACTION_TYPE, "M");
+				monitoringLocation.put(TRANSACTION_TYPE, "M");
 				
-				updatedMonitoringLocation.replace(AGENCY_CODE, newAgencyCode);
-				updatedMonitoringLocation.replace(SITE_NUMBER, newSiteNumber);
+				monitoringLocation.replace(AGENCY_CODE, newAgencyCode);
+				monitoringLocation.replace(SITE_NUMBER, newSiteNumber);
 				
 				// Need full object to validate as an Add transaction.  Need to validate as an Add transaction because the update
 				// validations will attempt to retrieve the existing record based on the new primary key, which won't exist.
-				updatedMonitoringLocation = legacyValidatorService.doValidation(updatedMonitoringLocation, true, siteReport);
+				monitoringLocation = legacyValidatorService.doValidation(monitoringLocation, true, siteReport);
 				
-				json = mlToJson(updatedMonitoringLocation);
+				json = mlToJson(monitoringLocation);
 				
 				// Need to submit entire record for update (vs. patch), otherwise fields that are not submitted are set to null in the database.
-				json = legacyCruService.updateTransaction(updatedMonitoringLocation.get(ID).toString(), json, siteReport);
-				fileExportService.exportUpdate(updatedMonitoringLocation.get(AGENCY_CODE).toString(), updatedMonitoringLocation.get(SITE_NUMBER).toString(), json, siteReport);
+				json = legacyCruService.updateTransaction(monitoringLocation.get(ID).toString(), json, siteReport);
+				
+				updatedMonitoringLocation = jsonToMl(json);
+				
+				exportChangeObject.put(AGENCY_CODE, oldAgencyCode);
+				exportChangeObject.put(NEW_AGENCY_CODE, updatedMonitoringLocation.get(AGENCY_CODE));
+				exportChangeObject.put(SITE_NUMBER, oldSiteNumber);
+				exportChangeObject.put(NEW_SITE_NUMBER, updatedMonitoringLocation.get(SITE_NUMBER));
+				exportChangeObject.put(REQUESTER_NAME, updatedMonitoringLocation.get("updatedBy"));
+				exportChangeObject.put(UPDATED, updatedMonitoringLocation.get(UPDATED));
+				exportChangeObject.put(REASON_TEXT, reasonText);
+				
+				json = mlToJson(exportChangeObject);
+				
+				fileExportService.exportChange(json, siteReport);
 			}
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper){
@@ -208,10 +225,27 @@ public class LegacyWorkflowService {
 		try {
 			json = mapper.writeValueAsString(ml);
 		} catch (Exception e) {
+			LOG.error("Unable to serialize transformer output: ", e);
 			// Unable to determine when this might actually happen, but the api says it can...
 			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize transformer output.\"}");
 		}
 		
 		return json;
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected Map<String, Object> jsonToMl(String json) {
+		ObjectMapper mapper = new ObjectMapper();
+		Map<String, Object> ml = new HashMap<>();
+		
+		try {
+			ml = mapper.readValue(json, Map.class);
+			
+		} catch (Exception e) {
+			// Unable to determine when this might actually happen, but the api says it can...
+			LOG.error("Unable to serialize legacy cru output: ", e);
+			throw new FeignBadResponseWrapper(HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "{\"error_message\": \"Unable to serialize legacy cru output.\"}");
+		}
+		return ml;
 	}
 }

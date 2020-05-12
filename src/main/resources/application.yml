@@ -15,6 +15,10 @@ security:
   basic:
     enabled: false
   maintenanceRoles: ${maintenanceRoles:}
+  token:
+    claims:
+      email: email
+      username: preferred_username
 
 spring:
   security:
@@ -27,16 +31,15 @@ spring:
         provider:
           wma-keycloak:
             issuer-uri: ${oauthIssuerUri:}
-      resourceserver:
-        jwt:
-          issuer-uri: ${oauthIssuerUri:}
 
 logging:
   level:
     org:
       springframework: ${mlrgateway_springFrameworkLogLevel:INFO}
 
-additionalNotificationRecipients: ${mlrgateway_additionalNotificationRecipients:}
+notification:
+  email:
+    cc-list: ${emailCCList:}
 
 springdoc:
   swagger-ui:
@@ -70,43 +73,43 @@ hystrix:
 zuul:
   retryable: true
   ribbonIsolationStrategy: SEMAPHORE
-  sensitiveHeaders: 
+  sensitiveHeaders: Cookie,Set-Cookie
   routes:
     legacyCruBase:
       path: /monitoringLocations**
-      serviceId: legacyCru
+      serviceId: mlrLegacyCru
       stripPrefix: false
     legacyCruPlus:
       path: /monitoringLocations/**
-      serviceId: legacyCru
+      serviceId: mlrLegacyCru
       stripPrefix: false
 
-ddot:
+mlrDdot:
   ribbon:
     listOfServers: ${mlrgateway_ddotServers}
     IsSecure: ${mlrgateway_ddotIsSecure:true}
 
-legacyTransformer:
+mlrLegacyTransformer:
   ribbon:
     listOfServers: ${mlrgateway_legacyTransformerServers}
     IsSecure: ${mlrgateway_legacyTransformerIsSecure:true}
 
-legacyValidator:
+mlrLegacyValidator:
   ribbon:
     listOfServers: ${mlrgateway_legacyValidatorServers}
     IsSecure: ${mlrgateway_legacyValidatorIsSecure:true}
 
-legacyCru:
+mlrLegacyCru:
   ribbon:
     listOfServers: ${mlrgateway_legacyCruServers}
     IsSecure: ${mlrgateway_legacyCruIsSecure:true}
 
-fileExport:
+mlrFileExport:
   ribbon:
     listOfServers: ${mlrgateway_fileExportServers}
     IsSecure: ${mlrgateway_fileExportIsSecure:true}
 
-notification:
+mlrNotification:
   ribbon:
     listOfServers: ${mlrgateway_notificationServers}
     IsSecure: ${mlrgateway_notificationIsSecure:true}
