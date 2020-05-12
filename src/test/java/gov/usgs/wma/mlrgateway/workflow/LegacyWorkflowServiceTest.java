@@ -294,7 +294,7 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 
 		service.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
 		
-		verify(legacyValidatorService, never()).doValidation(anyMap(), anyBoolean(), any());
+		verify(legacyValidatorService, never()).doPKValidation(anyMap(), any());
 		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), any());
 		verify(fileExportService, never()).exportChange(eq(null), any());
 	}

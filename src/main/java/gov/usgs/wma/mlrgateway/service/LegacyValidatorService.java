@@ -104,18 +104,19 @@ public class LegacyValidatorService {
 			doDuplicateValidation(ml, siteReport);
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
-				log.debug("An error occured during LegacyCRU Duplicate Validation: ", e);
+				log.debug("An error occured during LegacyCRU Duplicate Validation for Primary Key Update: ", e);
 				duplicateValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
 				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, clientErrorParser.parseClientError("LegacyCruClient#validateMonitoringLocation(String)", ((FeignBadResponseWrapper)e).getBody())));
 			} else {
-				log.error("An error occured during LegacyCRU Duplicate Validation: ", e);
+				log.error("An error occured during LegacyCRU Duplicate Validation for Primary Key Update: ", e);
 				duplicateValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, e.getMessage()));
 			}
 		}
 		try {
 			ResponseEntity<String> validationResponse;
-			//  Need to implement this method as if it were an add transaction, since we want it to fail if a monitoring location exists with the new primary key
+			
+			//  Need to implement the following method as if it were an add transaction, since we want it to fail if a monitoring location exists with the new primary key
 			String validationPayload = attachExistingMonitoringLocation(ml, true, siteReport);
 			
 			// Need to validate using the update service so that we only have to submit and validate the fields we care about (agencyCode and siteNumber)
@@ -124,11 +125,11 @@ public class LegacyValidatorService {
 			siteReport.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(), true, "{\"validator_message\": " + validationResponse.getBody() + "}" ));
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper) {
-				log.debug("An error occured during LegacyValidator Validation: ", e);
+				log.debug("An error occured during LegacyValidator Validation for Primary Key Update: ", e);
 				otherValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
 				siteReport.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus, false, ((FeignBadResponseWrapper)e).getBody()));
 			} else {
-				log.error("An error occured during LegacyValidator Validation: ", e);
+				log.error("An error occured during LegacyValidator Validation for Primary Key Update: ", e);
 				otherValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
 				siteReport.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus, false, "{\"error_message\":\"" + e.getMessage() + "\"}"));
 			}
