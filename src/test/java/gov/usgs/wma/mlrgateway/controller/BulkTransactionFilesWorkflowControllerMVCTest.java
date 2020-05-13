@@ -39,12 +39,13 @@ import gov.usgs.wma.mlrgateway.service.NotificationService;
 import gov.usgs.wma.mlrgateway.util.ParseCSV;
 import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
 import gov.usgs.wma.mlrgateway.config.MethodSecurityConfig;
+import gov.usgs.wma.mlrgateway.config.OAuth2Config;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers={BulkTransactionFilesWorkflowController.class})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import({MvcTestConfig.class, PermissionEvaluatorImpl.class, MethodSecurityConfig.class})
+@Import({MvcTestConfig.class, PermissionEvaluatorImpl.class, MethodSecurityConfig.class, OAuth2Config.class})
 public class BulkTransactionFilesWorkflowControllerMVCTest {
 
 	@Autowired

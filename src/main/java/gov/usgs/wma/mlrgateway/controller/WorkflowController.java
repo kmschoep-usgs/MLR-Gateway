@@ -64,6 +64,7 @@ public class WorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping(path = "/ddots", consumes = "multipart/form-data")
 	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
+		userAuthUtil.validateToken(authentication);
 		log.info("[VALIDATE AND UPDATE WORKFLOW]: Starting full validate and update workflow for: User: " + userAuthUtil.getUserName(authentication) + " | File: " + file.getOriginalFilename());
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW
 				,file.getOriginalFilename()
@@ -104,6 +105,7 @@ public class WorkflowController extends BaseController {
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PostMapping(path = "/ddots/validate", consumes = "multipart/form-data")
 	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
+		userAuthUtil.validateToken(authentication);
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
 				,file.getOriginalFilename()
 				,userAuthUtil.getUserName(authentication)
@@ -152,6 +154,7 @@ public class WorkflowController extends BaseController {
 			HttpServletResponse response, 
 			Authentication authentication) 
 	{
+		userAuthUtil.validateToken(authentication);
 		log.info("[PK CHANGE WORKFLOW]: Starting primary key change workflow for: User: " + userAuthUtil.getUserName(authentication) + " | Location: [" + oldAgencyCode + " - " + oldSiteNumber + "] --> [" + newAgencyCode + " - " + newSiteNumber + "]");
 		setReport(new GatewayReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
 				,null

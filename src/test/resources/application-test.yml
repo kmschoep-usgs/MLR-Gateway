@@ -1,16 +1,15 @@
 spring:
   main:
     allow-bean-definition-overriding: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: https://test.gov/test
 
 security:
   basic:
     enabled: false
   require-ssl: false
+  token:
+    claims:
+      email: email
+      username: preferred_username
 
 ddot:
   ribbon:
@@ -54,3 +53,5 @@ hystrix:
 
 emailCCList: test@test.test
 maintenanceRoles: test_allowed
+oauthClientId: testId
+oauthClientSecret: testSecret

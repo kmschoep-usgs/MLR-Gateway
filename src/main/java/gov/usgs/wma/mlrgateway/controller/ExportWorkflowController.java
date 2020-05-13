@@ -53,7 +53,8 @@ public class ExportWorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/legacy/location/{agencyCode}/{siteNumber}")
 	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response, Authentication authentication) {
-		log.info("COPY WORKFLOW: Starting copy to NWIS Hosts workflow for: User: " + userAuthUtil.getUserName(authentication) + " | Location: [" + agencyCode + " - " + siteNumber + "]");
+		userAuthUtil.validateToken(authentication);
+		log.info("[COPY WORKFLOW]: Starting copy to NWIS Hosts workflow for: User: " + userAuthUtil.getUserName(authentication) + " | Location: [" + agencyCode + " - " + siteNumber + "]");
 		setReport(new GatewayReport(COMPLETE_WORKFLOW
 				,null
 				,userAuthUtil.getUserName(authentication)

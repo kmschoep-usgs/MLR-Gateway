@@ -14,9 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -65,14 +63,19 @@ public class AuthController extends BaseController {
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@GetMapping("/login")
 	public void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		OAuth2AccessToken token = userAuthUtil.getRefreshAccessToken(auth);
+		String jwt = getJwt();
 		String cacheBreak = String.valueOf(Instant.now().getEpochSecond());
-		if (token != null && !token.getTokenValue().isEmpty()) {
+		if (jwt != null && !jwt.isEmpty()) {
 			response.sendRedirect(uiDomainName + "?mlrAccessToken=" + getToken() + "&cacheBreak=" + cacheBreak);
 		} else {
 			response.sendError(HttpStatus.UNAUTHORIZED.value());
 		}
+	}
+
+	@Operation(description="Route logged-out users back to login")
+	@GetMapping("/reauth")
+	public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		response.sendRedirect("/auth/login");
 	}
 }
 	

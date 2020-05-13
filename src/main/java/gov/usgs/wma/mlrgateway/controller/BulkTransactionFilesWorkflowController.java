@@ -60,6 +60,7 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping(path = "/bulkTransactionFiles", consumes = "multipart/form-data")
 	public UserSummaryReport bulkGenerateTransactionFilesWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
+		userAuthUtil.validateToken(authentication);
 		log.info("[BULK TRANSACTION WORKFLOW]: Starting bulk transaction workflow for: User: " + userAuthUtil.getUserName(authentication) + " | File: " + file.getOriginalFilename());
 		setReport(new GatewayReport(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW
 				,file.getOriginalFilename()
