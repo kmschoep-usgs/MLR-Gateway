@@ -15,7 +15,7 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
 @Component
-public class ZuulOAuth2Filter extends ZuulFilter {
+public class ZuulOAuth2PreFilter extends ZuulFilter {
 
 	public static final String MLR_SERVICE_PREFIX = "mlr";
 	public static final String AUTHORIZATION_HEADER = "authorization";
