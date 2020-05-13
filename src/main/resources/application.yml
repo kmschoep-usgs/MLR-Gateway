@@ -28,9 +28,11 @@ spring:
           wma-keycloak: 
             client-id: ${oauthClientId:}
             client-secret: ${oauthClientSecret:}
+            scope: ${oauthClientScopes:email}
         provider:
           wma-keycloak:
             issuer-uri: ${oauthIssuerUri:}
+        defaultProvider: wma-keycloak
 
 logging:
   level:

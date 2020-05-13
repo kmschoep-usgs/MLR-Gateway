@@ -19,6 +19,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Value("${server.session.timeout:}")
 	private Integer sessionTimeoutSeconds;
+
+	@Value("${spring.security.oauth2.client.default-provider:}")
+	private String oauth2DefaultProvider;
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -29,9 +32,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.authorizeRequests()
 					.antMatchers("/swagger-resources/**", "/webjars/**", "/v2/**").permitAll()
 					.antMatchers("/info**", "/actuator/health/**", "/hystrix/**", "/hystrix.stream**", "/proxy.stream**", "/favicon.ico", "/swagger-ui.html").permitAll()
+					.antMatchers("/auth/reauth").permitAll()
 					.anyRequest().fullyAuthenticated()
 			.and()
-				.logout().permitAll()
+				.logout().logoutSuccessUrl("/auth/reauth").permitAll()
 			.and()
 				.oauth2Login()
 			.and()
