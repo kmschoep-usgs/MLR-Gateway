@@ -64,7 +64,7 @@
             <dependency>
                 <groupId>org.springframework.session</groupId>
                 <artifactId>spring-session-bom</artifactId>
-                <version>Corn-SR2</version>
+                <version>Dragonfruit-RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

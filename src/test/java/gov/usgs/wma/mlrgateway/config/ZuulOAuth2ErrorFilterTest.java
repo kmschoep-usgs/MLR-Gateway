@@ -1,7 +1,5 @@
 package gov.usgs.wma.mlrgateway.config;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
-
 import java.io.IOException;
 
 import javax.servlet.ServletException;

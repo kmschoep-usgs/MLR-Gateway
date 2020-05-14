@@ -2,9 +2,11 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
@@ -23,6 +25,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.netflix.hystrix.exception.HystrixBadRequestException;
@@ -120,4 +123,17 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		verify(export).exportWorkflow(anyString(), anyString());
 	}
 
+	@Test
+	public void expiredTokenTest() throws Exception {
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(mockAuth);
+		
+		try {
+			controller.exportWorkflow("test", "test", response, mockAuth);
+			fail("Expected ClientAuthorizationRequiredException but got no exception.");
+		} catch(ClientAuthorizationRequiredException e) {
+			assertTrue(e.getMessage().contains("test-client"));
+		} catch(Exception e) {
+			fail("Expected ClientAuthorizationRequiredException, but got " + e.getClass().getName());
+		}
+	}
 }

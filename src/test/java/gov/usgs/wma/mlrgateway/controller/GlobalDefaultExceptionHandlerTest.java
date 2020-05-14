@@ -1,10 +1,16 @@
 package gov.usgs.wma.mlrgateway.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -18,6 +24,7 @@ import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.context.request.WebRequest;
@@ -91,5 +98,17 @@ public class GlobalDefaultExceptionHandlerTest {
 		Map<String, String> actual = controller.handleUncaughtException(new HttpMessageNotReadableException("ok to see\nhide this\nand this", new MockHttpInputMessage("test".getBytes())), request, servRequest, response);
 		assertEquals(expected, actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY));
 		assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-	}	
+	}
+
+	@Test
+	public void handleOAuth2AuthorizationException() throws IOException, ServletException {
+		HttpServletResponse response = new MockHttpServletResponse();
+		HttpServletRequest servRequest = mock(HttpServletRequest.class);
+		String expected = "Your login has expired.";
+		Map<String, String> actual = controller.handleUncaughtException(new ClientAuthorizationRequiredException("test-client"), request, servRequest, response);
+		assertTrue(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains(expected));
+		assertFalse(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains("test-client"));
+		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
+		verify(servRequest, times(1)).logout();
+	}
 }

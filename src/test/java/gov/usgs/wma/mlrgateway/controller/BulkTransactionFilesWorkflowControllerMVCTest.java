@@ -2,7 +2,9 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,6 +25,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -138,5 +141,22 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 				.andExpect(content().string(badJson));
 
 		verify(bulkTransactions).generateTransactionFilesWorkflow(any(MultipartFile.class));
+	}
+
+	@Test
+	@WithMockUser(authorities = "test_allowed")
+	public void expiredToken_BulkTransactionFilesWorkflow() throws Exception {
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(any());
+		
+		// First time the token is expired it returns 401 and clears session
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/bulkTransactionFiles").file(file))
+				.andExpect(status().isUnauthorized())
+				.andExpect(content().contentType("application/json"));
+
+		// Subsequent requests should cause login redirect since the session is gone
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/bulkTransactionFiles").file(file))
+				.andExpect(status().is3xxRedirection());
+
+		verify(bulkTransactions, times(0)).generateTransactionFilesWorkflow(any(MultipartFile.class));
 	}
 }

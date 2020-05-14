@@ -1,7 +1,9 @@
 package gov.usgs.wma.mlrgateway.controller;
 
 import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.doThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
@@ -85,6 +88,22 @@ public class AdminControllerTest extends BaseSpringTest {
 			assertEquals(500, e.getStatus());
 		} catch(Exception e) {
 			fail("Expected FeignBadResponseWrapper, but got " + e.getClass().getName());
+		}
+	}
+
+	@Test
+	public void expiredTokenTest() throws Exception {
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(mockAuth);
+		List<String> recipients = new ArrayList<>();
+		recipients.add("test");
+
+		try {
+			controller.sendSummaryEmail("2020-01-01", recipients, mockAuth, response);
+			fail("Expected ClientAuthorizationRequiredException but got no exception.");
+		} catch(ClientAuthorizationRequiredException e) {
+			assertTrue(e.getMessage().contains("test-client"));
+		} catch(Exception e) {
+			fail("Expected ClientAuthorizationRequiredException, but got " + e.getClass().getName());
 		}
 	}
 }
