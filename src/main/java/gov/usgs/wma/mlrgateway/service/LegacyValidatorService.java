@@ -95,6 +95,60 @@ public class LegacyValidatorService {
 		}
 		
 	}
+	
+	public Map<String, Object> doPKValidation(Map<String, Object> ml, SiteReport siteReport) throws FeignBadResponseWrapper {
+		clientErrorParser = new ClientErrorParser();
+		int duplicateValidationStatus = 200;
+		int otherValidationStatus = 200;
+		try {
+			doDuplicateValidation(ml, siteReport);
+		} catch (Exception e) {
+			if(e instanceof FeignBadResponseWrapper) {
+				log.debug("An error occured during LegacyCRU Duplicate Validation for Primary Key Update: ", e);
+				duplicateValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
+				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, clientErrorParser.parseClientError("LegacyCruClient#validateMonitoringLocation(String)", ((FeignBadResponseWrapper)e).getBody())));
+			} else {
+				log.error("An error occured during LegacyCRU Duplicate Validation for Primary Key Update: ", e);
+				duplicateValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				siteReport.addStepReport(new StepReport(SITE_VALIDATE_STEP, duplicateValidationStatus, false, e.getMessage()));
+			}
+		}
+		try {
+			ResponseEntity<String> validationResponse;
+			
+			//  Need to implement the following method as if it were an add transaction, since we want it to fail if a monitoring location exists with the new primary key
+			String validationPayload = attachExistingMonitoringLocation(ml, true, siteReport);
+			
+			// Need to validate using the update service so that we only have to submit and validate the fields we care about (agencyCode and siteNumber)
+			validationResponse = legacyValidatorClient.validateUpdate(validationPayload);
+			ml = verifyValidationStatus(ml, validationResponse);
+			siteReport.addStepReport(new StepReport(VALIDATION_STEP, validationResponse.getStatusCodeValue(), true, "{\"validator_message\": " + validationResponse.getBody() + "}" ));
+		} catch (Exception e) {
+			if(e instanceof FeignBadResponseWrapper) {
+				log.debug("An error occured during LegacyValidator Validation for Primary Key Update: ", e);
+				otherValidationStatus = ((FeignBadResponseWrapper)e).getStatus();
+				siteReport.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus, false, ((FeignBadResponseWrapper)e).getBody()));
+			} else {
+				log.error("An error occured during LegacyValidator Validation for Primary Key Update: ", e);
+				otherValidationStatus = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				siteReport.addStepReport(new StepReport(VALIDATION_STEP, otherValidationStatus, false, "{\"error_message\":\"" + e.getMessage() + "\"}"));
+			}
+		}
+		//We have to choose between two status codes.
+		//Favor advertising a server-side error over a client-side error
+		//Favor advertising a client-side error over a server-side success
+		//5xx > 4xx > 2xx
+		
+		int finalStatus = Math.max(duplicateValidationStatus, otherValidationStatus);
+
+		if(200 == finalStatus) {
+			return ml;
+		} else {
+			//Throw error to stop additional transaction processing
+			throw new FeignBadResponseWrapper(finalStatus, null, VALIDATION_FAILED );	
+		}
+		
+	}
 
 	private Map<String, Object> verifyValidationStatus(Map<String,Object> ml, ResponseEntity<String> validationResponse) {
 		if(validationResponse.getStatusCode().value() == 200) {

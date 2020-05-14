@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.util.Collections;
 import java.util.Comparator;
 
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -12,6 +13,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -47,6 +49,11 @@ public class WorkflowController extends BaseController {
 	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "Submitted Ddot Validation";
 	public static final String PRIMARY_KEY_UPDATE_WORKFLOW_SUBJECT = "Submitted Primary Key Update Transaction";
 	private final Clock clock;
+	
+	@Bean
+    public MultipartConfigElement multipartConfigElement() {
+        return new MultipartConfigElement("");
+    }
 	
 	@Autowired
 	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, UserAuthUtil userAuthUtil, Clock clock) {

@@ -21,6 +21,9 @@ security:
       username: preferred_username
 
 spring:
+  http:
+    multipart:
+      enabled: true
   security:
     oauth2:
       client:
