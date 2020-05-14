@@ -79,6 +79,7 @@ zuul:
   retryable: true
   ribbonIsolationStrategy: SEMAPHORE
   sensitiveHeaders: Cookie,Set-Cookie
+  ignoredHeaders: Access-Control-Allow-Credentials,Access-Control-Allow-Origin
   routes:
     legacyCruBase:
       path: /monitoringLocations**
