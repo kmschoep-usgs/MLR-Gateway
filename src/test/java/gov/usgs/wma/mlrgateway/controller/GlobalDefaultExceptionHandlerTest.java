@@ -3,9 +3,12 @@ package gov.usgs.wma.mlrgateway.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Map;
@@ -13,6 +16,7 @@ import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,11 +108,30 @@ public class GlobalDefaultExceptionHandlerTest {
 	public void handleOAuth2AuthorizationException() throws IOException, ServletException {
 		HttpServletResponse response = new MockHttpServletResponse();
 		HttpServletRequest servRequest = mock(HttpServletRequest.class);
+		HttpSession session = mock(HttpSession.class);
+		when(servRequest.getSession()).thenReturn(session);
 		String expected = "Your login has expired.";
 		Map<String, String> actual = controller.handleUncaughtException(new ClientAuthorizationRequiredException("test-client"), request, servRequest, response);
 		assertTrue(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains(expected));
 		assertFalse(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains("test-client"));
 		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 		verify(servRequest, times(1)).logout();
+		verify(session, never()).invalidate();
+	}
+
+	@Test
+	public void handleOAuth2AuthorizationExceptionLogoutError() throws IOException, ServletException {
+		HttpServletResponse response = new MockHttpServletResponse();
+		HttpServletRequest servRequest = mock(HttpServletRequest.class);
+		HttpSession session = mock(HttpSession.class);
+		when(servRequest.getSession()).thenReturn(session);
+		doThrow(new ServletException("uh oh")).when(servRequest).logout();
+		String expected = "Your login has expired.";
+		Map<String, String> actual = controller.handleUncaughtException(new ClientAuthorizationRequiredException("test-client"), request, servRequest, response);
+		assertTrue(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains(expected));
+		assertFalse(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains("test-client"));
+		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
+		verify(servRequest, times(1)).logout();
+		verify(session, times(1)).invalidate();
 	}
 }
