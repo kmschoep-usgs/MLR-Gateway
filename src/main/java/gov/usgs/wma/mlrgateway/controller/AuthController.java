@@ -17,7 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 @Tag(name="Auth Controller", description="Display")
 @RestController
@@ -49,8 +49,8 @@ public class AuthController extends BaseController {
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@GetMapping("/token")
-	public String getToken(RequestAttributes requestAttributes) {
-		return requestAttributes.getSessionId();
+	public String getToken() {
+		return RequestContextHolder.currentRequestAttributes().getSessionId();
 	}
 
 	@Operation(description="Return the user to the new UI, logged in.")
@@ -60,11 +60,11 @@ public class AuthController extends BaseController {
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@GetMapping("/login")
-	public void login(Authentication auth, RequestAttributes requestAttributes, HttpServletResponse response) throws IOException {
+	public void login(Authentication auth, HttpServletResponse response) throws IOException {
 		String jwt = getJwt(auth);
 		String cacheBreak = String.valueOf(Instant.now().getEpochSecond());
 		if (jwt != null && !jwt.isEmpty()) {
-			response.sendRedirect(uiDomainName + "?mlrAccessToken=" + getToken(requestAttributes) + "&cacheBreak=" + cacheBreak);
+			response.sendRedirect(uiDomainName + "?mlrAccessToken=" + getToken() + "&cacheBreak=" + cacheBreak);
 		} else {
 			response.sendError(HttpStatus.UNAUTHORIZED.value());
 		}
