@@ -102,6 +102,6 @@ public class UserAuthUtil {
 			return client;
 		}
 
-		return null;		
+		return null;
 	}
 }
