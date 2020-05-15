@@ -275,16 +275,16 @@ public class LegacyWorkflowServiceTest extends BaseSpringTest {
 		GatewayReport rtn = WorkflowController.getReport();
 		
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
-		assertEquals(oldAgencyCode, rtn.getSites().get(1).getAgencyCode());
-		assertEquals(oldSiteNumber, rtn.getSites().get(1).getSiteNumber());
-		assertTrue(rtn.getSites().get(1).isSuccess());
-		assertEquals(newAgencyCode, rtn.getSites().get(0).getAgencyCode());
-		assertEquals(newSiteNumber, rtn.getSites().get(0).getSiteNumber());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getHttpStatus().toString(), "500");
-		assertFalse(rtn.getSites().get(0).getSteps().get(0).isSuccess());
-		assertFalse(rtn.getSites().get(0).isSuccess());
-		assertEquals(rtn.getSites().get(0).getSteps().get(0).getDetails(), "{\"error_message\": \"null\"}");
-		assertEquals(LegacyWorkflowService.PRIMARY_KEY_UPDATE_TRANSACTION_STEP, rtn.getSites().get(0).getSteps().get(0).getName());
+		assertEquals(oldAgencyCode, rtn.getSites().get(0).getAgencyCode());
+		assertEquals(oldSiteNumber, rtn.getSites().get(0).getSiteNumber());
+		assertTrue(rtn.getSites().get(0).isSuccess());
+		assertEquals(newAgencyCode, rtn.getSites().get(1).getAgencyCode());
+		assertEquals(newSiteNumber, rtn.getSites().get(1).getSiteNumber());
+		assertEquals(rtn.getSites().get(1).getSteps().get(0).getHttpStatus().toString(), "500");
+		assertFalse(rtn.getSites().get(1).getSteps().get(0).isSuccess());
+		assertFalse(rtn.getSites().get(1).isSuccess());
+		assertEquals(rtn.getSites().get(1).getSteps().get(0).getDetails(), "{\"error_message\": \"null\"}");
+		assertEquals(LegacyWorkflowService.PRIMARY_KEY_UPDATE_TRANSACTION_STEP, rtn.getSites().get(1).getSteps().get(0).getName());
 		verify(legacyValidatorService).doPKValidation(anyMap(), any());
 		verify(legacyCruService, never()).updateTransaction(anyString(), anyString(), any());
 	}

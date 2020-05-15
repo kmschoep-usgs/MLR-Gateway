@@ -177,13 +177,16 @@ public class LegacyWorkflowService {
 		
 		try {
 			monitoringLocation = legacyCruService.getMonitoringLocation(oldAgencyCode, oldSiteNumber, false, oldSiteReport);
+			WorkflowController.addSiteReport(oldSiteReport);
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper){
 				LOG.debug("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);
 				oldSiteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
+				WorkflowController.addSiteReport(oldSiteReport);
 			} else {
 				LOG.error("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);
 				oldSiteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
+				WorkflowController.addSiteReport(oldSiteReport);
 			}
 		}
 		try {
@@ -234,7 +237,6 @@ public class LegacyWorkflowService {
 				WorkflowController.addSiteReport(newSiteReport);
 			}
 		}
-		WorkflowController.addSiteReport(oldSiteReport);
 		LOG.trace("End processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ");
 	}
 	
