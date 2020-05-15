@@ -1,5 +1,7 @@
 package gov.usgs.wma.mlrgateway.controller;
 
+import javax.validation.Validator;
+
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -11,11 +13,18 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 @ActiveProfiles("test")
 public class MvcTestConfig {
+    @Bean
+    @Primary
+    public Validator localValidatorFactoryBean() {
+        return new LocalValidatorFactoryBean();
+    }
+
     @MockBean
-    JwtDecoder jwtDecoder;
+    public JwtDecoder jwtDecoder;
 
     @Bean
     @Primary

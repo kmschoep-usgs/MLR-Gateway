@@ -2,6 +2,8 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import static org.mockito.BDDMockito.willThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +17,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,8 +29,9 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.BulkTransactionFilesWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.BDDMockito.given;
 
@@ -48,7 +52,7 @@ public class BulkTransactionFilesWorkflowControllerTest extends BaseSpringTest {
 	@MockBean
 	private BulkTransactionFilesWorkflowService bulkTransactions;
 	@MockBean
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 	
 	@Bean
 	@Primary
@@ -63,11 +67,11 @@ public class BulkTransactionFilesWorkflowControllerTest extends BaseSpringTest {
 
 	@BeforeEach
 	public void init() {
-		given(userAuthUtil.getUserEmail(any(Authentication.class))).willReturn("test@test");
-		given(userAuthUtil.getUserName(any(Authentication.class))).willReturn("test");
+		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("test@test");
+		given(userAuthService.getUserName(any(Authentication.class))).willReturn("test");
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
-		controller = new BulkTransactionFilesWorkflowController(bulkTransactions, notify, userAuthUtil, clock());
+		controller = new BulkTransactionFilesWorkflowController(bulkTransactions, notify, userAuthService, clock());
 		response = new MockHttpServletResponse();
 	}
 
@@ -116,5 +120,20 @@ public class BulkTransactionFilesWorkflowControllerTest extends BaseSpringTest {
 		assertEquals("sites.csv", rtn.getInputFileName());
 		
 		verify(bulkTransactions).generateTransactionFilesWorkflow(any(MultipartFile.class));
+	}
+
+	@Test
+	public void expiredTokenTest() throws Exception {
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(mockAuth);
+		MockMultipartFile file = new MockMultipartFile("file", "sites.csv", "text/plain", "".getBytes());
+		
+		try {
+			controller.bulkGenerateTransactionFilesWorkflow(file, response, mockAuth);
+			fail("Expected ClientAuthorizationRequiredException but got no exception.");
+		} catch(ClientAuthorizationRequiredException e) {
+			assertTrue(e.getMessage().contains("test-client"));
+		} catch(Exception e) {
+			fail("Expected ClientAuthorizationRequiredException, but got " + e.getClass().getName());
+		}
 	}
 }

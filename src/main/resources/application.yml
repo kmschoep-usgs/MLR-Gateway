@@ -1,6 +1,7 @@
 server:
   port: ${serverPort:8443}
   use-forward-headers: true
+  max-http-header-size: 64KB
   session:
     timeout: ${sessionTimeout:43200}
   ssl:
@@ -21,9 +22,11 @@ security:
       username: preferred_username
 
 spring:
-  http:
+  servlet:
     multipart:
       enabled: true
+      maxFileSize: 10MB
+      maxRequestSize: 20MB
   security:
     oauth2:
       client:
@@ -31,9 +34,11 @@ spring:
           wma-keycloak: 
             client-id: ${oauthClientId:}
             client-secret: ${oauthClientSecret:}
+            scope: ${oauthClientScopes:email}
         provider:
           wma-keycloak:
             issuer-uri: ${oauthIssuerUri:}
+        defaultProvider: wma-keycloak
 
 logging:
   level:

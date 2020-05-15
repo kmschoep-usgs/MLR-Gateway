@@ -7,7 +7,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.exception.InvalidEmailException;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 public abstract class BaseController {
 	protected NotificationService notificationService;
-	protected UserAuthUtil userAuthUtil;
+	protected UserAuthService userAuthService;
 	
 	@Value("${notification.email.cc-list:}")
 	private String notificationEmailCCListString;
@@ -43,9 +43,9 @@ public abstract class BaseController {
 	private UserSummaryReportBuilder userSummaryReportBuilder = new UserSummaryReportBuilder();
 	
 	public BaseController() {};
-	public BaseController(NotificationService notificationService, UserAuthUtil userAuthUtil) {
+	public BaseController(NotificationService notificationService, UserAuthService userAuthService) {
 		this.notificationService = notificationService;
-		this.userAuthUtil = userAuthUtil;
+		this.userAuthService = userAuthService;
 	}
 
 	public static GatewayReport getReport() {
@@ -81,7 +81,7 @@ public abstract class BaseController {
 				ccList = new ArrayList<>(Arrays.asList(StringUtils.split(notificationEmailCCListString.trim(), ',')));
 			}
 			
-			String userEmail = userAuthUtil.getUserEmail(authentication);
+			String userEmail = userAuthService.getUserEmail(authentication);
 				
 			if(userEmail == null || userEmail.isEmpty()){
 				throw new InvalidEmailException("Could not find valid user email in security context.");

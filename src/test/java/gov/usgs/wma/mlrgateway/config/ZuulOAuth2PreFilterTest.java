@@ -18,17 +18,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = ZuulOAuth2Filter.class)
-public class ZuulOAuth2FilterTest {
+@SpringBootTest(classes = ZuulOAuth2PreFilter.class)
+public class ZuulOAuth2PreFilterTest {
 
     @Autowired
-    ZuulOAuth2Filter filter;
+    ZuulOAuth2PreFilter filter;
 
     @MockBean
-    UserAuthUtil userAuthUtil;
+    UserAuthService userAuthService;
 
     @Test
     public void shouldFilterHappyPathTest() {
@@ -71,41 +71,41 @@ public class ZuulOAuth2FilterTest {
         assertFalse(filter.shouldFilter());
         context.remove(FORWARD_TO_KEY);
 
-        context.addZuulRequestHeader(ZuulOAuth2Filter.AUTHORIZATION_HEADER, "");
+        context.addZuulRequestHeader(ZuulOAuth2PreFilter.AUTHORIZATION_HEADER, "");
         RequestContext.testSetCurrentContext(context);
         assertFalse(filter.shouldFilter());
     }
 
     @Test
     public void runFilterWithTokenTest() {
-        when(userAuthUtil.getTokenValue(any())).thenReturn("test-token");
+        when(userAuthService.getTokenValue(any())).thenReturn("test-token");
         RequestContext context = new RequestContext();
         context.set(SERVICE_ID_KEY, "mlrLegacyCru");
         RequestContext.testSetCurrentContext(context);
-        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2Filter.AUTHORIZATION_HEADER));
+        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2PreFilter.AUTHORIZATION_HEADER));
         filter.run();
-        assertEquals("Bearer test-token", RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2Filter.AUTHORIZATION_HEADER));
+        assertEquals("Bearer test-token", RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2PreFilter.AUTHORIZATION_HEADER));
     }
 
     @Test
     public void runFilterBlankTokenTest() {
-        when(userAuthUtil.getTokenValue(any())).thenReturn("");
+        when(userAuthService.getTokenValue(any())).thenReturn("");
         RequestContext context = new RequestContext();
         context.set(SERVICE_ID_KEY, "mlrLegacyCru");
         RequestContext.testSetCurrentContext(context);
-        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2Filter.AUTHORIZATION_HEADER));
+        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2PreFilter.AUTHORIZATION_HEADER));
         filter.run();
-        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2Filter.AUTHORIZATION_HEADER));
+        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2PreFilter.AUTHORIZATION_HEADER));
     }
 
     @Test
     public void runFilterNoTokenTest() {
-        when(userAuthUtil.getTokenValue(any())).thenReturn(null);
+        when(userAuthService.getTokenValue(any())).thenReturn(null);
         RequestContext context = new RequestContext();
         context.set(SERVICE_ID_KEY, "mlrLegacyCru");
         RequestContext.testSetCurrentContext(context);
-        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2Filter.AUTHORIZATION_HEADER));
+        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2PreFilter.AUTHORIZATION_HEADER));
         filter.run();
-        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2Filter.AUTHORIZATION_HEADER));
+        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get(ZuulOAuth2PreFilter.AUTHORIZATION_HEADER));
     }
 }

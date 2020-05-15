@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
@@ -37,19 +39,22 @@ public class GlobalDefaultExceptionHandler {
 	
 	static final String ERROR_MESSAGE_KEY = "error_message";
 
+	public static final String LOGIN_EXPIRED_MESSAGE = "Your login has expired. Please refresh the page to login again. If you continue " +
+	"to experience this error please contact the support team for assistance.";
+
 	@ExceptionHandler(Exception.class)
-	public @ResponseBody Map<String, String> handleUncaughtException(Exception ex, WebRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody Map<String, String> handleUncaughtException(Exception ex, WebRequest request, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
 		Map<String, String> responseMap = new HashMap<>();
 		if (ex instanceof AccessDeniedException) {
-			response.setStatus(HttpStatus.FORBIDDEN.value());
+			servletResponse.setStatus(HttpStatus.FORBIDDEN.value());
 			responseMap.put(ERROR_MESSAGE_KEY, "You are not authorized to perform this action.");
 		} else if (ex instanceof MissingServletRequestParameterException
 				|| ex instanceof HttpMediaTypeNotSupportedException
 				|| ex instanceof HttpMediaTypeNotAcceptableException) {
-			response.setStatus(HttpStatus.BAD_REQUEST.value());
+			servletResponse.setStatus(HttpStatus.BAD_REQUEST.value());
 			responseMap.put(ERROR_MESSAGE_KEY, ex.getLocalizedMessage());
 		} else if (ex instanceof HttpMessageNotReadableException) {
-			response.setStatus(HttpStatus.BAD_REQUEST.value());
+			servletResponse.setStatus(HttpStatus.BAD_REQUEST.value());
 			if (ex.getLocalizedMessage().contains("\n")) {
 				//This exception's message contains implementation details after the new line, so only take up to that.
 				responseMap.put(ERROR_MESSAGE_KEY, ex.getLocalizedMessage().substring(0, ex.getLocalizedMessage().indexOf("\n")));
@@ -63,16 +68,21 @@ public class GlobalDefaultExceptionHandler {
 				((MultipartException)ex).getRootCause() instanceof SizeLimitExceededException
 			)
 		) {
-			response.setStatus(HttpStatus.BAD_REQUEST.value());
+			servletResponse.setStatus(HttpStatus.BAD_REQUEST.value());
 			responseMap.put(ERROR_MESSAGE_KEY, "The file you tried to upload exceeds the maximum allowed size for a single file ("+ MAX_FILE_SIZE + 
 				"). Please split your transaction into multiple files or contact the support team for assistance.");
 		} else if(ex instanceof OAuth2AuthorizationException) {
-			response.setStatus(HttpStatus.UNAUTHORIZED.value());
-			responseMap.put(ERROR_MESSAGE_KEY, "Your login has expired. Please refresh the page to login again. If you continue " +
-				"to experience this error please contact the support team for assistance.");
+			// If we encounter an OAuth2AuthorizationException invalidate the user's session to force re-auth
+			servletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
+			responseMap.put(ERROR_MESSAGE_KEY, LOGIN_EXPIRED_MESSAGE);
+			try {
+				servletRequest.logout();
+			} catch(ServletException e) {
+				servletRequest.getSession().invalidate();
+			}
 		} else {
-			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			int hashValue = response.hashCode();
+			servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			int hashValue = servletResponse.hashCode();
 			//Note: we are giving the user a generic message.  
 			//Server logs can be used to troubleshoot problems.
 			String msgText = "Something bad happened. Contact us with Reference Number: " + hashValue;
