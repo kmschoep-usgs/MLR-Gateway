@@ -51,8 +51,8 @@ public class WorkflowController extends BaseController {
 	private final Clock clock;
 	
 	@Bean
-    public MultipartConfigElement multipartConfigElement() {
-        return new MultipartConfigElement("");
+	public MultipartConfigElement multipartConfigElement() {
+		return new MultipartConfigElement("");
     }
 	
 	@Autowired

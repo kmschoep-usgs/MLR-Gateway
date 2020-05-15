@@ -167,13 +167,25 @@ public class LegacyWorkflowService {
 		Map<String, Object> monitoringLocationToValidate = new HashMap<>();
 		Map<String, Object> updatedMonitoringLocation = new HashMap<>();
 		Map<String, Object> exportChangeObject = new HashMap<>();
-		SiteReport siteReport = new SiteReport(oldAgencyCode, oldSiteNumber);
+		SiteReport oldSiteReport = new SiteReport(oldAgencyCode, oldSiteNumber);
+		SiteReport newSiteReport = new SiteReport(newAgencyCode, newSiteNumber);
 		// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
-		siteReport.setTransactionType("M");
+		oldSiteReport.setTransactionType("M");
+		newSiteReport.setTransactionType("M");
 		
 		LOG.trace("Start processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ");
 		
-		monitoringLocation = legacyCruService.getMonitoringLocation(oldAgencyCode, oldSiteNumber, false, siteReport);
+		try {
+			monitoringLocation = legacyCruService.getMonitoringLocation(oldAgencyCode, oldSiteNumber, false, oldSiteReport);
+		} catch (Exception e) {
+			if(e instanceof FeignBadResponseWrapper){
+				LOG.debug("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);
+				oldSiteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
+			} else {
+				LOG.error("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);
+				oldSiteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
+			}
+		}
 		try {
 			if (!monitoringLocation.isEmpty()) {
 				
@@ -189,12 +201,12 @@ public class LegacyWorkflowService {
 				monitoringLocationToValidate.put(AGENCY_CODE, newAgencyCode);
 				monitoringLocationToValidate.put(SITE_NUMBER, newSiteNumber);
 				
-				monitoringLocationToValidate = legacyValidatorService.doPKValidation(monitoringLocationToValidate,siteReport);
+				monitoringLocationToValidate = legacyValidatorService.doPKValidation(monitoringLocationToValidate,newSiteReport);
 				
 				json = mlToJson(monitoringLocation);
 				
 				// Need to submit entire record for update (vs. patch), otherwise fields that are not submitted are set to null in the database.
-				json = legacyCruService.updateTransaction(monitoringLocation.get(ID).toString(), json, siteReport);
+				json = legacyCruService.updateTransaction(monitoringLocation.get(ID).toString(), json, newSiteReport);
 				
 				updatedMonitoringLocation = jsonToMl(json);
 				
@@ -208,18 +220,21 @@ public class LegacyWorkflowService {
 				
 				json = mlToJson(exportChangeObject);
 				
-				fileExportService.exportChange(json, siteReport);
+				fileExportService.exportChange(json, newSiteReport);
+				WorkflowController.addSiteReport(newSiteReport);
 			}
 		} catch (Exception e) {
 			if(e instanceof FeignBadResponseWrapper){
 				LOG.debug("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);
-				siteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
+				newSiteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, ((FeignBadResponseWrapper)e).getStatus(), false, ((FeignBadResponseWrapper)e).getBody()));
+				WorkflowController.addSiteReport(newSiteReport);
 			} else {
 				LOG.error("An error occurred while processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ", e);
-				siteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
+				newSiteReport.addStepReport(new StepReport(PRIMARY_KEY_UPDATE_TRANSACTION_STEP, HttpStatus.SC_INTERNAL_SERVER_ERROR, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
+				WorkflowController.addSiteReport(newSiteReport);
 			}
 		}
-		WorkflowController.addSiteReport(siteReport);
+		WorkflowController.addSiteReport(oldSiteReport);
 		LOG.trace("End processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ");
 	}
 	
