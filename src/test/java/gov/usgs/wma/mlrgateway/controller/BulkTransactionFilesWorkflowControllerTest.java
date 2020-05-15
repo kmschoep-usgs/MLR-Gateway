@@ -29,7 +29,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.BulkTransactionFilesWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -52,7 +52,7 @@ public class BulkTransactionFilesWorkflowControllerTest extends BaseSpringTest {
 	@MockBean
 	private BulkTransactionFilesWorkflowService bulkTransactions;
 	@MockBean
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 	
 	@Bean
 	@Primary
@@ -67,11 +67,11 @@ public class BulkTransactionFilesWorkflowControllerTest extends BaseSpringTest {
 
 	@BeforeEach
 	public void init() {
-		given(userAuthUtil.getUserEmail(any(Authentication.class))).willReturn("test@test");
-		given(userAuthUtil.getUserName(any(Authentication.class))).willReturn("test");
+		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("test@test");
+		given(userAuthService.getUserName(any(Authentication.class))).willReturn("test");
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
-		controller = new BulkTransactionFilesWorkflowController(bulkTransactions, notify, userAuthUtil, clock());
+		controller = new BulkTransactionFilesWorkflowController(bulkTransactions, notify, userAuthService, clock());
 		response = new MockHttpServletResponse();
 	}
 
@@ -124,7 +124,7 @@ public class BulkTransactionFilesWorkflowControllerTest extends BaseSpringTest {
 
 	@Test
 	public void expiredTokenTest() throws Exception {
-		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(mockAuth);
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(mockAuth);
 		MockMultipartFile file = new MockMultipartFile("file", "sites.csv", "text/plain", "".getBytes());
 		
 		try {

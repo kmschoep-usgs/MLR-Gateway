@@ -18,7 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = ZuulOAuth2PreFilter.class)
@@ -28,7 +28,7 @@ public class ZuulOAuth2PreFilterTest {
     ZuulOAuth2PreFilter filter;
 
     @MockBean
-    UserAuthUtil userAuthUtil;
+    UserAuthService userAuthService;
 
     @Test
     public void shouldFilterHappyPathTest() {
@@ -78,7 +78,7 @@ public class ZuulOAuth2PreFilterTest {
 
     @Test
     public void runFilterWithTokenTest() {
-        when(userAuthUtil.getTokenValue(any())).thenReturn("test-token");
+        when(userAuthService.getTokenValue(any())).thenReturn("test-token");
         RequestContext context = new RequestContext();
         context.set(SERVICE_ID_KEY, "mlrLegacyCru");
         RequestContext.testSetCurrentContext(context);
@@ -89,7 +89,7 @@ public class ZuulOAuth2PreFilterTest {
 
     @Test
     public void runFilterBlankTokenTest() {
-        when(userAuthUtil.getTokenValue(any())).thenReturn("");
+        when(userAuthService.getTokenValue(any())).thenReturn("");
         RequestContext context = new RequestContext();
         context.set(SERVICE_ID_KEY, "mlrLegacyCru");
         RequestContext.testSetCurrentContext(context);
@@ -100,7 +100,7 @@ public class ZuulOAuth2PreFilterTest {
 
     @Test
     public void runFilterNoTokenTest() {
-        when(userAuthUtil.getTokenValue(any())).thenReturn(null);
+        when(userAuthService.getTokenValue(any())).thenReturn(null);
         RequestContext context = new RequestContext();
         context.set(SERVICE_ID_KEY, "mlrLegacyCru");
         RequestContext.testSetCurrentContext(context);

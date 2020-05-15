@@ -21,7 +21,7 @@ import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.exception.InvalidEmailException;
 import gov.usgs.wma.mlrgateway.service.AdminService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class AdminControllerTest extends BaseSpringTest {
 	private AdminService adminService;
 
 	@MockBean
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 
 	private AdminController controller;
 	private MockHttpServletResponse response;
@@ -42,7 +42,7 @@ public class AdminControllerTest extends BaseSpringTest {
 
 	@BeforeEach
 	public void init() {
-		controller = new AdminController(adminService, userAuthUtil);
+		controller = new AdminController(adminService, userAuthService);
 		response = new MockHttpServletResponse();
 	}
 
@@ -93,7 +93,7 @@ public class AdminControllerTest extends BaseSpringTest {
 
 	@Test
 	public void expiredTokenTest() throws Exception {
-		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(mockAuth);
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(mockAuth);
 		List<String> recipients = new ArrayList<>();
 		recipients.add("test");
 

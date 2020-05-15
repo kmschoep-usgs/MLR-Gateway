@@ -31,7 +31,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {ZuulOAuth2ErrorFilter.class})
@@ -44,7 +44,7 @@ public class ZuulOAuth2ErrorFilterTest {
     ZuulException exceptionWrapper;
 
     @MockBean
-    UserAuthUtil userAuthUtil;
+    UserAuthService userAuthService;
 
     @Test
     public void shouldFilterHappyPathTest() {

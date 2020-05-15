@@ -39,6 +39,9 @@ public class GlobalDefaultExceptionHandler {
 	
 	static final String ERROR_MESSAGE_KEY = "error_message";
 
+	public static final String LOGIN_EXPIRED_MESSAGE = "Your login has expired. Please refresh the page to login again. If you continue " +
+	"to experience this error please contact the support team for assistance.";
+
 	@ExceptionHandler(Exception.class)
 	public @ResponseBody Map<String, String> handleUncaughtException(Exception ex, WebRequest request, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
 		Map<String, String> responseMap = new HashMap<>();
@@ -71,8 +74,7 @@ public class GlobalDefaultExceptionHandler {
 		} else if(ex instanceof OAuth2AuthorizationException) {
 			// If we encounter an OAuth2AuthorizationException invalidate the user's session to force re-auth
 			servletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
-			responseMap.put(ERROR_MESSAGE_KEY, "Your login has expired. Please refresh the page to login again. If you continue " +
-				"to experience this error please contact the support team for assistance.");
+			responseMap.put(ERROR_MESSAGE_KEY, LOGIN_EXPIRED_MESSAGE);
 			try {
 				servletRequest.logout();
 			} catch(ServletException e) {

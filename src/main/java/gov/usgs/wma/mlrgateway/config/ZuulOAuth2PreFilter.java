@@ -9,7 +9,7 @@ import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
@@ -21,7 +21,7 @@ public class ZuulOAuth2PreFilter extends ZuulFilter {
 	public static final String AUTHORIZATION_HEADER = "authorization";
 
 	@Autowired
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 
 	@Override
 	public boolean shouldFilter() {
@@ -34,7 +34,7 @@ public class ZuulOAuth2PreFilter extends ZuulFilter {
 	@Override
 	public Object run() {
 		RequestContext ctx = RequestContext.getCurrentContext();
-		String authToken = userAuthUtil.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
+		String authToken = userAuthService.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
 
 		if(authToken != null && !authToken.isEmpty()) {
 			ctx.addZuulRequestHeader(AUTHORIZATION_HEADER, "Bearer " + authToken);

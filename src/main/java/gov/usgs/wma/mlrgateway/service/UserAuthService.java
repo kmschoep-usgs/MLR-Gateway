@@ -1,4 +1,4 @@
-package gov.usgs.wma.mlrgateway.util;
+package gov.usgs.wma.mlrgateway.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +12,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserAuthUtil {
+public class UserAuthService {
 
 	@Value("${security.token.claims.email:email}")
 	protected String EMAIL_CLAIM_KEY;
@@ -24,7 +24,7 @@ public class UserAuthUtil {
 	protected OAuth2AuthorizedClientManager authorizedClientManager;
 
 	@Autowired
-	public UserAuthUtil(OAuth2AuthorizedClientService authorizedClientService, OAuth2AuthorizedClientManager authorizedClientManager) {
+	public UserAuthService(OAuth2AuthorizedClientService authorizedClientService, OAuth2AuthorizedClientManager authorizedClientManager) {
 		this.authorizedClientManager = authorizedClientManager;
 		this.authorizedClientService = authorizedClientService;
 	}

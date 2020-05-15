@@ -110,9 +110,8 @@ public class GlobalDefaultExceptionHandlerTest {
 		HttpServletRequest servRequest = mock(HttpServletRequest.class);
 		HttpSession session = mock(HttpSession.class);
 		when(servRequest.getSession()).thenReturn(session);
-		String expected = "Your login has expired.";
 		Map<String, String> actual = controller.handleUncaughtException(new ClientAuthorizationRequiredException("test-client"), request, servRequest, response);
-		assertTrue(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains(expected));
+		assertTrue(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains(GlobalDefaultExceptionHandler.LOGIN_EXPIRED_MESSAGE));
 		assertFalse(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains("test-client"));
 		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 		verify(servRequest, times(1)).logout();
@@ -126,9 +125,8 @@ public class GlobalDefaultExceptionHandlerTest {
 		HttpSession session = mock(HttpSession.class);
 		when(servRequest.getSession()).thenReturn(session);
 		doThrow(new ServletException("uh oh")).when(servRequest).logout();
-		String expected = "Your login has expired.";
 		Map<String, String> actual = controller.handleUncaughtException(new ClientAuthorizationRequiredException("test-client"), request, servRequest, response);
-		assertTrue(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains(expected));
+		assertTrue(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains(GlobalDefaultExceptionHandler.LOGIN_EXPIRED_MESSAGE));
 		assertFalse(actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY).contains("test-client"));
 		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 		verify(servRequest, times(1)).logout();

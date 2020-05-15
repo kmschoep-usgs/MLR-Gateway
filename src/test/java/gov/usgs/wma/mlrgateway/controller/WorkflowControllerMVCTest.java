@@ -42,7 +42,7 @@ import gov.usgs.wma.mlrgateway.client.LegacyCruClient;
 import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 import gov.usgs.wma.mlrgateway.config.MethodSecurityConfig;
 import gov.usgs.wma.mlrgateway.config.OAuth2Config;
 
@@ -72,7 +72,7 @@ public class WorkflowControllerMVCTest {
 	private LegacyCruClient legacyClient;
 
 	@MockBean
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 
 	@MockBean
 	private Clock clockMock;
@@ -83,8 +83,8 @@ public class WorkflowControllerMVCTest {
 	public void init() {
 		file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		when(clockMock.instant()).thenReturn(Clock.fixed(Instant.parse("2010-01-10T10:00:00Z"), ZoneId.of("UTC")).instant());
-		when(userAuthUtil.getUserName(any(Authentication.class))).thenReturn("test");
-		when(userAuthUtil.getUserEmail(any(Authentication.class))).thenReturn("test@test.test");
+		when(userAuthService.getUserName(any(Authentication.class))).thenReturn("test");
+		when(userAuthService.getUserEmail(any(Authentication.class))).thenReturn("test@test.test");
 	}
 	
 	@Test
@@ -329,7 +329,7 @@ public class WorkflowControllerMVCTest {
 	@Test
 	@WithMockUser(authorities = "test_allowed")
 	public void expiredToken_LegacyValidateUpdateWorkflow() throws Exception {
-		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(any());
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(any());
 		
 		// First time the token is expired it returns 401 and clears session
 		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots").file(file))
@@ -346,7 +346,7 @@ public class WorkflowControllerMVCTest {
 	@Test
 	@WithMockUser(authorities = "test_allowed")
 	public void expiredToken_LegacyValidateWorkflow() throws Exception {
-		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(any());
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(any());
 		
 		// First time the token is expired it returns 401 and clears session
 		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/ddots/validate").file(file))
@@ -363,7 +363,7 @@ public class WorkflowControllerMVCTest {
 	@Test
 	@WithMockUser(authorities = "test_allowed")
 	public void expiredToken_PKUpdateWorkflow() throws Exception {
-		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(any());
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(any());
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.set("oldAgencyCode", "USGS");
 		params.set("newAgencyCode", "BLAH");

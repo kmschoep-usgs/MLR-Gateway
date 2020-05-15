@@ -15,7 +15,7 @@ import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedCli
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 
 import feign.RequestInterceptor;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
 @Configuration
 public class OAuth2Config {
@@ -23,12 +23,12 @@ public class OAuth2Config {
 	private static final Logger LOG = LoggerFactory.getLogger(OAuth2Config.class);
 
 	@Autowired
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 
 	@Bean
 	RequestInterceptor oauth2FeignRequestInterceptor() {
 		return requestTemplate -> {
-			String tokenValue = userAuthUtil.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
+			String tokenValue = userAuthService.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
 
 			if(tokenValue != null && !tokenValue.isEmpty()) {
 				requestTemplate.header("Authorization", "Bearer " + tokenValue);

@@ -20,7 +20,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
 import java.io.IOException;
 
@@ -30,7 +30,7 @@ import javax.servlet.http.HttpSession;
 public class AuthControllerTest extends BaseSpringTest {
 
 	@MockBean
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 
     private AuthController controller;
     private MockHttpServletRequest request;
@@ -41,7 +41,7 @@ public class AuthControllerTest extends BaseSpringTest {
 
 	@BeforeEach
 	public void init() {
-		controller = new AuthController(userAuthUtil);
+		controller = new AuthController(userAuthService);
         response = new MockHttpServletResponse();
         request = new MockHttpServletRequest();
         session = mock(HttpSession.class);
@@ -53,7 +53,7 @@ public class AuthControllerTest extends BaseSpringTest {
 
 	@Test
 	public void loginSuccessTest() throws IOException {
-        given(userAuthUtil.getTokenValue(mockAuth)).willReturn("token-value");
+        given(userAuthService.getTokenValue(mockAuth)).willReturn("token-value");
         controller.login(mockAuth, response);
         assertEquals(HttpStatus.FOUND.value(), response.getStatus());
         assertTrue(response.getRedirectedUrl().contains("?mlrAccessToken=session-id"));
@@ -61,12 +61,12 @@ public class AuthControllerTest extends BaseSpringTest {
 
 	@Test
 	public void loginEmptyTest() throws IOException {
-        given(userAuthUtil.getTokenValue(mockAuth)).willReturn("");
+        given(userAuthService.getTokenValue(mockAuth)).willReturn("");
         given(attributes.getSessionId()).willReturn("session-id");
         controller.login(mockAuth, response);
         assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 
-        given(userAuthUtil.getTokenValue(mockAuth)).willReturn(null);
+        given(userAuthService.getTokenValue(mockAuth)).willReturn(null);
         response = new MockHttpServletResponse();
         controller.login(mockAuth, response);
         assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
@@ -74,7 +74,7 @@ public class AuthControllerTest extends BaseSpringTest {
     
 	@Test
 	public void loginErrorTest() throws IOException {
-        given(userAuthUtil.getTokenValue(mockAuth)).willThrow(new ClientAuthorizationRequiredException("test-client"));
+        given(userAuthService.getTokenValue(mockAuth)).willThrow(new ClientAuthorizationRequiredException("test-client"));
         given(attributes.getSessionId()).willReturn("session-id");
         
         try {
@@ -89,13 +89,13 @@ public class AuthControllerTest extends BaseSpringTest {
 
     @Test
     public void getJwtSuccessTest() {
-        given(userAuthUtil.getTokenValue(mockAuth)).willReturn("token-value");
+        given(userAuthService.getTokenValue(mockAuth)).willReturn("token-value");
         assertEquals("token-value", controller.getJwt(mockAuth));
     }
 
     @Test
     public void getJwtErrorTest() {
-        given(userAuthUtil.getTokenValue(mockAuth)).willThrow(new ClientAuthorizationRequiredException("test-client"));
+        given(userAuthService.getTokenValue(mockAuth)).willThrow(new ClientAuthorizationRequiredException("test-client"));
         
         try {
             controller.getJwt(mockAuth);

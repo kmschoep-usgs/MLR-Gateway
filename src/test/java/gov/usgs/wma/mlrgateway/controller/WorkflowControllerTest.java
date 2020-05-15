@@ -30,7 +30,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -53,7 +53,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@MockBean
 	private LegacyWorkflowService legacy;
 	@MockBean
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 	
 	@Bean
 	@Primary
@@ -68,11 +68,11 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	@BeforeEach
 	public void init() {
-		given(userAuthUtil.getUserEmail(any(Authentication.class))).willReturn("test@test");
-		given(userAuthUtil.getUserName(any(Authentication.class))).willReturn("test");
+		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("test@test");
+		given(userAuthService.getUserName(any(Authentication.class))).willReturn("test");
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
-		controller = new WorkflowController(legacy, notify, userAuthUtil, clock());
+		controller = new WorkflowController(legacy, notify, userAuthService, clock());
 		response = new MockHttpServletResponse();
 	}
 
@@ -230,7 +230,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	@Test
 	public void validateUpdateExpiredTokenTest() throws Exception {
-		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(mockAuth);
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(mockAuth);
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
 		try {
@@ -245,7 +245,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	@Test
 	public void validateExpiredTokenTest() throws Exception {
-		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(mockAuth);
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(mockAuth);
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 
 		try {
@@ -260,7 +260,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	@Test
 	public void pkUpdateExpiredTokenTest() throws Exception {
-		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthUtil).validateToken(mockAuth);
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(mockAuth);
 		
 		try {
 			controller.updatePrimaryKeyWorkflow("test", "test", "test", "test", "reason", response, mockAuth);

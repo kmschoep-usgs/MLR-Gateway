@@ -2,7 +2,7 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import gov.usgs.wma.mlrgateway.exception.InvalidEmailException;
 import gov.usgs.wma.mlrgateway.service.AdminService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -31,12 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 	private Logger log = LoggerFactory.getLogger(AdminController.class);
 	private AdminService adminService;
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 
 	@Autowired
-	public AdminController(AdminService adminService, UserAuthUtil userAuthUtil) {
+	public AdminController(AdminService adminService, UserAuthService userAuthService) {
 		this.adminService = adminService;
-		this.userAuthUtil = userAuthUtil;
+		this.userAuthService = userAuthService;
 	}
 
 	@Operation(description="Generates and sends a transaction summary email for the provided date")
@@ -52,7 +52,7 @@ public class AdminController {
 		Authentication authentication,
 		HttpServletResponse response
 	) throws IOException {
-		userAuthUtil.validateToken(authentication);
+		userAuthService.validateToken(authentication);
 		log.info("[SUMMARY EMAIL WORKFLOW]: Starting summary email generation for date: " + date);
 		try {
 			adminService.sendSummaryEmail(date, recipientList);

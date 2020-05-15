@@ -25,7 +25,7 @@ import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.BulkTransactionFilesWorkflowService;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -44,8 +44,8 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 	private final Clock clock;
 	
 	@Autowired
-	public BulkTransactionFilesWorkflowController(BulkTransactionFilesWorkflowService transactionFiles, NotificationService notificationService, UserAuthUtil userAuthUtil, Clock clock) {
-		super(notificationService, userAuthUtil);
+	public BulkTransactionFilesWorkflowController(BulkTransactionFilesWorkflowService transactionFiles, NotificationService notificationService, UserAuthService userAuthService, Clock clock) {
+		super(notificationService, userAuthService);
 		this.transactionFiles = transactionFiles;
 		this.clock = clock;
 
@@ -60,11 +60,11 @@ public class BulkTransactionFilesWorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping(path = "/bulkTransactionFiles", consumes = "multipart/form-data")
 	public UserSummaryReport bulkGenerateTransactionFilesWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
-		userAuthUtil.validateToken(authentication);
-		log.info("[BULK TRANSACTION WORKFLOW]: Starting bulk transaction workflow for: User: " + userAuthUtil.getUserName(authentication) + " | File: " + file.getOriginalFilename());
+		userAuthService.validateToken(authentication);
+		log.info("[BULK TRANSACTION WORKFLOW]: Starting bulk transaction workflow for: User: " + userAuthService.getUserName(authentication) + " | File: " + file.getOriginalFilename());
 		setReport(new GatewayReport(BulkTransactionFilesWorkflowService.BULK_GENERATE_TRANSACTION_FILES_WORKFLOW
 				,file.getOriginalFilename()
-				,userAuthUtil.getUserName(authentication)
+				,userAuthService.getUserName(authentication)
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {

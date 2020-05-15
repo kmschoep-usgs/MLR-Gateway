@@ -1,6 +1,6 @@
 package gov.usgs.wma.mlrgateway.controller;
 
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -24,11 +24,11 @@ import org.springframework.web.context.request.RequestContextHolder;
 @RequestMapping("/auth")
 public class AuthController extends BaseController {
 
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 
 	@Autowired
-	public AuthController(UserAuthUtil userAuthUtil) {
-		this.userAuthUtil = userAuthUtil;
+	public AuthController(UserAuthService userAuthService) {
+		this.userAuthService = userAuthService;
 	}
 
 	@Operation(description="Return the logged-in user's current short-lived JWT token")
@@ -39,7 +39,7 @@ public class AuthController extends BaseController {
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@GetMapping("/jwt")
 	public String getJwt(Authentication auth) {
-		return userAuthUtil.getTokenValue(auth);
+		return userAuthService.getTokenValue(auth);
 	}
 
 	@Operation(description="Return the logged-in user's X-Auth-Token")

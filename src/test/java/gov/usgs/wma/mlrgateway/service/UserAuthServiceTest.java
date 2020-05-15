@@ -1,4 +1,4 @@
-package gov.usgs.wma.mlrgateway.util;
+package gov.usgs.wma.mlrgateway.service;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,8 +27,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes=UserAuthUtil.class)
-public class UserAuthUtilTest {
+@SpringBootTest(classes=UserAuthService.class)
+public class UserAuthServiceTest {
 
     private final String TEST_CLIENT_ID = "test-client";
     private final String TEST_PRINCIPAL_NAME = "test-uid";
@@ -40,7 +40,7 @@ public class UserAuthUtilTest {
 	private OAuth2AuthorizedClientManager mockOAuth2ClientManager;
 
     @Autowired
-    private UserAuthUtil userAuthUtil;
+    private UserAuthService userAuthService;
     
     @MockBean
     private OAuth2AuthenticationToken mockOAuthToken;
@@ -84,26 +84,26 @@ public class UserAuthUtilTest {
     public void getOAuth2UserAttributeSuccessTest() {
         when(mockOAuth2User.getAttribute("test")).thenReturn("test-value");
 
-        assertEquals("test-value", userAuthUtil.getOAuth2UserAttribute(mockOAuthToken, "test"));
-        assertEquals(null, userAuthUtil.getOAuth2UserAttribute(mockOAuthToken, "undefined"));
+        assertEquals("test-value", userAuthService.getOAuth2UserAttribute(mockOAuthToken, "test"));
+        assertEquals(null, userAuthService.getOAuth2UserAttribute(mockOAuthToken, "undefined"));
     }
 
     @Test
     public void getOAuth2UserAttributeInvalidTest() {
-        assertEquals(null, userAuthUtil.getOAuth2UserAttribute(null, "test"));
-        assertEquals(null, userAuthUtil.getOAuth2UserAttribute(new UsernamePasswordAuthenticationToken("user", "password"), "test"));
+        assertEquals(null, userAuthService.getOAuth2UserAttribute(null, "test"));
+        assertEquals(null, userAuthService.getOAuth2UserAttribute(new UsernamePasswordAuthenticationToken("user", "password"), "test"));
     }
 
     @Test
     public void getUserEmailTest() {
         when(mockOAuth2User.getAttribute("email")).thenReturn("test@test.test");
-        assertEquals("test@test.test", userAuthUtil.getUserEmail(mockOAuthToken));
+        assertEquals("test@test.test", userAuthService.getUserEmail(mockOAuthToken));
     }
 
     @Test
     public void getUserNameTest() {
         when(mockOAuth2User.getAttribute("preferred_username")).thenReturn("test-user");
-        assertEquals("test-user", userAuthUtil.getUserName(mockOAuthToken));
+        assertEquals("test-user", userAuthService.getUserName(mockOAuthToken));
     }
 
     @Test
@@ -117,7 +117,7 @@ public class UserAuthUtilTest {
         when(mockRefreshedClient.getRefreshToken()).thenReturn(mockRefRefreshToken);
         when(mockOAuth2ClientManager.authorize(any())).thenReturn(mockRefreshedClient);
 
-        OAuth2AuthorizedClient clientResult = userAuthUtil.getRefreshAuthorizedClient(mockOAuthToken);
+        OAuth2AuthorizedClient clientResult = userAuthService.getRefreshAuthorizedClient(mockOAuthToken);
         assertEquals(mockRefAccessToken.getTokenValue(), clientResult.getAccessToken().getTokenValue());
         assertEquals(mockRefRefreshToken.getTokenValue(), clientResult.getRefreshToken().getTokenValue());
     }
@@ -129,7 +129,7 @@ public class UserAuthUtilTest {
         );
 
         try {
-            userAuthUtil.getRefreshAuthorizedClient(mockOAuthToken);
+            userAuthService.getRefreshAuthorizedClient(mockOAuthToken);
             fail("Expected ClientAuthorizationRequiredException but got no exception.");
         } catch(ClientAuthorizationRequiredException e) {
             assertTrue(e.getMessage().contains(TEST_CLIENT_ID));
@@ -143,7 +143,7 @@ public class UserAuthUtilTest {
         when(mockOAuth2ClientManager.authorize(any())).thenReturn(null);
 
         try {
-            userAuthUtil.getRefreshAuthorizedClient(mockOAuthToken);
+            userAuthService.getRefreshAuthorizedClient(mockOAuthToken);
             fail("Expected ClientAuthorizationRequiredException but got no exception.");
         } catch(ClientAuthorizationRequiredException e) {
             assertTrue(e.getMessage().contains(TEST_CLIENT_ID));
@@ -159,7 +159,7 @@ public class UserAuthUtilTest {
             .thenReturn(null);
 
         try {
-            userAuthUtil.getRefreshAuthorizedClient(mockOAuthToken);
+            userAuthService.getRefreshAuthorizedClient(mockOAuthToken);
             fail("Expected ClientAuthorizationRequiredException but got no exception.");
         } catch(ClientAuthorizationRequiredException e) {
             assertTrue(e.getMessage().contains(TEST_CLIENT_ID));
@@ -172,7 +172,7 @@ public class UserAuthUtilTest {
     public void getRefreshAuthorizedNullAuthTest() {
         when(mockOAuth2ClientManager.authorize(any())).thenReturn(mockOAuth2Client);
 
-        assertEquals(null, userAuthUtil.getRefreshAuthorizedClient(null));
+        assertEquals(null, userAuthService.getRefreshAuthorizedClient(null));
     }
 
     @Test
@@ -180,7 +180,7 @@ public class UserAuthUtilTest {
         when(mockOAuth2ClientManager.authorize(any())).thenReturn(mockOAuth2Client);
 
         try {
-            userAuthUtil.validateToken(mockOAuthToken);
+            userAuthService.validateToken(mockOAuthToken);
         } catch(Exception e) {
             fail("Expected no exception but got " + e.getClass().getName());
         }
@@ -191,7 +191,7 @@ public class UserAuthUtilTest {
         when(mockOAuth2ClientManager.authorize(any())).thenReturn(mockOAuth2Client);
 
         try {
-            userAuthUtil.validateToken(null);
+            userAuthService.validateToken(null);
             fail("Expected ClientAuthorizationRequiredException but got no exception.");
         } catch(ClientAuthorizationRequiredException e) {
             assertTrue(e.getMessage().contains("Current user context is not oauth2 authenticated"));
@@ -200,7 +200,7 @@ public class UserAuthUtilTest {
         }
 
         try {
-            userAuthUtil.validateToken(new UsernamePasswordAuthenticationToken("test-user", "test-pass"));
+            userAuthService.validateToken(new UsernamePasswordAuthenticationToken("test-user", "test-pass"));
             fail("Expected ClientAuthorizationRequiredException but got no exception.");
         } catch(ClientAuthorizationRequiredException e) {
             assertTrue(e.getMessage().contains("Current user context is not oauth2 authenticated"));
@@ -215,7 +215,7 @@ public class UserAuthUtilTest {
         when(mockOAuth2ClientManager.authorize(any())).thenReturn(null);
 
         try {
-            userAuthUtil.validateToken(mockOAuthToken);
+            userAuthService.validateToken(mockOAuthToken);
             fail("Expected ClientAuthorizationRequiredException but got no exception.");
         } catch(ClientAuthorizationRequiredException e) {
             assertTrue(e.getMessage().contains(TEST_CLIENT_ID));
@@ -229,7 +229,7 @@ public class UserAuthUtilTest {
         when(mockOAuth2ClientManager.authorize(any())).thenReturn(mockOAuth2Client);
 
         try {
-            assertEquals("mock-access", userAuthUtil.getTokenValue(mockOAuthToken));
+            assertEquals("mock-access", userAuthService.getTokenValue(mockOAuthToken));
         } catch(Exception e) {
             fail("Expected no exception but got " + e.getClass().getName());
         }
@@ -244,7 +244,7 @@ public class UserAuthUtilTest {
         when(mockOAuth2ClientManager.authorize(any())).thenReturn(mockRefreshedClient);
 
         try {
-            assertEquals("mock-access-2", userAuthUtil.getTokenValue(mockOAuthToken));
+            assertEquals("mock-access-2", userAuthService.getTokenValue(mockOAuthToken));
         } catch(Exception e) {
             fail("Expected no exception but got " + e.getClass().getName());
         }
@@ -254,8 +254,8 @@ public class UserAuthUtilTest {
     public void getTokenValueInvalidTest() {
         when(mockOAuth2ClientManager.authorize(any())).thenReturn(mockOAuth2Client);
 
-        assertEquals(null, userAuthUtil.getTokenValue(null));
-        assertEquals(null, userAuthUtil.getTokenValue(new UsernamePasswordAuthenticationToken("test-user", "test-pass")));
+        assertEquals(null, userAuthService.getTokenValue(null));
+        assertEquals(null, userAuthService.getTokenValue(new UsernamePasswordAuthenticationToken("test-user", "test-pass")));
     }
 
     @Test
@@ -263,7 +263,7 @@ public class UserAuthUtilTest {
         when(mockOAuth2ClientManager.authorize(any())).thenReturn(null);
 
         try {
-            userAuthUtil.getTokenValue(mockOAuthToken);
+            userAuthService.getTokenValue(mockOAuthToken);
             fail("Expected ClientAuthorizationRequiredException but got no exception.");
         } catch(ClientAuthorizationRequiredException e) {
             assertTrue(e.getMessage().contains(TEST_CLIENT_ID));

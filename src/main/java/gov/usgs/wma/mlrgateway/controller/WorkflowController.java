@@ -30,7 +30,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 import gov.usgs.wma.mlrgateway.util.UserSummaryReportBuilder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -56,8 +56,8 @@ public class WorkflowController extends BaseController {
     }
 	
 	@Autowired
-	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, UserAuthUtil userAuthUtil, Clock clock) {
-		super(notificationService, userAuthUtil);
+	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, UserAuthService userAuthService, Clock clock) {
+		super(notificationService, userAuthService);
 		this.legacy = legacy;
 		this.clock = clock;
 	}
@@ -71,11 +71,11 @@ public class WorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping(path = "/ddots", consumes = "multipart/form-data")
 	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
-		userAuthUtil.validateToken(authentication);
-		log.info("[VALIDATE AND UPDATE WORKFLOW]: Starting full validate and update workflow for: User: " + userAuthUtil.getUserName(authentication) + " | File: " + file.getOriginalFilename());
+		userAuthService.validateToken(authentication);
+		log.info("[VALIDATE AND UPDATE WORKFLOW]: Starting full validate and update workflow for: User: " + userAuthService.getUserName(authentication) + " | File: " + file.getOriginalFilename());
 		setReport(new GatewayReport(LegacyWorkflowService.COMPLETE_WORKFLOW
 				,file.getOriginalFilename()
-				,userAuthUtil.getUserName(authentication)
+				,userAuthService.getUserName(authentication)
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
@@ -112,10 +112,10 @@ public class WorkflowController extends BaseController {
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PostMapping(path = "/ddots/validate", consumes = "multipart/form-data")
 	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
-		userAuthUtil.validateToken(authentication);
+		userAuthService.validateToken(authentication);
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
 				,file.getOriginalFilename()
-				,userAuthUtil.getUserName(authentication)
+				,userAuthService.getUserName(authentication)
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {
@@ -161,11 +161,11 @@ public class WorkflowController extends BaseController {
 			HttpServletResponse response, 
 			Authentication authentication) 
 	{
-		userAuthUtil.validateToken(authentication);
-		log.info("[PK CHANGE WORKFLOW]: Starting primary key change workflow for: User: " + userAuthUtil.getUserName(authentication) + " | Location: [" + oldAgencyCode + " - " + oldSiteNumber + "] --> [" + newAgencyCode + " - " + newSiteNumber + "]");
+		userAuthService.validateToken(authentication);
+		log.info("[PK CHANGE WORKFLOW]: Starting primary key change workflow for: User: " + userAuthService.getUserName(authentication) + " | Location: [" + oldAgencyCode + " - " + oldSiteNumber + "] --> [" + newAgencyCode + " - " + newSiteNumber + "]");
 		setReport(new GatewayReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
 				,null
-				,userAuthUtil.getUserName(authentication)
+				,userAuthService.getUserName(authentication)
 				,clock.instant().toString()));
 		userSummaryReportbuilder = new UserSummaryReportBuilder();
 		try {

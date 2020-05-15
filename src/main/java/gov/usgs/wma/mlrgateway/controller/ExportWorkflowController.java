@@ -22,7 +22,7 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.workflow.ExportWorkflowService;
 import gov.usgs.wma.mlrgateway.service.FileExportService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -38,8 +38,8 @@ public class ExportWorkflowController extends BaseController {
 	private final Clock clock;
 	
 	@Autowired
-	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService, UserAuthUtil userAuthUtil, Clock clock) {
-		super(notificationService, userAuthUtil);
+	public ExportWorkflowController(ExportWorkflowService export, NotificationService notificationService, UserAuthService userAuthService, Clock clock) {
+		super(notificationService, userAuthService);
 		this.export = export;
 		this.clock = clock;
 	}
@@ -53,11 +53,11 @@ public class ExportWorkflowController extends BaseController {
 	@PreAuthorize("hasPermission(null, null)")
 	@PostMapping("/legacy/location/{agencyCode}/{siteNumber}")
 	public GatewayReport exportWorkflow(@PathVariable("agencyCode") String agencyCode, @PathVariable("siteNumber") String siteNumber, HttpServletResponse response, Authentication authentication) {
-		userAuthUtil.validateToken(authentication);
-		log.info("[COPY WORKFLOW]: Starting copy to NWIS Hosts workflow for: User: " + userAuthUtil.getUserName(authentication) + " | Location: [" + agencyCode + " - " + siteNumber + "]");
+		userAuthService.validateToken(authentication);
+		log.info("[COPY WORKFLOW]: Starting copy to NWIS Hosts workflow for: User: " + userAuthService.getUserName(authentication) + " | Location: [" + agencyCode + " - " + siteNumber + "]");
 		setReport(new GatewayReport(COMPLETE_WORKFLOW
 				,null
-				,userAuthUtil.getUserName(authentication)
+				,userAuthService.getUserName(authentication)
 				,clock.instant().toString()));
 		try {
 			export.exportWorkflow(agencyCode, siteNumber);
