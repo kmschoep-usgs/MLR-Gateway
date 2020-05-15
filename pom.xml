@@ -24,6 +24,11 @@
 
     <repositories>
         <repository>
+            <id>maven-centralized</id>
+            <name>Maven Snapshots and Releases</name>
+            <url>https://artifactory.wma.usgs.gov/artifactory/maven-central</url>
+        </repository>
+        <repository>
             <id>wma-maven-centralized</id>
             <name>Water Mission Area Snapshots and Releases</name>
             <url>https://artifactory.wma.usgs.gov/artifactory/wma-maven</url>
@@ -32,11 +37,6 @@
             <id>eros-artifactory-wma-maven-releases</id>
             <name>EROS Artifactory</name>
             <url>https://artifactory.wma.usgs.gov/artifactory/eros-artifactory-wma-maven-releases</url>
-        </repository>
-        <repository>
-            <id>maven-centralized</id>
-            <name>Maven Snapshots and Releases</name>
-            <url>https://artifactory.wma.usgs.gov/artifactory/maven-central</url>
         </repository>
     </repositories>
 
