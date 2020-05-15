@@ -21,9 +21,11 @@ security:
       username: preferred_username
 
 spring:
-  http:
+  servlet:
     multipart:
       enabled: true
+      maxFileSize: 20MB
+      maxRequestSize: 30MB
   security:
     oauth2:
       client:
