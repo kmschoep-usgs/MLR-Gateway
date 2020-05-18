@@ -4,7 +4,6 @@ import java.time.Clock;
 import java.util.Collections;
 import java.util.Comparator;
 
-import javax.servlet.MultipartConfigElement;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -13,7 +12,6 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
