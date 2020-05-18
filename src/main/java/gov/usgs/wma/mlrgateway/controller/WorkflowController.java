@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -50,11 +51,6 @@ public class WorkflowController extends BaseController {
 	public static final String PRIMARY_KEY_UPDATE_WORKFLOW_SUBJECT = "Submitted Primary Key Update Transaction";
 	private final Clock clock;
 	
-	@Bean
-    public MultipartConfigElement multipartConfigElement() {
-        return new MultipartConfigElement("");
-    }
-	
 	@Autowired
 	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, UserAuthService userAuthService, Clock clock) {
 		super(notificationService, userAuthService);
@@ -69,7 +65,7 @@ public class WorkflowController extends BaseController {
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
 	@PreAuthorize("hasPermission(null, null)")
-	@PostMapping(path = "/ddots", consumes = "multipart/form-data")
+	@PostMapping(path = "/ddots", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
 	public UserSummaryReport legacyWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		userAuthService.validateToken(authentication);
 		log.info("[VALIDATE AND UPDATE WORKFLOW]: Starting full validate and update workflow for: User: " + userAuthService.getUserName(authentication) + " | File: " + file.getOriginalFilename());
@@ -110,7 +106,7 @@ public class WorkflowController extends BaseController {
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 		@ApiResponse(responseCode = "401", description = "Unauthorized"),
 		@ApiResponse(responseCode = "403", description = "Forbidden") })
-	@PostMapping(path = "/ddots/validate", consumes = "multipart/form-data")
+	@PostMapping(path = "/ddots/validate", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
 	public UserSummaryReport legacyValidationWorkflow(@RequestPart MultipartFile file, HttpServletResponse response, Authentication authentication) {
 		userAuthService.validateToken(authentication);
 		setReport(new GatewayReport(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW
