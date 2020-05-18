@@ -24,6 +24,11 @@
 
     <repositories>
         <repository>
+            <id>maven-centralized</id>
+            <name>Maven Snapshots and Releases</name>
+            <url>https://artifactory.wma.usgs.gov/artifactory/maven-central</url>
+        </repository>
+        <repository>
             <id>wma-maven-centralized</id>
             <name>Water Mission Area Snapshots and Releases</name>
             <url>https://artifactory.wma.usgs.gov/artifactory/wma-maven</url>
@@ -33,11 +38,6 @@
             <name>EROS Artifactory</name>
             <url>https://artifactory.wma.usgs.gov/artifactory/eros-artifactory-wma-maven-releases</url>
         </repository>
-        <repository>
-            <id>maven-centralized</id>
-            <name>Maven Snapshots and Releases</name>
-            <url>https://artifactory.wma.usgs.gov/artifactory/maven-central</url>
-        </repository>
     </repositories>
 
     <dependencyManagement>
@@ -45,7 +45,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.2.6.RELEASE</version>
+                <version>2.3.0.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -59,7 +59,7 @@
             <dependency>
                 <groupId>org.springframework.session</groupId>
                 <artifactId>spring-session-bom</artifactId>
-                <version>Corn-SR2</version>
+                <version>Dragonfruit-RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -69,17 +69,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.64</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-core</artifactId>
-                <version>9.0.31</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-websocket</artifactId>
-                <version>9.0.31</version>
+                <version>1.65</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -99,11 +89,11 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -218,14 +208,14 @@
                     <dependency>
                         <groupId>org.junit.jupiter</groupId>
                         <artifactId>junit-jupiter-engine</artifactId>
-                        <version>5.5.2</version>
+                        <version>5.6.2</version>
                     </dependency>
                 </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.2.5.RELEASE</version>
+                <version>2.3.0.RELEASE</version>
                 <executions>
                     <execution>
                         <goals>

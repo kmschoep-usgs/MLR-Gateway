@@ -2,6 +2,7 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import gov.usgs.wma.mlrgateway.exception.InvalidEmailException;
 import gov.usgs.wma.mlrgateway.service.AdminService;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,10 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 	private Logger log = LoggerFactory.getLogger(AdminController.class);
 	private AdminService adminService;
+	private UserAuthService userAuthService;
 
 	@Autowired
-	public AdminController(AdminService adminService) {
+	public AdminController(AdminService adminService, UserAuthService userAuthService) {
 		this.adminService = adminService;
+		this.userAuthService = userAuthService;
 	}
 
 	@Operation(description="Generates and sends a transaction summary email for the provided date")
@@ -45,8 +49,10 @@ public class AdminController {
 	public void sendSummaryEmail(
 		@RequestParam @Pattern(regexp="\\d\\d\\d\\d-\\d\\d-\\d\\d") String date,
 		@RequestParam @NotEmpty List<String> recipientList,
+		Authentication authentication,
 		HttpServletResponse response
 	) throws IOException {
+		userAuthService.validateToken(authentication);
 		log.info("[SUMMARY EMAIL WORKFLOW]: Starting summary email generation for date: " + date);
 		try {
 			adminService.sendSummaryEmail(date, recipientList);

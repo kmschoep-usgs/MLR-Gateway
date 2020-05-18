@@ -2,7 +2,9 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,6 +25,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -37,14 +40,15 @@ import gov.usgs.wma.mlrgateway.client.NotificationClient;
 import gov.usgs.wma.mlrgateway.workflow.BulkTransactionFilesWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
 import gov.usgs.wma.mlrgateway.util.ParseCSV;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 import gov.usgs.wma.mlrgateway.config.MethodSecurityConfig;
+import gov.usgs.wma.mlrgateway.config.OAuth2Config;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers={BulkTransactionFilesWorkflowController.class})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import({MvcTestConfig.class, PermissionEvaluatorImpl.class, MethodSecurityConfig.class})
+@Import({MvcTestConfig.class, PermissionEvaluatorImpl.class, MethodSecurityConfig.class, OAuth2Config.class})
 public class BulkTransactionFilesWorkflowControllerMVCTest {
 
 	@Autowired
@@ -66,7 +70,7 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 	private LegacyCruClient legacyClient;
 
 	@MockBean
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 
 	@MockBean
 	private Clock clockMock;
@@ -77,8 +81,8 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 	public void init() {
 		file = new MockMultipartFile("file", "sites.csv", "text/plain", "".getBytes());
 		when(clockMock.instant()).thenReturn(Clock.fixed(Instant.parse("2010-01-10T10:00:00Z"), ZoneId.of("UTC")).instant());
-		when(userAuthUtil.getUserName(any(Authentication.class))).thenReturn("test");
-		when(userAuthUtil.getUserEmail(any(Authentication.class))).thenReturn("test@test.test");
+		when(userAuthService.getUserName(any(Authentication.class))).thenReturn("test");
+		when(userAuthService.getUserEmail(any(Authentication.class))).thenReturn("test@test.test");
 	}
 	
 	@Test
@@ -137,5 +141,22 @@ public class BulkTransactionFilesWorkflowControllerMVCTest {
 				.andExpect(content().string(badJson));
 
 		verify(bulkTransactions).generateTransactionFilesWorkflow(any(MultipartFile.class));
+	}
+
+	@Test
+	@WithMockUser(authorities = "test_allowed")
+	public void expiredToken_BulkTransactionFilesWorkflow() throws Exception {
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(any());
+		
+		// First time the token is expired it returns 401 and clears session
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/bulkTransactionFiles").file(file))
+				.andExpect(status().isUnauthorized())
+				.andExpect(content().contentType("application/json"));
+
+		// Subsequent requests should cause login redirect since the session is gone
+		mvc.perform(MockMvcRequestBuilders.multipart("/workflows/bulkTransactionFiles").file(file))
+				.andExpect(status().is3xxRedirection());
+
+		verify(bulkTransactions, times(0)).generateTransactionFilesWorkflow(any(MultipartFile.class));
 	}
 }

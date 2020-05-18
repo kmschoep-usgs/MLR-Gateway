@@ -2,6 +2,8 @@ package gov.usgs.wma.mlrgateway.controller;
 
 import static org.mockito.BDDMockito.willThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
@@ -16,6 +18,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,8 +30,9 @@ import gov.usgs.wma.mlrgateway.StepReport;
 import gov.usgs.wma.mlrgateway.UserSummaryReport;
 import gov.usgs.wma.mlrgateway.workflow.LegacyWorkflowService;
 import gov.usgs.wma.mlrgateway.service.NotificationService;
-import gov.usgs.wma.mlrgateway.util.UserAuthUtil;
+import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.BDDMockito.given;
 
@@ -49,7 +53,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	@MockBean
 	private LegacyWorkflowService legacy;
 	@MockBean
-	private UserAuthUtil userAuthUtil;
+	private UserAuthService userAuthService;
 	
 	@Bean
 	@Primary
@@ -64,11 +68,11 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	@BeforeEach
 	public void init() {
-		given(userAuthUtil.getUserEmail(any(Authentication.class))).willReturn("test@test");
-		given(userAuthUtil.getUserName(any(Authentication.class))).willReturn("test");
+		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("test@test");
+		given(userAuthService.getUserName(any(Authentication.class))).willReturn("test");
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
-		controller = new WorkflowController(legacy, notify, userAuthUtil, clock());
+		controller = new WorkflowController(legacy, notify, userAuthService, clock());
 		response = new MockHttpServletResponse();
 	}
 
@@ -224,4 +228,47 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
 
+	@Test
+	public void validateUpdateExpiredTokenTest() throws Exception {
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(mockAuth);
+		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
+
+		try {
+			controller.legacyWorkflow(file, response, mockAuth);
+			fail("Expected ClientAuthorizationRequiredException but got no exception.");
+		} catch(ClientAuthorizationRequiredException e) {
+			assertTrue(e.getMessage().contains("test-client"));
+		} catch(Exception e) {
+			fail("Expected ClientAuthorizationRequiredException, but got " + e.getClass().getName());
+		}
+	}
+
+	@Test
+	public void validateExpiredTokenTest() throws Exception {
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(mockAuth);
+		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
+
+		try {
+			controller.legacyValidationWorkflow(file, response, mockAuth);
+			fail("Expected ClientAuthorizationRequiredException but got no exception.");
+		} catch(ClientAuthorizationRequiredException e) {
+			assertTrue(e.getMessage().contains("test-client"));
+		} catch(Exception e) {
+			fail("Expected ClientAuthorizationRequiredException, but got " + e.getClass().getName());
+		}
+	}
+
+	@Test
+	public void pkUpdateExpiredTokenTest() throws Exception {
+		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(mockAuth);
+		
+		try {
+			controller.updatePrimaryKeyWorkflow("test", "test", "test", "test", "reason", response, mockAuth);
+			fail("Expected ClientAuthorizationRequiredException but got no exception.");
+		} catch(ClientAuthorizationRequiredException e) {
+			assertTrue(e.getMessage().contains("test-client"));
+		} catch(Exception e) {
+			fail("Expected ClientAuthorizationRequiredException, but got " + e.getClass().getName());
+		}
+	}
 }
