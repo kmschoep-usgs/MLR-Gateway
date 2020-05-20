@@ -21,6 +21,7 @@ import gov.usgs.wma.mlrgateway.service.UserAuthService;
 public class OAuth2Config {
 
 	private static final Logger LOG = LoggerFactory.getLogger(OAuth2Config.class);
+	private static final String AUTH_HEADER = "Authorization";
 
 	@Autowired
 	private UserAuthService userAuthService;
@@ -28,13 +29,15 @@ public class OAuth2Config {
 	@Bean
 	RequestInterceptor oauth2FeignRequestInterceptor() {
 		return requestTemplate -> {
-			String tokenValue = userAuthService.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
+			if(!requestTemplate.headers().containsKey(AUTH_HEADER)) {
+				String tokenValue = userAuthService.getTokenValue(SecurityContextHolder.getContext().getAuthentication());
 
-			if(tokenValue != null && !tokenValue.isEmpty()) {
-				requestTemplate.header("Authorization", "Bearer " + tokenValue);
-			} else {
-				LOG.warn("Attempted feign client request with no valid oauth2 access token.");
-			}
+				if(tokenValue != null && !tokenValue.isEmpty()) {
+					requestTemplate.header(AUTH_HEADER, "Bearer " + tokenValue);
+				} else {
+					LOG.warn("Attempted feign client request with no valid oauth2 access token.");
+				}
+			}			
 		};
 	}
 	

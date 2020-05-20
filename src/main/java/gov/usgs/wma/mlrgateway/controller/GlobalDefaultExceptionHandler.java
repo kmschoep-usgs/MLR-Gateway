@@ -29,6 +29,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartException;
 
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
+import gov.usgs.wma.mlrgateway.exception.InvalidEmailException;
 
 @ControllerAdvice
 public class GlobalDefaultExceptionHandler {
@@ -80,6 +81,9 @@ public class GlobalDefaultExceptionHandler {
 			} catch(ServletException e) {
 				servletRequest.getSession().invalidate();
 			}
+		} else if(ex instanceof InvalidEmailException) {	
+			servletResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+			responseMap.put(ERROR_MESSAGE_KEY, ex.getMessage());
 		} else {
 			servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			int hashValue = servletResponse.hashCode();

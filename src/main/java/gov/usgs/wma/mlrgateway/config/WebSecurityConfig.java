@@ -32,7 +32,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.authorizeRequests()
 					.antMatchers("/swagger-resources/**", "/webjars/**", "/v2/**").permitAll()
 					.antMatchers("/info**", "/actuator/health/**", "/hystrix/**", "/hystrix.stream**", "/proxy.stream**", "/favicon.ico", "/swagger-ui.html").permitAll()
-					.antMatchers("/auth/reauth").permitAll()
+					.antMatchers("/auth/reauth", "/util/sendSummaryEmail").permitAll()
 					.anyRequest().fullyAuthenticated()
 			.and()
 				.logout().logoutSuccessUrl("/auth/reauth").permitAll()

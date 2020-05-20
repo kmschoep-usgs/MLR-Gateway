@@ -20,6 +20,7 @@ security:
     claims:
       email: email
       username: preferred_username
+  service-auth-token: changeMe
 
 spring:
   servlet:
@@ -35,10 +36,18 @@ spring:
             client-id: ${oauthClientId:}
             client-secret: ${oauthClientSecret:}
             scope: ${oauthClientScopes:email}
+          wma-keycloak-service-account: 
+            client-id: ${oauthClientId:}
+            client-secret: ${oauthClientSecret:}
+            scope: ${oauthClientScopes:email}
+            authorization-grant-type: client_credentials
         provider:
           wma-keycloak:
             issuer-uri: ${oauthIssuerUri:}
-        defaultProvider: wma-keycloak
+          wma-keycloak-service-account:
+            issuer-uri: ${oauthIssuerUri:}
+        userProvider: wma-keycloak
+        serviceProvider: wma-keycloak-service-account
 
 logging:
   level:
