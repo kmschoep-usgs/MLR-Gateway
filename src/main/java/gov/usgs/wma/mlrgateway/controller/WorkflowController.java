@@ -49,13 +49,17 @@ public class WorkflowController extends BaseController {
 	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "Submitted Ddot Validation";
 	public static final String PRIMARY_KEY_UPDATE_WORKFLOW_SUBJECT = "Submitted Primary Key Update Transaction";
 	private final Clock clock;
-	protected Boolean enablePrimaryKeyUpdate;
+	private Boolean enablePrimaryKeyUpdate;
 	
 	@Autowired
-	public WorkflowController(@Value("${enablePrimaryKeyUpdate:}") Boolean enablePrimaryKeyUpdate, LegacyWorkflowService legacy, NotificationService notificationService, UserAuthService userAuthService, Clock clock) {
+	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, UserAuthService userAuthService, Clock clock) {
 		super(notificationService, userAuthService);
 		this.legacy = legacy;
 		this.clock = clock;
+	}
+	
+	@Value("${enablePrimaryKeyUpdate:}")
+	protected void setEnablePrimaryKeyUpdate(Boolean enablePrimaryKeyUpdate) {
 		this.enablePrimaryKeyUpdate = enablePrimaryKeyUpdate;
 	}
 
