@@ -228,6 +228,21 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		
 		verify(legacy).updatePrimaryKeyWorkflow(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
+	
+	@Test
+	public void pkUpdateDisabled() throws Exception {
+		WorkflowController controllerTest = new WorkflowController(legacy, notify, userAuthService, clock());
+		controllerTest.setEnablePrimaryKeyUpdate(false);
+		
+		try {
+			controllerTest.updatePrimaryKeyWorkflow("test", "test", "test", "test", "reason", response, mockAuth);
+			fail("Expected UnsupportedOperationException but got no exception.");
+		} catch(UnsupportedOperationException e) {
+			assertTrue(e.getMessage().contains("Feature not enabled"));
+		} catch(Exception e) {
+			fail("UnsupportedOperationException, but got " + e.getClass().getName());
+		}
+	}
 
 	@Test
 	public void validateUpdateExpiredTokenTest() throws Exception {
