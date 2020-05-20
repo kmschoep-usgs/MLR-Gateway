@@ -1,9 +1,7 @@
 package gov.usgs.wma.mlrgateway.controller;
 
 import static org.mockito.BDDMockito.willThrow;
-import static org.mockito.Mockito.doThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -13,36 +11,33 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import gov.usgs.wma.mlrgateway.BaseSpringTest;
 import gov.usgs.wma.mlrgateway.FeignBadResponseWrapper;
 import gov.usgs.wma.mlrgateway.exception.InvalidEmailException;
 import gov.usgs.wma.mlrgateway.service.AdminService;
-import gov.usgs.wma.mlrgateway.service.UserAuthService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings("unchecked")
-public class AdminControllerTest extends BaseSpringTest {
+public class UtilControllerTest extends BaseSpringTest {
+
+	private final String SERVICE_AUTH_TOKEN_VAL = "changeMe";
 
 	@MockBean
 	private AdminService adminService;
 
-	@MockBean
-	private UserAuthService userAuthService;
-
-	private AdminController controller;
+	private UtilController controller;
 	private MockHttpServletResponse response;
-	private UsernamePasswordAuthenticationToken mockAuth = new UsernamePasswordAuthenticationToken("user", "pass");
 
 	@BeforeEach
 	public void init() {
-		controller = new AdminController(adminService, userAuthService);
+		controller = new UtilController(adminService);
+		controller.setServiceAuthToken(SERVICE_AUTH_TOKEN_VAL);
 		response = new MockHttpServletResponse();
 	}
 
@@ -52,14 +47,14 @@ public class AdminControllerTest extends BaseSpringTest {
 		recipients.add("test");
 
 		try {
-			controller.sendSummaryEmail("2020-01-01", recipients, mockAuth, response);
+			controller.sendSummaryEmail("2020-01-01", recipients, SERVICE_AUTH_TOKEN_VAL, response);
 		} catch(Exception e) {
 			fail("Expected no Exceptions, but got " + e.getClass().getName());
 		}
 	}
 
 	@Test
-	public void invalidEmailExceptionCaughtTest() throws Exception {
+	public void invalidEmailExceptionTest() throws Exception {
 		String errorMessage = "Invalid email";
 		List<String> recipients = new ArrayList<>();
 		recipients.add("test");
@@ -67,9 +62,12 @@ public class AdminControllerTest extends BaseSpringTest {
 		willThrow(new InvalidEmailException(errorMessage)).given(adminService).sendSummaryEmail(eq("2020-01-01"), any(List.class));
 		
 		try {
-			controller.sendSummaryEmail("2020-01-01", recipients, mockAuth, response);
+			controller.sendSummaryEmail("2020-01-01", recipients, SERVICE_AUTH_TOKEN_VAL, response);
+			fail("Expected InvalidEmailException but got no exception.");
+		} catch(InvalidEmailException e) {
+			assertEquals(errorMessage, e.getMessage());
 		} catch(Exception e) {
-			fail("Expected expcetion to be caught but got " + e.getClass().getName());
+			fail("Expected InvalidEmailException but got " + e.getClass().getName());
 		}
 	}
 
@@ -82,7 +80,7 @@ public class AdminControllerTest extends BaseSpringTest {
 		willThrow(new FeignBadResponseWrapper(500, null, badText)).given(adminService).sendSummaryEmail(eq("2020-01-01"), any(List.class));
 		
 		try {
-			controller.sendSummaryEmail("2020-01-01", recipients, mockAuth, response);
+			controller.sendSummaryEmail("2020-01-01", recipients, SERVICE_AUTH_TOKEN_VAL, response);
 			fail("Expected FeignBadResponseWrapper but got no exception.");
 		} catch(FeignBadResponseWrapper e) {
 			assertEquals(500, e.getStatus());
@@ -92,18 +90,17 @@ public class AdminControllerTest extends BaseSpringTest {
 	}
 
 	@Test
-	public void expiredTokenTest() throws Exception {
-		doThrow(new ClientAuthorizationRequiredException("test-client")).when(userAuthService).validateToken(mockAuth);
+	public void invalidServiceTokenTest() {
 		List<String> recipients = new ArrayList<>();
 		recipients.add("test");
 
 		try {
-			controller.sendSummaryEmail("2020-01-01", recipients, mockAuth, response);
-			fail("Expected ClientAuthorizationRequiredException but got no exception.");
-		} catch(ClientAuthorizationRequiredException e) {
-			assertTrue(e.getMessage().contains("test-client"));
+			controller.sendSummaryEmail("2020-01-01", recipients, "invalid", response);
+			fail("Expected AccessDeniedException but got no exception.");
+		} catch(AccessDeniedException e) {
+			// Success case
 		} catch(Exception e) {
-			fail("Expected ClientAuthorizationRequiredException, but got " + e.getClass().getName());
+			fail("Expected AccessDeniedException, but got " + e.getClass().getName());
 		}
 	}
 }

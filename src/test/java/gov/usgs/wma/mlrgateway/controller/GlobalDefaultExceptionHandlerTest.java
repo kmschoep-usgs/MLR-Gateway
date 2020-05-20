@@ -33,6 +33,8 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.context.request.WebRequest;
 
+import gov.usgs.wma.mlrgateway.exception.InvalidEmailException;
+
 public class GlobalDefaultExceptionHandlerTest {
 	@Mock
 	WebRequest request;
@@ -131,5 +133,15 @@ public class GlobalDefaultExceptionHandlerTest {
 		assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 		verify(servRequest, times(1)).logout();
 		verify(session, times(1)).invalidate();
+	}
+
+	@Test
+	public void handleInvalidEmailExceptionTest() throws IOException, ServletException {
+		HttpServletResponse response = new MockHttpServletResponse();
+		HttpServletRequest servRequest = new MockHttpServletRequest();
+		String expected = "Some123$Mes\tsage!!.";
+		Map<String, String> actual = controller.handleUncaughtException(new InvalidEmailException(expected), request, servRequest, response);
+		assertEquals(expected, actual.get(GlobalDefaultExceptionHandler.ERROR_MESSAGE_KEY));
+		assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
 	}
 }
