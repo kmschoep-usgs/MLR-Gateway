@@ -37,9 +37,9 @@ public class AdminService {
         this.notificationClient = notificationClient;
 	}
 
-    public void sendSummaryEmail(String date, List<String> recipientList) throws IOException {
+    public void sendSummaryEmail(String date, List<String> recipientList, String bearerToken) throws IOException {
         Map<String, Object> messageMap = new HashMap<>();
-        String messageBody = generateSummaryHTML(date);
+        String messageBody = generateSummaryHTML(date, bearerToken);
 
 		//Build Request
 		messageMap.put(NotificationClient.MESSAGE_TO_KEY, recipientList);
@@ -47,7 +47,7 @@ public class AdminService {
         messageMap.put(NotificationClient.MESSAGE_HTML_BODY_KEY, messageBody);
         
         try {
-            notificationClient.sendEmail(new ObjectMapper().writeValueAsString(messageMap));
+            notificationClient.sendEmail(bearerToken, new ObjectMapper().writeValueAsString(messageMap));
         } catch(FeignBadResponseWrapper e) {
             if(e.getStatus() == HttpStatus.SC_BAD_REQUEST) {
                 throw new InvalidEmailException(e.getBody());
@@ -57,10 +57,10 @@ public class AdminService {
         }
     }
 
-    public String generateSummaryHTML(String date) throws IOException {
+    public String generateSummaryHTML(String date, String bearerToken) throws IOException {
         StringBuilder builder = new StringBuilder();
 
-        String rawResponse = legacyCruClient.getLoggedTransactionSummary(date, date, null).getBody();
+        String rawResponse = legacyCruClient.getLoggedTransactionSummary(bearerToken, date, date, null).getBody();
         List<Map<String, Object>> summaryList = new ObjectMapper().readValue(rawResponse, ArrayList.class);
 
         builder.append("<h1>Summary of MLR Transactions executed on " + date + "</h1>");

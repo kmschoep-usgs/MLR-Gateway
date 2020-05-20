@@ -1,5 +1,8 @@
 package gov.usgs.wma.mlrgateway.service;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -20,6 +23,9 @@ public class UserAuthService {
 	@Value("${security.token.claims.username:preferred_username}")
 	protected String USER_NAME_CLAIM_KEY;
 
+	@Value("${spring.security.oauth2.client.serviceProvider:}")
+	protected String serviceAccountProvider;
+
 	protected OAuth2AuthorizedClientService authorizedClientService;
 	protected OAuth2AuthorizedClientManager authorizedClientManager;
 
@@ -28,7 +34,7 @@ public class UserAuthService {
 		this.authorizedClientManager = authorizedClientManager;
 		this.authorizedClientService = authorizedClientService;
 	}
-
+	
 	/**
 	 * Validates the OAuth2 Access Token associated with the provided Authentication is valid.
 	 * Throws OAuth2AuthorizationException if re-auth is needed.
@@ -103,5 +109,22 @@ public class UserAuthService {
 		}
 
 		return null;
+	}
+
+	public String getServiceAccountBearerToken(Authentication auth, HttpServletRequest request, HttpServletResponse response) {
+		OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId(serviceAccountProvider)
+                .principal(auth)
+                .attributes(attrs -> {
+                    attrs.put(HttpServletRequest.class.getName(), request);
+                    attrs.put(HttpServletResponse.class.getName(), response);
+                })
+                .build();
+        OAuth2AuthorizedClient authorizedClient = this.authorizedClientManager.authorize(authorizeRequest);
+		
+		if(authorizedClient == null) {
+			throw new ClientAuthorizationRequiredException(serviceAccountProvider);
+		}
+
+		return "Bearer " + authorizedClient.getAccessToken().getTokenValue();
 	}
 }

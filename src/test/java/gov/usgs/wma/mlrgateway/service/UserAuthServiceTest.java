@@ -271,4 +271,27 @@ public class UserAuthServiceTest {
             fail("Expected ClientAuthorizationRequiredException but got " + e.getClass().getName());
         }
     }
+
+    @Test
+    public void getServiceAccountBearerTokenSuccessTest() {
+        when(mockOAuth2ClientManager.authorize(any())).thenReturn(mockOAuth2Client);
+        assertEquals(
+            "Bearer " + mockOAuth2Client.getAccessToken().getTokenValue(), 
+            userAuthService.getServiceAccountBearerToken(mockOAuthToken, null, null)
+        );
+    }
+
+    @Test
+    public void getServiceAccountBearerTokenErrorTest() {
+        when(mockOAuth2ClientManager.authorize(any())).thenReturn(null);
+
+        try {
+            userAuthService.getServiceAccountBearerToken(mockOAuthToken, null, null);
+            fail("Expected ClientAuthorizationRequiredException but got no exception.");
+        } catch(ClientAuthorizationRequiredException e) {
+            // Success Case
+        } catch(Exception e) {
+            fail("Expected ClientAuthorizationRequiredException but got " + e.getClass().getName());
+        }
+    }
 }
