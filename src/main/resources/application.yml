@@ -49,6 +49,8 @@ notification:
   email:
     cc-list: ${emailCCList:}
 
+enablePrimaryKeyUpdate: ${enablePrimaryKeyUpdate:false}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui/api-docs.html

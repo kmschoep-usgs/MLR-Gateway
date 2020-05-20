@@ -72,7 +72,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		given(userAuthService.getUserName(any(Authentication.class))).willReturn("test");
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
-		controller = new WorkflowController(legacy, notify, userAuthService, clock());
+		controller = new WorkflowController(true, legacy, notify, userAuthService, clock());
 		response = new MockHttpServletResponse();
 	}
 
