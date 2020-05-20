@@ -20,8 +20,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("${server.session.timeout:}")
 	private Integer sessionTimeoutSeconds;
 
-	@Value("${spring.security.oauth2.client.default-provider:}")
-	private String oauth2DefaultProvider;
+	@Value("${spring.security.oauth2.client.userProvider:}")
+	private String oauth2UserProvider;
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -37,7 +37,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.and()
 				.logout().logoutSuccessUrl("/auth/reauth").permitAll()
 			.and()
-				.oauth2Login()
+				.oauth2Login().loginPage(loginRoute())
 			.and()
 				.csrf().disable()
 		;
@@ -58,5 +58,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Bean
 	public HttpSessionIdResolver httpSessionIdResolver() {
 		return new HybridHttpSessionIdResolver();
+	}
+
+	public String loginRoute() {
+		if(this.oauth2UserProvider != null && !this.oauth2UserProvider.isEmpty()) {
+			return "/oauth2/authorization/" + this.oauth2UserProvider;
+		} else {
+			return "/login";
+		}
 	}
 }
