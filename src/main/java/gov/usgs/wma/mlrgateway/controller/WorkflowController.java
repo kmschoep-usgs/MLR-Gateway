@@ -12,6 +12,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -48,12 +49,18 @@ public class WorkflowController extends BaseController {
 	public static final String VALIDATE_DDOT_WORKFLOW_SUBJECT = "Submitted Ddot Validation";
 	public static final String PRIMARY_KEY_UPDATE_WORKFLOW_SUBJECT = "Submitted Primary Key Update Transaction";
 	private final Clock clock;
+	private Boolean enablePrimaryKeyUpdate;
 	
 	@Autowired
 	public WorkflowController(LegacyWorkflowService legacy, NotificationService notificationService, UserAuthService userAuthService, Clock clock) {
 		super(notificationService, userAuthService);
 		this.legacy = legacy;
 		this.clock = clock;
+	}
+	
+	@Value("${enablePrimaryKeyUpdate:}")
+	protected void setEnablePrimaryKeyUpdate(Boolean enablePrimaryKeyUpdate) {
+		this.enablePrimaryKeyUpdate = enablePrimaryKeyUpdate;
 	}
 
 	@Operation(description="Perform the entire workflow, including updating the repository and sending transaction file(s) to WSC.")
@@ -155,6 +162,9 @@ public class WorkflowController extends BaseController {
 			HttpServletResponse response, 
 			Authentication authentication) 
 	{
+		if (!enablePrimaryKeyUpdate) {
+			throw new UnsupportedOperationException("Feature not enabled");
+		}
 		userAuthService.validateToken(authentication);
 		log.info("[PK CHANGE WORKFLOW]: Starting primary key change workflow for: User: " + userAuthService.getUserName(authentication) + " | Location: [" + oldAgencyCode + " - " + oldSiteNumber + "] --> [" + newAgencyCode + " - " + newSiteNumber + "]");
 		setReport(new GatewayReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW

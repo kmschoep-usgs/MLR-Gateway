@@ -11,6 +11,8 @@ security:
       email: email
       username: preferred_username
 
+enablePrimaryKeyUpdate: true
+
 ddot:
   ribbon:
     listOfServers: https://test.gov/test
