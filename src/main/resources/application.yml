@@ -49,7 +49,7 @@ notification:
   email:
     cc-list: ${emailCCList:}
 
-enablePrimaryKeyUpdate: ${enablePrimaryKeyUpdate:false}
+enablePrimaryKeyUpdate: false
 
 springdoc:
   swagger-ui:

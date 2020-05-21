@@ -164,39 +164,39 @@ public class WorkflowController extends BaseController {
 	{
 		if (!enablePrimaryKeyUpdate) {
 			throw new UnsupportedOperationException("Feature not enabled");
-		   }
-			userAuthService.validateToken(authentication);
-			log.info("[PK CHANGE WORKFLOW]: Starting primary key change workflow for: User: " + userAuthService.getUserName(authentication) + " | Location: [" + oldAgencyCode + " - " + oldSiteNumber + "] --> [" + newAgencyCode + " - " + newSiteNumber + "]");
-			setReport(new GatewayReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
-					,null
-					,userAuthService.getUserName(authentication)
-					,clock.instant().toString()));
-			userSummaryReportbuilder = new UserSummaryReportBuilder();
-			try {
-				legacy.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
-				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_SUCCESS));
-	
-			} catch (Exception e) {
-				if (e instanceof FeignBadResponseWrapper) {
-					int status = ((FeignBadResponseWrapper) e).getStatus();
-					WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
-				} else {
-					int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-					WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
-				}
+		}
+		userAuthService.validateToken(authentication);
+		log.info("[PK CHANGE WORKFLOW]: Starting primary key change workflow for: User: " + userAuthService.getUserName(authentication) + " | Location: [" + oldAgencyCode + " - " + oldSiteNumber + "] --> [" + newAgencyCode + " - " + newSiteNumber + "]");
+		setReport(new GatewayReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW
+				,null
+				,userAuthService.getUserName(authentication)
+				,clock.instant().toString()));
+		userSummaryReportbuilder = new UserSummaryReportBuilder();
+		try {
+			legacy.updatePrimaryKeyWorkflow(oldAgencyCode, oldSiteNumber, newAgencyCode, newSiteNumber, reasonText);
+			WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW, HttpStatus.SC_OK, true, LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_SUCCESS));
+
+		} catch (Exception e) {
+			if (e instanceof FeignBadResponseWrapper) {
+				int status = ((FeignBadResponseWrapper) e).getStatus();
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, status, false, ((FeignBadResponseWrapper) e).getBody()));
+			} else {
+				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+				WorkflowController.addWorkflowStepReport(new StepReport(LegacyWorkflowService.PRIMARY_KEY_UPDATE_WORKFLOW_FAILED, status, false, e.getLocalizedMessage()));
 			}
-	
-			// Overall Status ignores Notification Status
-			response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
-			
-			//Send Notification
-			String attachmentName = "update primary key:" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber;
-			notificationStep(PRIMARY_KEY_UPDATE_WORKFLOW_SUBJECT, attachmentName, authentication, true);
-	
-			//Return report
-			GatewayReport rtn = getReport();
-			UserSummaryReport userSummaryReport = userSummaryReportbuilder.buildUserSummaryReport(rtn);
-			remove();
-			return userSummaryReport;
+		}
+
+		// Overall Status ignores Notification Status
+		response.setStatus(Collections.max(getReport().getWorkflowSteps(), Comparator.comparing(s -> s.getHttpStatus())).getHttpStatus());
+		
+		//Send Notification
+		String attachmentName = "update primary key:" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber;
+		notificationStep(PRIMARY_KEY_UPDATE_WORKFLOW_SUBJECT, attachmentName, authentication, true);
+
+		//Return report
+		GatewayReport rtn = getReport();
+		UserSummaryReport userSummaryReport = userSummaryReportbuilder.buildUserSummaryReport(rtn);
+		remove();
+		return userSummaryReport;
 	}
 }
