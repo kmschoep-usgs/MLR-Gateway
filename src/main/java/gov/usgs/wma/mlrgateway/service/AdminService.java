@@ -66,13 +66,12 @@ public class AdminService {
         builder.append("<h1>Summary of MLR Transactions executed on " + date + "</h1>");
 
         if(summaryList != null && !summaryList.isEmpty()) {
-            builder.append("<p>This table shows the number of transactions that were executed which "); 
-            builder.append("<i>affected</i> the listed district code. This will not list transactions that ");
-            builder.append("resulted in no fields of a location being changed. This table does not infer ");
-            builder.append("that a given location still exists within a given district code. I.E: A ");
-            builder.append("modification of a location that moves it from one district code to ");
-            builder.append("another will be reflected in this table as a Location Modification for ");
-            builder.append("both the old and new district code.</p>");
+            builder.append("<p>The summary table below shows the daily number of executed transactions by "); 
+            builder.append("district code. The table does not list failed or duplication transactions. ");
+            builder.append("If ownership or the authoritative source of a location is transferred to a ");
+            builder.append("different district, that transaction will show up as a location modification for ");
+            builder.append("both districts; and does not infer the given location still exists within both ");
+            builder.append("districts, unless it is a \"border site\" operated by both districts.</p>");
             builder.append("<table style=\"border-collapse: collapse;\" cellpadding=\"7\" border=\"1\">");
             builder.append("<tr>");
             builder.append("<th>District Code</th>");
