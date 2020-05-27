@@ -67,7 +67,7 @@ public class AdminService {
 
         if(summaryList != null && !summaryList.isEmpty()) {
             builder.append("<p>The summary table below shows the daily number of executed transactions by "); 
-            builder.append("district code. The table does not list failed or duplication transactions. ");
+            builder.append("district code. The table does not list failed or duplicate transactions. ");
             builder.append("If ownership or the authoritative source of a location is transferred to a ");
             builder.append("different district, that transaction will show up as a location modification for ");
             builder.append("both districts; and does not infer the given location still exists within both ");
