@@ -69,6 +69,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 	public void init() {
 		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("test@test");
 		given(userAuthService.getUserName(any(Authentication.class))).willReturn("test");
+		given(notificationService.buildEmailSubject(any(String.class))).willReturn("subject");
 		controller = new ExportWorkflowController(export, notificationService, userAuthService, clock());
 		response = new MockHttpServletResponse();
 		testEmail = new HashMap<>();

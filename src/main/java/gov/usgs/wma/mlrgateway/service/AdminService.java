@@ -26,10 +26,10 @@ public class AdminService {
     public static final String UPDATE_COUNT_KEY = "updateCount";
 
 	private LegacyCruClient legacyCruClient;
-	private NotificationClient notificationClient;
-
-	@Value("${environmentTier:}")
-	private String environmentTier;
+    private NotificationClient notificationClient;
+    
+	@Value("${uiHost:}")
+	protected String uiDomainName;
     
 	@Autowired
 	public AdminService(LegacyCruClient legacyCruClient, NotificationClient notificationClient) {
@@ -66,12 +66,12 @@ public class AdminService {
         builder.append("<h1>Summary of MLR Transactions executed on " + date + "</h1>");
 
         if(summaryList != null && !summaryList.isEmpty()) {
-            builder.append("<p>The summary table below shows the daily number of executed transactions by "); 
+            builder.append("<p>The table below shows the daily number of executed transactions sorted by "); 
             builder.append("district code. The table does not list failed or duplicate transactions. ");
             builder.append("If ownership or the authoritative source of a location is transferred to a ");
-            builder.append("different district, that transaction will show up as a location modification for ");
-            builder.append("both districts; and does not infer the given location still exists within both ");
-            builder.append("districts, unless it is a \"border site\" operated by both districts.</p>");
+            builder.append("different district code, that transaction will show up as a location modification ");
+            builder.append("under both district codes; and does not infer the given location still exists in ");
+            builder.append("both Water Science Centers.</p>");
             builder.append("<table style=\"border-collapse: collapse;\" cellpadding=\"7\" border=\"1\">");
             builder.append("<tr>");
             builder.append("<th>District Code</th>");
@@ -90,9 +90,10 @@ public class AdminService {
             builder.append("</table>");
             builder.append("<p>To view the details of each change visit the Audit Table section of the MLR Website.</p>");
         } else {
-            builder.append("<p>No transactions were executed on " + date + " that resulted in any modifications to location data in MLR.");
+            builder.append("<p>No transactions were executed on " + date + " that resulted in any modifications to location data in MLR.</p>");
         }
-        
+
+        builder.append("<br/>MLR Website: <a href=\"").append(uiDomainName).append("\">Click Here</a>");
         return builder.toString();
     }
 }
