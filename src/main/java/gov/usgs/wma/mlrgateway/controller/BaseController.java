@@ -28,15 +28,10 @@ public abstract class BaseController {
 	
 	@Value("${notification.email.cc-list:}")
 	private String notificationEmailCCListString;
-	
-	@Value("${environmentTier:}")
-	protected String environmentTier;
 
 	@Value("${uiHost:}")
 	protected String uiDomainName;
-	
-	protected String SUBJECT_PREFIX = "[%environment%] MLR Report for ";
-		
+			
 	private Logger log = LoggerFactory.getLogger(BaseController.class);
 	private static ThreadLocal<GatewayReport> gatewayReport = new ThreadLocal<>();
 	private UserSummaryReport userSummaryReport = new UserSummaryReport();
@@ -80,16 +75,15 @@ public abstract class BaseController {
 				//Note List returned from Arrays.asList does not implement .add() thus the need for the additional ArrayList<> constructor
 				ccList = new ArrayList<>(Arrays.asList(StringUtils.split(notificationEmailCCListString.trim(), ',')));
 			}
-			
+
 			String userEmail = userAuthService.getUserEmail(authentication);
-				
+
 			if(userEmail == null || userEmail.isEmpty()){
 				throw new InvalidEmailException("Could not find valid user email in security context.");
 			}
 
-			String fullSubject = SUBJECT_PREFIX.replace("%environment%", environmentTier != null && environmentTier.length() > 0 ? environmentTier : "") + subject;
 			userSummaryReport = userSummaryReportBuilder.buildUserSummaryReport(getReport());
-			notificationService.sendNotification(userEmail, ccList, fullSubject, getReport().getUserName(), attachmentFileName, userSummaryReport);
+			notificationService.sendNotification(userEmail, ccList, notificationService.buildEmailSubject(subject), getReport().getUserName(), attachmentFileName, userSummaryReport);
 		} catch(Exception e) {
 			log.error("An error occurred while attempting to send the notification email: ", e);
 			if (e instanceof FeignBadResponseWrapper) {

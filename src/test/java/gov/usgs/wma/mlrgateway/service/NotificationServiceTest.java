@@ -91,7 +91,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		String userEmail = "test@test";
 		report.setUserName(user);
 		String attachmentFileName = "test-d.file";
-		String expectedBody = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expectedBody = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        test-user\n" +
 			"Workflow:    TEST NOTIFICATION\n" +
 			"Report Date: report-date-time\n" +
@@ -120,7 +120,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		String userEmail = "test@test";
 		report.setUserName(user);
 		String attachmentFileName = "test-d.file";
-		String expectedBody = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expectedBody = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        test-user\n" +
 			"Workflow:    TEST NOTIFICATION\n" +
 			"Report Date: report-date-time\n" +
@@ -154,7 +154,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setName("TEST NOTIFICATION");
 		report.setNumberSiteFailure(0);
 		report.setNumberSiteSuccess(0);
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    TEST NOTIFICATION\n" +
 			"Report Date: report-date-time\n" +
@@ -173,7 +173,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setWorkflowSteps(Arrays.asList(workflowStep));
 		report.setSites(Arrays.asList());
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Complete Export Workflow\n" +
 			"Report Date: report-date-time\n" +
@@ -194,7 +194,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setWorkflowSteps(Arrays.asList(workflowStep));
 		report.setSites(Arrays.asList());
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Complete Export Workflow\n" +
 			"Report Date: report-date-time\n" +
@@ -216,7 +216,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setWorkflowSteps(Arrays.asList(workflowFailureStep, workflowErrorStep));
 		report.setSites(Arrays.asList());
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -244,7 +244,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -271,7 +271,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -297,7 +297,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -323,7 +323,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -349,7 +349,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -376,7 +376,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -402,7 +402,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -428,7 +428,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -455,7 +455,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -487,7 +487,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		report.setNumberSiteFailure(1);
 		
-		String expected = "An MLR Workflow has completed on the null environment. The workflow output report is below.\n\n\n" +
+		String expected = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
 			"User:        report-user\n" +
 			"Workflow:    Validate D dot File\n" +
 			"Report Date: report-date-time\n" +
@@ -507,5 +507,18 @@ public class NotificationServiceTest extends BaseSpringTest {
 		assertEquals("mlr-test-report.json", service.buildAttachmentName("test"));
 		assertEquals("mlr-output-report.json", service.buildAttachmentName(""));
 		assertEquals("mlr-output-report.json", service.buildAttachmentName(null));
+	}
+
+	@Test
+	public void buildSubjectNullEmptyPrefixTest() {
+		assertEquals(" MLR Report for test", service.buildEmailSubject("test", ""));
+		assertEquals(" MLR Report for test", service.buildEmailSubject("test", null));
+		assertEquals(" MLR Report for test", service.buildEmailSubject("test"));
+	}
+
+	@Test
+	public void buildSubjectWithPrefixTest() {
+		assertEquals("[test] MLR Report for test", service.buildEmailSubject("test", "test"));
+		assertEquals("[qa] MLR Report for test", service.buildEmailSubject("test", "qa"));
 	}
 }

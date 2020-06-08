@@ -30,10 +30,8 @@ public class NotificationService {
 
 	private NotificationClient notificationClient;
 	private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
-	
-	@Value("${environmentTier:}")
-	private String environmentTier;
-	
+	private static final String SUBJECT_TEMPLATE = "%prefix% MLR Report for ";
+
 	public static final String NOTIFICATION_STEP = "Notification";
 	public static final String NOTIFICATION_SUCCESSFUL = "Notification sent successfully.";
 	public static final String NOTIFICATION_FAILURE = "{\"error_message\": \"Notification failed to send.\"}";
@@ -42,6 +40,9 @@ public class NotificationService {
 	public static final String FATAL_ERROR_MESSAGE = "fatal_error_message";
 	public static final String WARNING_MESSAGE = "warning_message";
 	public static final String VALIDATOR_MESSAGE = "validator_message";
+
+	@Value("${notification.email.subject.prefix:}")
+	protected String emailSubjectPrefix;
 	
 	@Autowired
 	public NotificationService(NotificationClient notificationClient){
@@ -79,8 +80,7 @@ public class NotificationService {
 	
 	protected String buildMessageBody(UserSummaryReport report, String user) {
 		report.setUserName(user);
-		String reportBody = "An MLR Workflow has completed on the " + 
-				environmentTier + " environment. The workflow output report is below.\n\n\n";
+		String reportBody = "An MLR Workflow has completed. The workflow output report is below.\n\n\n";
 		reportBody += "User:        " + user + "\n";
 		reportBody += "Workflow:    " + report.getName() + "\n";
 		reportBody += "Report Date: " + report.getReportDateTime() + "\n"; 
@@ -95,6 +95,17 @@ public class NotificationService {
 		return ATTACHMENT_FILE_NAME.replace("%NAME%", 
 			(attachmentFileName != null && !attachmentFileName.isEmpty()) ? attachmentFileName : "output"
 		); 
+	}
+
+	public String buildEmailSubject(String subjectBase) {
+		return buildEmailSubject(subjectBase, emailSubjectPrefix);
+	}
+
+	protected String buildEmailSubject(String subjectBase, String prefix) {
+		return SUBJECT_TEMPLATE
+			.replace("%prefix%", prefix != null && prefix.trim().length() > 0 ? 
+				"[" + prefix.trim() + "]" : ""
+			) + subjectBase;
 	}
 	
 	protected String buildErrorReport(UserSummaryReport report){

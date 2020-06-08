@@ -57,6 +57,8 @@ logging:
 notification:
   email:
     cc-list: ${emailCCList:}
+    subject:
+      prefix: ""
 
 enablePrimaryKeyUpdate: false
 
