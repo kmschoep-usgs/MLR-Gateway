@@ -71,7 +71,7 @@ public class AdminService {
             builder.append("If ownership or the authoritative source of a location is transferred to a ");
             builder.append("different district code, that transaction will show up as a location modification ");
             builder.append("under both district codes; and does not infer the given location still exists in ");
-            builder.append("both Water Science Centers.</p>");
+            builder.append("both NWIS hosts.</p>");
             builder.append("<table style=\"border-collapse: collapse;\" cellpadding=\"7\" border=\"1\">");
             builder.append("<tr>");
             builder.append("<th>District Code</th>");
@@ -93,7 +93,7 @@ public class AdminService {
             builder.append("<p>No transactions were executed on " + date + " that resulted in any modifications to location data in MLR.</p>");
         }
 
-        builder.append("<br/>MLR Website: <a href=\"").append(uiDomainName).append("\">Click Here</a>");
+        builder.append("<br/>MLR User Interface: <a href=\"").append(uiDomainName).append("\">Click Here</a>");
         return builder.toString();
     }
 }
