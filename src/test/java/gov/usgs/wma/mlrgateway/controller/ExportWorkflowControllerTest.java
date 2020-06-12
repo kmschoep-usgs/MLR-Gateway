@@ -88,7 +88,7 @@ public class ExportWorkflowControllerTest extends BaseSpringTest {
 		assertEquals(rtn.getName(), ExportWorkflowController.COMPLETE_WORKFLOW);
 		
 		verify(export).exportWorkflow(anyString(), anyString());
-		verify(notificationService).sendNotification(anyString(), anyList(), anyString(), anyString(), anyString(), any());
+		verify(notificationService).sendNotification(anyList(), anyList(), anyString(), anyString(), anyString(), any());
 	}
 
 	@Test

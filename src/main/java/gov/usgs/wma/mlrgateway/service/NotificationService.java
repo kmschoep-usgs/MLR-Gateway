@@ -49,7 +49,7 @@ public class NotificationService {
 		this.notificationClient = notificationClient;
 	}
 
-	public void sendNotification(String recipient, List<String> ccList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
+	public void sendNotification(List<String> recipient, List<String> ccList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
 		ObjectMapper mapper = new ObjectMapper();
 		String messageJson;
 		HashMap<String, Object> messageMap = buildRequestMap(recipient, ccList, subject, user, attachmentFileName, report);
@@ -64,11 +64,11 @@ public class NotificationService {
 		}
 	}
 
-	protected HashMap<String, Object> buildRequestMap(String recipient, List<String> ccList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
+	protected HashMap<String, Object> buildRequestMap(List<String> recipient, List<String> ccList, String subject, String user, String attachmentFileName, UserSummaryReport report) {
 		HashMap<String, Object> messageMap = new HashMap<>();
 
 		//Build Request
-		messageMap.put(NotificationClient.MESSAGE_TO_KEY, Arrays.asList(recipient));
+		messageMap.put(NotificationClient.MESSAGE_TO_KEY, recipient);
 		messageMap.put(NotificationClient.MESSAGE_CC_KEY, ccList);
 		messageMap.put(NotificationClient.MESSAGE_SUBJECT_KEY, subject);
 		messageMap.put(NotificationClient.MESSAGE_TEXT_BODY_KEY, buildMessageBody(report, user));
