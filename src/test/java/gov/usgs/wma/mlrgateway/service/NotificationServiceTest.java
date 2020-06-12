@@ -65,11 +65,12 @@ public class NotificationServiceTest extends BaseSpringTest {
 	public void happyPath() throws Exception {
 		ResponseEntity<String> emailResp = new ResponseEntity<>("test", HttpStatus.OK);
 		List<String> ccList = Arrays.asList("test");
+		List<String> recipient = Arrays.asList("test@test");
 		given(notificationClient.sendEmail(anyString())).willReturn(emailResp);
 		UserSummaryReport report = basicReport();
 		report.setNumberSiteFailure(0);
 		report.setNumberSiteSuccess(0);
-		service.sendNotification("test@test", ccList, "test", "test", "test", report);
+		service.sendNotification(recipient, ccList, "test", "test", "test", report);
 		assertEquals(HttpStatus.OK.value(), response.getStatus());
 		assertEquals(report.getUserName(), "test");
 		assertNotNull(report.getReportDateTime());
@@ -88,7 +89,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		List<String> ccList = Arrays.asList("test-recipient1", "test-recipient2");
 		String subject = "test-subject";
 		String user = "test-user";
-		String userEmail = "test@test";
+		List<String> userEmail = Arrays.asList("test@test");
 		report.setUserName(user);
 		String attachmentFileName = "test-d.file";
 		String expectedBody = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
@@ -101,7 +102,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		String expectedAttachment = "mlr-test-d.file-report.json";
 
 		HashMap<String, Object> result = service.buildRequestMap(userEmail, ccList, subject, user, attachmentFileName, report);
-		assertEquals(result.get(NotificationClient.MESSAGE_TO_KEY), Arrays.asList(userEmail));
+		assertEquals(result.get(NotificationClient.MESSAGE_TO_KEY), userEmail);
 		assertEquals(result.get(NotificationClient.MESSAGE_CC_KEY), ccList);
 		assertEquals(result.get(NotificationClient.MESSAGE_TEXT_BODY_KEY), expectedBody);
 		assertEquals(result.get(NotificationClient.MESSAGE_SUBJECT_KEY), subject);
@@ -117,7 +118,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		String subject = "test-subject";
 		String user = "test-user";
-		String userEmail = "test@test";
+		List<String> userEmail = Arrays.asList("test@test");
 		report.setUserName(user);
 		String attachmentFileName = "test-d.file";
 		String expectedBody = "An MLR Workflow has completed. The workflow output report is below.\n\n\n" +
@@ -130,7 +131,7 @@ public class NotificationServiceTest extends BaseSpringTest {
 		String expectedAttachment = "mlr-test-d.file-report.json";
 
 		HashMap<String, Object> result = service.buildRequestMap(userEmail, null, subject, user, attachmentFileName, report);
-		assertEquals(result.get(NotificationClient.MESSAGE_TO_KEY), Arrays.asList(userEmail));
+		assertEquals(result.get(NotificationClient.MESSAGE_TO_KEY), userEmail);
 		assertEquals(result.get(NotificationClient.MESSAGE_CC_KEY), null);
 		assertEquals(result.get(NotificationClient.MESSAGE_TEXT_BODY_KEY), expectedBody);
 		assertEquals(result.get(NotificationClient.MESSAGE_SUBJECT_KEY), subject);
@@ -145,7 +146,8 @@ public class NotificationServiceTest extends BaseSpringTest {
 		report.setNumberSiteSuccess(0);
 		given(notificationClient.sendEmail(anyString())).willThrow(new RuntimeException());
 		List<String> ccList = Arrays.asList("test");
-		service.sendNotification("test@test", ccList, "test", "test", "test", report);
+		List<String> userEmail = Arrays.asList("test@test");
+		service.sendNotification(userEmail, ccList, "test", "test", "test", report);
 	}
 
 	@Test

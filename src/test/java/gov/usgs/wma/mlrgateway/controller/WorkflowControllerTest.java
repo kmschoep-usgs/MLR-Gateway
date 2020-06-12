@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -70,6 +71,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	public void init() {
 		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("test@test");
 		given(userAuthService.getUserName(any(Authentication.class))).willReturn("test");
+		given(notify.buildEmailSubject(anyString())).willReturn("test Subject");
 		testEmail = new HashMap<>();
 		testEmail.put("email", "localuser@example.gov");
 		controller = new WorkflowController(legacy, notify, userAuthService, clock());
@@ -79,6 +81,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 
 	@Test
 	public void happyPath_LegacyWorkflow() throws Exception {
+		controller.setNotificationEmailCCListString("testCCList@test");
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		UserSummaryReport rtn = controller.legacyWorkflow(file, response, mockAuth);
 		assertEquals(LegacyWorkflowService.COMPLETE_WORKFLOW, rtn.getName() );
@@ -86,6 +89,37 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		assertEquals(new ArrayList<>(), rtn.getSites());
 		assertEquals("d.", rtn.getInputFileName());
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
+		verify(notify).sendNotification(anyList(), anyList(), anyString(), anyString(), anyString(), any());
+	}
+	
+	@Test
+	public void noUserEmail_LegacyWorkflow() throws Exception {
+		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("");
+		controller.setNotificationEmailCCListString("testCCList@test");
+		String errorMessage = "{\"error_message\": \"Could not find valid user email in security context.\"}";
+		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
+		UserSummaryReport rtn = controller.legacyWorkflow(file, response, mockAuth);
+		assertEquals(LegacyWorkflowService.COMPLETE_WORKFLOW, rtn.getName() );
+		assertEquals(errorMessage, rtn.getWorkflowSteps().get(0).getDetails());
+		assertEquals(new ArrayList<>(), rtn.getSites());
+		assertEquals("d.", rtn.getInputFileName());
+		verify(legacy).completeWorkflow(any(MultipartFile.class));
+		verify(notify).sendNotification(anyList(), anyList(), anyString(), anyString(), anyString(), any());
+	}
+	
+	@Test
+	public void noUserEmail_noCCListLegacyWorkflow() throws Exception {
+		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("");
+		controller.setNotificationEmailCCListString(null);
+		String errorMessage = "{\"error_message\": \"Could not find valid user email in security context.\"}";
+		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
+		UserSummaryReport rtn = controller.legacyWorkflow(file, response, mockAuth);
+		assertEquals(LegacyWorkflowService.COMPLETE_WORKFLOW, rtn.getName() );
+		assertEquals(errorMessage, rtn.getWorkflowSteps().get(0).getDetails());
+		assertEquals(new ArrayList<>(), rtn.getSites());
+		assertEquals("d.", rtn.getInputFileName());
+		verify(legacy).completeWorkflow(any(MultipartFile.class));
+		verify(notify).sendNotification(anyList(), anyList(), anyString(), anyString(), anyString(), any());
 	}
 
 	@Test
@@ -120,7 +154,6 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		assertEquals(LegacyWorkflowService.COMPLETE_WORKFLOW_FAILED, completeWorkflowStep.getName());
 		assertEquals(badText, completeWorkflowStep.getDetails());
 		assertEquals("d.", rtn.getInputFileName());
-		
 		verify(legacy).completeWorkflow(any(MultipartFile.class));
 	}
 
@@ -133,6 +166,20 @@ public class WorkflowControllerTest extends BaseSpringTest {
 		assertEquals(new ArrayList<>(), userSummaryReport.getSites());
 		assertEquals("d.", userSummaryReport.getInputFileName());
 		verify(legacy).ddotValidation(any(MultipartFile.class));
+	}
+	
+	@Test
+	public void noUserEmail_LegacyValidationWorkflow() throws Exception {
+		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("");
+		String errorMessage = "{\"error_message\": \"Could not find valid user email in security context.\"}";
+		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
+		UserSummaryReport userSummaryReport = controller.legacyValidationWorkflow(file, response, mockAuth);	
+		assertEquals(LegacyWorkflowService.VALIDATE_DDOT_WORKFLOW, userSummaryReport.getName());
+		assertEquals(errorMessage, userSummaryReport.getWorkflowSteps().get(0).getDetails());
+		assertEquals(new ArrayList<>(), userSummaryReport.getSites());
+		assertEquals("d.", userSummaryReport.getInputFileName());
+		verify(legacy).ddotValidation(any(MultipartFile.class));
+		verify(notify).sendNotification(anyList(), anyList(), anyString(), anyString(), anyString(), any());
 	}
 
 	@Test
