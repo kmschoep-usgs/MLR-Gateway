@@ -25,9 +25,12 @@ import org.springframework.stereotype.Controller;
 public abstract class BaseController {
 	protected NotificationService notificationService;
 	protected UserAuthService userAuthService;
+	private String notificationEmailCCListString;
 	
 	@Value("${notification.email.cc-list:}")
-	private String notificationEmailCCListString;
+	protected void setNotificationEmailCCListString(String notificationEmailCCListString) {
+		this.notificationEmailCCListString = notificationEmailCCListString;
+	}
 
 	@Value("${uiHost:}")
 	protected String uiDomainName;
@@ -68,7 +71,8 @@ public abstract class BaseController {
 	}
 
 	protected void notificationStep(String subject, String attachmentFileName, Authentication authentication, Boolean includeCCList) {
-		List<String> ccList = new ArrayList<>();;
+		List<String> ccList = new ArrayList<>();
+		List<String> userEmail = new ArrayList<>();
 		//Send Notification
 		try {
 			if(includeCCList && notificationEmailCCListString != null && !notificationEmailCCListString.trim().isEmpty()){
@@ -76,14 +80,13 @@ public abstract class BaseController {
 				ccList = new ArrayList<>(Arrays.asList(StringUtils.split(notificationEmailCCListString.trim(), ',')));
 			}
 
-			String userEmail = userAuthService.getUserEmail(authentication);
-
-			if(userEmail == null || userEmail.isEmpty()){
+			userEmail.add(userAuthService.getUserEmail(authentication));
+			
+			if(userEmail.get(0).isEmpty()){
+				userEmail = ccList;
 				throw new InvalidEmailException("Could not find valid user email in security context.");
 			}
-
-			userSummaryReport = userSummaryReportBuilder.buildUserSummaryReport(getReport());
-			notificationService.sendNotification(userEmail, ccList, notificationService.buildEmailSubject(subject), getReport().getUserName(), attachmentFileName, userSummaryReport);
+			
 		} catch(Exception e) {
 			log.error("An error occurred while attempting to send the notification email: ", e);
 			if (e instanceof FeignBadResponseWrapper) {
@@ -91,8 +94,12 @@ public abstract class BaseController {
 				WorkflowController.addWorkflowStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, ((FeignBadResponseWrapper) e).getBody()));
 			} else {
 				int status = HttpStatus.SC_INTERNAL_SERVER_ERROR;
-				WorkflowController.addWorkflowStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, e.getMessage()));
+				WorkflowController.addWorkflowStepReport(new StepReport(NotificationService.NOTIFICATION_STEP, status, false, "{\"error_message\": \"" + e.getMessage() + "\"}"));
 			}
 		}
+		
+		userSummaryReport = userSummaryReportBuilder.buildUserSummaryReport(getReport());
+		notificationService.sendNotification(userEmail, ccList, notificationService.buildEmailSubject(subject), getReport().getUserName(), attachmentFileName, userSummaryReport);
+		
 	}
 }
