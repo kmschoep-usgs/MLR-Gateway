@@ -82,7 +82,7 @@ public abstract class BaseController {
 
 			userEmail.add(userAuthService.getUserEmail(authentication));
 			
-			if(userEmail.get(0).isEmpty()){
+			if(userEmail.get(0) == null){
 				userEmail = ccList;
 				throw new InvalidEmailException("Could not find valid user email in security context.");
 			}
