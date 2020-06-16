@@ -94,7 +94,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	
 	@Test
 	public void noUserEmail_LegacyWorkflow() throws Exception {
-		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("");
+		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn(null);
 		controller.setNotificationEmailCCListString("testCCList@test");
 		String errorMessage = "{\"error_message\": \"Could not find valid user email in security context.\"}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
@@ -109,7 +109,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	
 	@Test
 	public void noUserEmail_noCCListLegacyWorkflow() throws Exception {
-		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("");
+		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn(null);
 		controller.setNotificationEmailCCListString(null);
 		String errorMessage = "{\"error_message\": \"Could not find valid user email in security context.\"}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
@@ -170,7 +170,7 @@ public class WorkflowControllerTest extends BaseSpringTest {
 	
 	@Test
 	public void noUserEmail_LegacyValidationWorkflow() throws Exception {
-		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn("");
+		given(userAuthService.getUserEmail(any(Authentication.class))).willReturn(null);
 		String errorMessage = "{\"error_message\": \"Could not find valid user email in security context.\"}";
 		MockMultipartFile file = new MockMultipartFile("file", "d.", "text/plain", "".getBytes());
 		UserSummaryReport userSummaryReport = controller.legacyValidationWorkflow(file, response, mockAuth);	
