@@ -37,6 +37,9 @@ public class LegacyWorkflowService {
 	public static final String AGENCY_CODE = "agencyCode";
 	public static final String SITE_NUMBER = "siteNumber";
 	public static final String DISTRICT_CODE = "districtCode";
+	public static final String COORDINATE_DATUM_CODE = "coordinateDatumCode";
+	public static final String LATITUDE = "latitude";
+	public static final String LONGITUDE = "longitude";
 	public static final String NEW_AGENCY_CODE = "newAgencyCode";
 	public static final String NEW_SITE_NUMBER = "newSiteNumber";
 	public static final String REQUESTER_NAME = "requesterName";	
@@ -85,13 +88,25 @@ public class LegacyWorkflowService {
 		for (int i = 0; i < ddots.size(); i++) {
 			LOG.trace("Start processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size());
 			Map<String, Object> ml = ddots.get(i);
+			Map<String, Object> existingRecord = new HashMap<>();
 			SiteReport siteReport = new SiteReport(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString());
 			try {
 				if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
 					Boolean isAddTransaction = ((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD);
 					siteReport.setTransactionType(ml.get(TRANSACTION_TYPE).toString());
 					ml = transformService.transformStationIx(ml, siteReport);
-					ml = legacyValidatorService.doValidation(ml, isAddTransaction, siteReport);
+					
+					//Fetch Existing Record
+					existingRecord = fetchExistingRecord(ml, isAddTransaction, siteReport);
+					
+					ml = legacyValidatorService.doValidation(ml, existingRecord, isAddTransaction, siteReport);
+					
+					// If this is an update, and latitude and longitude are being updated but the 
+					// datum is not included, pull that from the existing record
+					if (!isAddTransaction && ml.get(COORDINATE_DATUM_CODE) ==  null && ml.get(LATITUDE) != null && ml.get(LONGITUDE) != null ) {
+						ml.put(COORDINATE_DATUM_CODE, existingRecord.get(COORDINATE_DATUM_CODE));
+					}
+					
 					ml = transformService.transformGeo(ml, siteReport);
 					json = mlToJson(ml);
 
@@ -132,15 +147,20 @@ public class LegacyWorkflowService {
 		for (int i = 0; i < ddots.size(); i++) {
 			LOG.trace("Start processing transaction [" + file.getOriginalFilename() + "] " + (i+1) + "/" + ddots.size());
 			Map<String, Object> ml = ddots.get(i);
+			Map<String, Object> existingRecord = new HashMap<>();
 			SiteReport siteReport = new SiteReport(ml.get(AGENCY_CODE).toString(), ml.get(SITE_NUMBER).toString());
 			try {
 				if (ml.containsKey(TRANSACTION_TYPE) && ml.get(TRANSACTION_TYPE) instanceof String) {
 					siteReport.setTransactionType(ml.get(TRANSACTION_TYPE).toString());
 					ml = transformService.transformStationIx(ml, siteReport);
+					
 					if (((String) ml.get(TRANSACTION_TYPE)).contentEquals(TRANSACTION_TYPE_ADD)) {
-						ml = legacyValidatorService.doValidation(ml, true, siteReport);
+						//Fetch Existing Record
+						existingRecord = fetchExistingRecord(ml, true, siteReport);
+						ml = legacyValidatorService.doValidation(ml, existingRecord, true, siteReport);
 					} else {
-						ml = legacyValidatorService.doValidation(ml, false, siteReport);
+						existingRecord = fetchExistingRecord(ml, false, siteReport);
+						ml = legacyValidatorService.doValidation(ml, existingRecord, false, siteReport);
 					}
 				} else {
 					siteReport.addStepReport(new StepReport(LegacyValidatorService.VALIDATION_STEP, HttpStatus.SC_BAD_REQUEST, false, BAD_TRANSACTION_TYPE));
@@ -167,6 +187,7 @@ public class LegacyWorkflowService {
 		Map<String, Object> monitoringLocationToValidate = new HashMap<>();
 		Map<String, Object> updatedMonitoringLocation = new HashMap<>();
 		Map<String, Object> exportChangeObject = new HashMap<>();
+		Map<String, Object> existingRecord = new HashMap<>();
 		SiteReport oldSiteReport = new SiteReport(oldAgencyCode, oldSiteNumber);
 		SiteReport newSiteReport = new SiteReport(newAgencyCode, newSiteNumber);
 		// TODO: This might change to a new transaction type once we figure out what the new transaction file needs to look like
@@ -204,7 +225,10 @@ public class LegacyWorkflowService {
 				monitoringLocationToValidate.put(AGENCY_CODE, newAgencyCode);
 				monitoringLocationToValidate.put(SITE_NUMBER, newSiteNumber);
 				
-				monitoringLocationToValidate = legacyValidatorService.doPKValidation(monitoringLocationToValidate,newSiteReport);
+				//Fetch Existing Record
+				existingRecord = fetchExistingRecord(monitoringLocationToValidate, true, newSiteReport);
+				
+				monitoringLocationToValidate = legacyValidatorService.doPKValidation(monitoringLocationToValidate, existingRecord, newSiteReport);
 				
 				json = mlToJson(monitoringLocation);
 				
@@ -238,6 +262,17 @@ public class LegacyWorkflowService {
 			}
 		}
 		LOG.trace("End processing primary key update transaction [" + oldAgencyCode + "-" + oldSiteNumber + " to " + newAgencyCode + "-" + newSiteNumber + "] ");
+	}
+	
+	protected Map<String, Object> fetchExistingRecord(Map<String, Object> ml, Boolean isAddTransaction, SiteReport siteReport) {
+		Map<String, Object> existingRecord = new HashMap<>();
+		
+		//Fetch Existing Record
+		String siteNumber = ml.get(LegacyWorkflowService.SITE_NUMBER) != null ? ml.get(LegacyWorkflowService.SITE_NUMBER).toString() : null;
+		String agencyCode = ml.get(LegacyWorkflowService.AGENCY_CODE) != null ? ml.get(LegacyWorkflowService.AGENCY_CODE).toString() : null;
+		existingRecord = legacyCruService.getMonitoringLocation(agencyCode, siteNumber, isAddTransaction, siteReport);
+		
+		return existingRecord;
 	}
 	
 	protected String mlToJson(Map<String, Object> ml) {

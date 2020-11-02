@@ -49,6 +49,27 @@ public class BaseSpringTest {
 		return m;
 	}
 	
+	public static Map<String, Object> getUpdateLatLongNoDatum() {
+		Map<String, Object> m = new HashMap<>();
+		m.put(LegacyWorkflowService.TRANSACTION_TYPE, LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
+		m.put(LegacyWorkflowService.AGENCY_CODE, "USGS ");
+		m.put(LegacyWorkflowService.SITE_NUMBER, "12345678       ");
+		m.put(LegacyWorkflowService.LATITUDE, "12345678       ");
+		m.put(LegacyWorkflowService.LONGITUDE, "87654321       ");
+		return m;
+	}
+	
+	public static Map<String, Object> getUpdateLatLongWithDatum() {
+		Map<String, Object> m = new HashMap<>();
+		m.put(LegacyWorkflowService.TRANSACTION_TYPE, LegacyWorkflowService.TRANSACTION_TYPE_UPDATE);
+		m.put(LegacyWorkflowService.AGENCY_CODE, "USGS ");
+		m.put(LegacyWorkflowService.SITE_NUMBER, "12345678       ");
+		m.put(LegacyWorkflowService.LATITUDE, "9999999       ");
+		m.put(LegacyWorkflowService.LONGITUDE, "12345678       ");
+		m.put(LegacyWorkflowService.COORDINATE_DATUM_CODE, "NAD83");
+		return m;
+	}
+	
 	public static Map<String, Object> getUpdatePK() {
 		Map<String, Object> m = new HashMap<>();
 		m.put(LegacyWorkflowService.ID, "1");

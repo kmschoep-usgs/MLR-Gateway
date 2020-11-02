@@ -42,7 +42,7 @@ public class LegacyValidatorService {
 		this.legacyValidatorClient = legacyValidatorClient;
 	}
 
-	public Map<String, Object> doValidation(Map<String, Object> ml, boolean isAddTransaction, SiteReport siteReport) throws FeignBadResponseWrapper {
+	public Map<String, Object> doValidation(Map<String, Object> ml, Map<String, Object> existingRecord, boolean isAddTransaction, SiteReport siteReport) throws FeignBadResponseWrapper {
 		clientErrorParser = new ClientErrorParser();
 		int duplicateValidationStatus = 200;
 		int otherValidationStatus = 200;
@@ -61,7 +61,7 @@ public class LegacyValidatorService {
 		}
 		try {
 			ResponseEntity<String> validationResponse;
-			String validationPayload = attachExistingMonitoringLocation(ml, isAddTransaction, siteReport);
+			String validationPayload = attachExistingMonitoringLocation(ml, existingRecord, isAddTransaction, siteReport);
 			if(isAddTransaction) {
 				validationResponse = legacyValidatorClient.validateAdd(validationPayload);
 			} else {
@@ -96,7 +96,7 @@ public class LegacyValidatorService {
 		
 	}
 	
-	public Map<String, Object> doPKValidation(Map<String, Object> ml, SiteReport siteReport) throws FeignBadResponseWrapper {
+	public Map<String, Object> doPKValidation(Map<String, Object> ml, Map<String, Object> existingRecord, SiteReport siteReport) throws FeignBadResponseWrapper {
 		clientErrorParser = new ClientErrorParser();
 		int duplicateValidationStatus = 200;
 		int otherValidationStatus = 200;
@@ -117,7 +117,7 @@ public class LegacyValidatorService {
 			ResponseEntity<String> validationResponse;
 			
 			//  Need to implement the following method as if it were an add transaction, since we want it to fail if a monitoring location exists with the new primary key
-			String validationPayload = attachExistingMonitoringLocation(ml, true, siteReport);
+			String validationPayload = attachExistingMonitoringLocation(ml, existingRecord, true, siteReport);
 			
 			// Need to validate using the update service so that we only have to submit and validate the fields we care about (agencyCode and siteNumber)
 			validationResponse = legacyValidatorClient.validateUpdate(validationPayload);
@@ -180,16 +180,9 @@ public class LegacyValidatorService {
 		return ml;
 	}
 
-	private String attachExistingMonitoringLocation(Map<String, Object> ml, boolean isAddTransaction, SiteReport siteReport) {
-		Map<String, Object> existingRecord = new HashMap<>();
+	private String attachExistingMonitoringLocation(Map<String, Object> ml, Map<String, Object> existingRecord, boolean isAddTransaction, SiteReport siteReport) {
 		Map<String, Object> validationPayload = new HashMap<>();
 		ObjectMapper mapper = new ObjectMapper();
-
-		//Fetch Existing Record
-		String siteNumber = ml.get(LegacyWorkflowService.SITE_NUMBER) != null ? ml.get(LegacyWorkflowService.SITE_NUMBER).toString() : null;
-		String agencyCode = ml.get(LegacyWorkflowService.AGENCY_CODE) != null ? ml.get(LegacyWorkflowService.AGENCY_CODE).toString() : null;
-
-		existingRecord = legacyCruService.getMonitoringLocation(agencyCode, siteNumber, isAddTransaction, siteReport);
 
 		validationPayload.put(LegacyValidatorClient.NEW_RECORD_PAYLOAD,ml);
 		validationPayload.put(LegacyValidatorClient.EXISTING_RECORD_PAYLOAD,existingRecord);
