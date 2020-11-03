@@ -149,6 +149,12 @@ public class DdotServiceTest extends BaseSpringTest {
 		lm.add(getUpdate());
 		return lm;
 	}
+	
+	public static List<Map<String, Object>> singleUpdateLatLongNoDatum() {
+		List<Map<String, Object>> lm = new ArrayList<>();
+		lm.add(getUpdateLatLongNoDatum());
+		return lm;
+	}
 
 	public static List<Map<String, Object>> multipleWithErrors() {
 		List<Map<String, Object>> lm = new ArrayList<>();

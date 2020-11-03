@@ -56,6 +56,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@SuppressWarnings("rawtypes")
 	public void validatorService_doValidation_addValidData() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -63,7 +64,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
+		Map<String, Object> mlValid = service.doValidation(ml, existingRecord, true, siteReport);
 		
 		assertEquals(2, siteReport.getSteps().size());
 		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
@@ -81,6 +82,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@SuppressWarnings("rawtypes")
 	public void validatorService_doValidation_updateValidData() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -88,7 +90,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willReturn("{}");
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doValidation(ml, false, siteReport);
+		Map<String, Object> mlValid = service.doValidation(ml, existingRecord, false, siteReport);
 		
 		assertEquals(2, siteReport.getSteps().size());
 		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
@@ -106,6 +108,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@SuppressWarnings("rawtypes")
 	public void validatorService_doValidation_nonExisting() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -113,7 +116,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
+		Map<String, Object> mlValid = service.doValidation(ml, existingRecord, true, siteReport);
 		
 		assertEquals(2, siteReport.getSteps().size());
 		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
@@ -132,6 +135,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@SuppressWarnings("rawtypes")
 	public void validatorService_doValidation_addWarningData() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -139,7 +143,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willReturn("{}");
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doValidation(ml, true, siteReport);
+		Map<String, Object> mlValid = service.doValidation(ml, existingRecord, true, siteReport);
 		
 		assertEquals(2, siteReport.getSteps().size());
 		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
@@ -158,6 +162,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@SuppressWarnings("rawtypes")
 	public void validatorService_doValidation_updateWarningData() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -165,7 +170,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willReturn("{}");
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doValidation(ml, false, siteReport);
+		Map<String, Object> mlValid = service.doValidation(ml, existingRecord, false, siteReport);
 		
 		assertEquals(2, siteReport.getSteps().size());
 		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
@@ -184,6 +189,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_InvalidData() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"fatal_error_message\": \"Fatal Error.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -192,7 +198,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doValidation(ml, true, siteReport);
+			service.doValidation(ml, existingRecord, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertEquals(400, e.getStatus());
@@ -215,6 +221,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_EmptyValidatorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -223,7 +230,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doValidation(ml, true, siteReport);
+			service.doValidation(ml, existingRecord, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertEquals(500, e.getStatus());
@@ -244,6 +251,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_UnknownValidatorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"invalid_key\":\"some data\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -252,7 +260,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doValidation(ml, true, siteReport);
+			service.doValidation(ml, existingRecord, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertEquals(500, e.getStatus());
@@ -273,6 +281,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_ValidatorErrorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "Bad Request";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.BAD_REQUEST);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -281,7 +290,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doValidation(ml, true, siteReport);
+			service.doValidation(ml, existingRecord, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertEquals(400, e.getStatus());
@@ -302,6 +311,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_InvalidValidatorResponse() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "I'm Not JSON";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -310,7 +320,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyValidatorClient.validateAdd(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doValidation(ml, true, siteReport);
+			service.doValidation(ml, existingRecord, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertEquals(500, e.getStatus());
@@ -331,6 +341,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_DuplicateValidationFailure() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -340,7 +351,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willReturn("Error");
 
 		try{
-			service.doValidation(ml, true, siteReport);
+			service.doValidation(ml, existingRecord, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			int status = e.getStatus();
@@ -362,6 +373,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_DuplicateValidationError() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -371,7 +383,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willThrow(new RuntimeException("error"));
 
 		try{
-			service.doValidation(ml, true, siteReport);
+			service.doValidation(ml, existingRecord, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			int status = e.getStatus();
@@ -393,6 +405,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doValidation_DuplicateValidationFailure_InvalidData() throws Exception {
 		Map<String, Object> ml = getAdd();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"fatal_error_message\": \"Fatal Error.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -402,7 +415,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willReturn("Error");
 
 		try{
-			service.doValidation(ml, true, siteReport);
+			service.doValidation(ml, existingRecord, true, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			int status = e.getStatus();
@@ -425,6 +438,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@SuppressWarnings("rawtypes")
 	public void validatorService_doPKValidation_updateValidData() throws Exception {
 		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -432,7 +446,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willReturn("{}");
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
-		Map<String, Object> mlValid = service.doPKValidation(ml, siteReport);
+		Map<String, Object> mlValid = service.doPKValidation(ml, existingRecord, siteReport);
 		
 		assertEquals(2, siteReport.getSteps().size());
 		assertEquals(LegacyValidatorService.SITE_VALIDATE_STEP, siteReport.getSteps().get(0).getName());
@@ -449,6 +463,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doPKValidation_InvalidData() throws Exception {
 		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"fatal_error_message\": \"Fatal Error.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -457,7 +472,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doPKValidation(ml, siteReport);
+			service.doPKValidation(ml, existingRecord, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertEquals(400, e.getStatus());
@@ -480,6 +495,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doPKValidation_EmptyValidatorResponse() throws Exception {
 		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -488,7 +504,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doPKValidation(ml, siteReport);
+			service.doPKValidation(ml, existingRecord, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertEquals(500, e.getStatus());
@@ -509,6 +525,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doPKValidation_UnknownValidatorResponse() throws Exception {
 		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"invalid_key\":\"some data\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -517,7 +534,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doPKValidation(ml, siteReport);
+			service.doPKValidation(ml, existingRecord, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertEquals(500, e.getStatus());
@@ -538,6 +555,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doPKValidation_ValidatorErrorResponse() throws Exception {
 		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "Bad Request";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.BAD_REQUEST);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -546,7 +564,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doPKValidation(ml, siteReport);
+			service.doPKValidation(ml, existingRecord, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertEquals(400, e.getStatus());
@@ -567,6 +585,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doPKValidation_InvalidValidatorResponse() throws Exception {
 		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "I'm Not JSON";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -575,7 +594,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyValidatorClient.validateUpdate(anyString())).willReturn(validatorResponse);
 		
 		try{
-			service.doPKValidation(ml, siteReport);
+			service.doPKValidation(ml, existingRecord, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			assertEquals(500, e.getStatus());
@@ -596,6 +615,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doPKValidation_DuplicateValidationFailure() throws Exception {
 		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -605,7 +625,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willReturn("Error");
 
 		try{
-			service.doPKValidation(ml, siteReport);
+			service.doPKValidation(ml, existingRecord, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			int status = e.getStatus();
@@ -627,6 +647,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_dopKValidation_DuplicateValidationError() throws Exception {
 		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"validation_passed_message\": \"Validation passed.\", \"warning_message\": \"Warnings.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -636,7 +657,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willThrow(new RuntimeException("error"));
 
 		try{
-			service.doPKValidation(ml, siteReport);
+			service.doPKValidation(ml, existingRecord, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			int status = e.getStatus();
@@ -658,6 +679,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 	@Test
 	public void validatorService_doPKValidation_DuplicateValidationFailure_InvalidData() throws Exception {
 		Map<String, Object> ml = getUpdatePK();
+		Map<String, Object> existingRecord = getAdd();
 		String responseMsg = "{\"fatal_error_message\": \"Fatal Error.\"}";
 		ResponseEntity<String> validatorResponse = new ResponseEntity<> (responseMsg, HttpStatus.OK);
 		SiteReport siteReport = new SiteReport(agencyCode, siteNumber);
@@ -667,7 +689,7 @@ public class LegacyValidatorServiceTest extends BaseSpringTest {
 		given(legacyCruService.validateMonitoringLocation(any(), any())).willReturn("Error");
 
 		try{
-			service.doPKValidation(ml, siteReport);
+			service.doPKValidation(ml, existingRecord, siteReport);
 			fail("Validation should throw an exception when errors are found in order to prevent further processing of this transaction.");
 		} catch (FeignBadResponseWrapper e) {
 			int status = e.getStatus();
