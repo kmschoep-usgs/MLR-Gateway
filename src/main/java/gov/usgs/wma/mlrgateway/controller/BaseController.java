@@ -26,14 +26,17 @@ public abstract class BaseController {
 	protected NotificationService notificationService;
 	protected UserAuthService userAuthService;
 	private String notificationEmailCCListString;
+	protected String allowedRedirectUriString;
 	
 	@Value("${notification.email.cc-list:}")
 	protected void setNotificationEmailCCListString(String notificationEmailCCListString) {
 		this.notificationEmailCCListString = notificationEmailCCListString;
 	}
-
-	@Value("${uiHost:}")
-	protected String uiDomainName;
+	
+	@Value("${allowedRedirectUris:}")
+	protected void setAllowedRedirectUriString(String allowedRedirectUriString) {
+		this.allowedRedirectUriString = allowedRedirectUriString;
+	}
 			
 	private Logger log = LoggerFactory.getLogger(BaseController.class);
 	private static ThreadLocal<GatewayReport> gatewayReport = new ThreadLocal<>();

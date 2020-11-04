@@ -54,21 +54,31 @@ public class AuthControllerTest extends BaseSpringTest {
 	@Test
 	public void loginSuccessTest() throws IOException {
         given(userAuthService.getTokenValue(mockAuth)).willReturn("token-value");
-        controller.login(mockAuth, response);
+        controller.setAllowedRedirectUriString("http://test.com");
+        controller.login("http://test.com", mockAuth, response);
         assertEquals(HttpStatus.FOUND.value(), response.getStatus());
         assertTrue(response.getRedirectedUrl().contains("?mlrAccessToken=session-id"));
+    }
+	
+	@Test
+	public void loginInvalidRedirectUriTest() throws IOException {
+        given(userAuthService.getTokenValue(mockAuth)).willReturn("token-value");
+        controller.setAllowedRedirectUriString("http://test.com");
+        controller.login("test", mockAuth, response);
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
     }
 
 	@Test
 	public void loginEmptyTest() throws IOException {
         given(userAuthService.getTokenValue(mockAuth)).willReturn("");
         given(attributes.getSessionId()).willReturn("session-id");
-        controller.login(mockAuth, response);
+        controller.setAllowedRedirectUriString("http://test.com");
+        controller.login("http://test.com", mockAuth, response);
         assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 
         given(userAuthService.getTokenValue(mockAuth)).willReturn(null);
         response = new MockHttpServletResponse();
-        controller.login(mockAuth, response);
+        controller.login("test", mockAuth, response);
         assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
     }
     
@@ -78,7 +88,8 @@ public class AuthControllerTest extends BaseSpringTest {
         given(attributes.getSessionId()).willReturn("session-id");
         
         try {
-            controller.login(mockAuth, response);
+        	controller.setAllowedRedirectUriString("http://test.com");
+            controller.login("http://test.com", mockAuth, response);
             fail("Expected ClientAuthorizationRequiredException but got no exception.");
 		} catch(ClientAuthorizationRequiredException e) {
 			assertTrue(e.getMessage().contains("test-client"));
