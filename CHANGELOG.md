@@ -6,20 +6,35 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
+- Configuration parameter to store a list of approved URIs that it can redirect to post-authentication
+
+### Changed
+- Bugfix: Lat/long changes submitted in a ddot file with no datum field will now be updated
+
+## [1.1] - 2020-06-16 - Rollout-RC1
+### Changed
+- Tweak summary email body message
+- Properly handle null email address that Keycloak will sometimes return if User is not properly configured.
+
+## [1.0] - 2020-05-28 - Pre-Rollout
+### Added
 - Maven code quality parent pom
 - Maven caching for docker build efficiency
 - Update Primary Key workflow
 - Login to Util Controller for separate UI
 - Service that takes in a .csv file of agency code and site number, and generates an update transaction for each monitoring location
+- Service to generate and send a daily summary email to LDMs
 
 ### Changed
 - Made authorization group checking case sensitive
 - Authentication uses JWT instead of JDBC sessions
 - Upgrade to Spring Boot 2.x
+- Upgrade to Spring Security 5.0
 - Library upgrades
 - Use Springdoc for swagger UI instead of Springfox
 - Fix Docker health check
 - Fix PATCH, CORS, and NPE when DDot has no district codes.
+- Use Keycloak for Authentication instead of Water Auth.
 
 ### Removed
 - UI code
@@ -129,7 +144,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Initial release - happy path - dDot injest and CRU only.
 
-[Unreleased]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.5.0...master
+[Unreleased]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-1.1...master
+[1.1]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-1.0...1.1
+[1.0]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.5.0...1.0
 [0.5.0]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.5...0.5.0
 [0.4.5]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.4...mlrgateway-0.4.5
 [0.4.4]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.3...mlrgateway-0.4.4
