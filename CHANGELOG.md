@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html). (Patch version X.Y.0 is implied if not specified.)
 
 ## [Unreleased]
+
+## [1.1.1] - 2020-11-06
 ### Added
 - Configuration parameter to store a list of approved URIs that it can redirect to post-authentication
 
@@ -144,7 +146,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Initial release - happy path - dDot injest and CRU only.
 
-[Unreleased]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-1.1...master
+[Unreleased]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-1.1.1...master
+[1.1.1]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-1.1...1.1.1
 [1.1]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-1.0...1.1
 [1.0]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.5.0...1.0
 [0.5.0]: https://github.com/USGS-CIDA/MLR-Gateway/compare/mlrgateway-0.4.5...0.5.0
